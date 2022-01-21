@@ -1,0 +1,49 @@
+set_global_assignment -name SYSTEMVERILOG_FILE zerowing.sv
+set_global_assignment -name SDC_FILE zerowing.sdc
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/video_timing.v
+
+set_global_assignment -name VERILOG_FILE rom_controller.v
+set_global_assignment -name VHDL_FILE rtl/mem/sdram.vhd
+set_global_assignment -name VHDL_FILE rtl/mem/download_buffer.vhd
+set_global_assignment -name VHDL_FILE rtl/mem/segment.vhd
+set_global_assignment -name VHDL_FILE rtl/math.vhd
+
+set_global_assignment -name QIP_FILE rtl/fx86k/fx68k.qip
+set_global_assignment -name VERILOG_FILE rtl/uaddrPla.v
+set_global_assignment -name VERILOG_FILE rtl/fx68kAlu.v
+set_global_assignment -name VERILOG_FILE rtl/fx68k.v
+set_global_assignment -name VERILOG_FILE rtl/fx86k/cpu_68k.v
+
+set_global_assignment -name QIP_FILE ram1kx8dp.qip
+set_global_assignment -name QIP_FILE ram4kx8dp.qip
+set_global_assignment -name QIP_FILE ram16kx8dp.qip
+set_global_assignment -name QIP_FILE ram256bx16dp.qip
+set_global_assignment -name QIP_FILE ram1kx16dp.qip
+set_global_assignment -name QIP_FILE ram16kx16dp.qip
+set_global_assignment -name QIP_FILE ram16kx32dp.qip
+
+set_global_assignment -name VHDL_FILE rtl/t80/T80_Reg.vhd
+set_global_assignment -name VHDL_FILE rtl/t80/T80_MCode.vhd
+set_global_assignment -name VHDL_FILE rtl/t80/T80_ALU.vhd
+set_global_assignment -name VHDL_FILE rtl/t80/T80.vhd
+set_global_assignment -name VHDL_FILE rtl/t80/T80pa.vhd
+
+set_global_assignment -name SYSTEMVERILOG_FILE rtl/opl3/opl3_intf.sv
+set_global_assignment -name VERILOG_FILE rtl/opl3/operator/vibrato.v
+set_global_assignment -name VERILOG_FILE rtl/opl3/operator/tremolo.v
+set_global_assignment -name VERILOG_FILE rtl/opl3/operator/phase_generator.v
+set_global_assignment -name VERILOG_FILE rtl/opl3/operator/opl3_log_sine_lut.v
+set_global_assignment -name VERILOG_FILE rtl/opl3/operator/opl3_exp_lut.v
+set_global_assignment -name VERILOG_FILE rtl/opl3/operator/operator.v
+set_global_assignment -name VERILOG_FILE rtl/opl3/operator/ksl_add_rom.v
+set_global_assignment -name VERILOG_FILE rtl/opl3/operator/envelope_generator.v
+set_global_assignment -name VERILOG_FILE rtl/opl3/operator/env_rate_counter.v
+set_global_assignment -name VERILOG_FILE rtl/opl3/operator/edge_detector.v
+set_global_assignment -name VERILOG_FILE rtl/opl3/operator/calc_rhythm_phase.v
+set_global_assignment -name VERILOG_FILE rtl/opl3/operator/calc_phase_inc.v
+set_global_assignment -name VERILOG_FILE rtl/opl3/opl3.v
+
+
+
+
+
