@@ -1,5 +1,5 @@
-set_global_assignment -name SYSTEMVERILOG_FILE zerowing.sv
-set_global_assignment -name SDC_FILE zerowing.sdc
+set_global_assignment -name SYSTEMVERILOG_FILE toaplan1.sv
+set_global_assignment -name SDC_FILE toaplan1.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/video_timing.v
 
 set_global_assignment -name VERILOG_FILE rtl/rom_controller.v
