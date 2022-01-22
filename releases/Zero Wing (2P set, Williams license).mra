@@ -6,7 +6,7 @@
   <year>1986</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Shooter</category>
-  <rbf>Toaplan1</rbf>
+  <rbf>zerowing</rbf>
 
   <buttons names="Fire,Jump,Start,Coin,Pause" default="A,B,R,L,Start" />
 
