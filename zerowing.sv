@@ -379,7 +379,7 @@ wire        ioctl_wait;
 
 //
 
-hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
+hps_io #(.CONF_STR(CONF_STR)) hps_io
 (
     .clk_sys(clk_sys),
     .HPS_BUS(HPS_BUS),
