@@ -8,7 +8,7 @@
   <category>Platform</category>
   <rbf>zerowing</rbf>
 
-  <buttons names="Fire,Jump,-,Start,Coin,Pause" default="A,B,R,L,Start" />
+  <buttons names="Fire,Jump,Start,Coin,Pause" default="A,B,R,L,Start" />
 
   <switches default="40,80">
     <dip bits="0,1" name="Coinage" ids="2c/1cr,1c/1cr,1c/2cr,1c/3cr" values="1,0,2,3" />
