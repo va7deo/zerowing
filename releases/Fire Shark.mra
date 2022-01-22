@@ -1,0 +1,58 @@
+<misterromdescription>
+  <name>Fire Shark</name>
+  <mameversion>0220</mameversion>
+  <setname>fireshrk</setname>
+  <mratimestamp>20200531</mratimestamp>
+  <year>1986</year>
+  <manufacturer>Toaplan</manufacturer>
+  <category>Shooter</category>
+  <rbf>zerowing</rbf>
+
+  <buttons names="Fire,Jump,Start,Coin,Pause" default="A,B,R,L,Start" />
+
+  <switches default="40,80">
+    <dip bits="0,1" name="Coinage" ids="2c/1cr,1c/1cr,1c/2cr,1c/3cr" values="1,0,2,3" />
+    <dip bits="4,5" name="Lives" ids="2,3,4,5" values="3,0,1,2" />
+    <dip bits="8,9" name="Bonus Life" ids="50K 200K 500K,100K 300K 600K,200K 500K,100K" />
+    <dip bits="12,13" name="Difficulty" ids="Easy,Normal,Hard,Hardest" />
+    <dip bits="14" name="2P Start Anytime" ids="No,Yes" />
+    <dip bits="15" name="Allow Continue" ids="No,Yes" />
+  </switches>
+
+  <!-- ROM data -->
+  <rom zip="fireshrk.zip" md5="none">
+    <!-- main cpu   0x000000-0x00FFFF 64K  -->
+    <interleave output="16">            
+        <part crc="f0c70e6f" name="09.8j" map="01" />
+        <part crc="9d253d77" name="10.8l" map="10" />
+    </interleave>
+
+    <!-- main cpu   0x010000-0x04FFFF 256K -->
+    <interleave output="16">            
+        <part crc="6beac378" name="o17_11ii.7j" map="10" />
+        <part crc="6adb6eb5" name="o17_12ii.7l" map="01" />
+    </interleave>
+     
+    <!-- gfx1       0x050000-0x0CFFFF 512K -->
+    <interleave output="32">    
+        <part crc="565315f8" name="o17_05.12j" map="0001"/>
+        <part crc="95262d4c" name="o17_06.13j" map="0010"/>
+        <part crc="4c4b735c" name="o17_07.12l" map="0100"/>
+        <part crc="95c6586c" name="o17_08.13l" map="1000"/>
+    </interleave>
+
+    <!-- gfx2       0x0D0000-0x14FFFF 512K -->
+    <interleave output="32">    
+        <part crc="ea12e491" name="o17_01.1d" map="0001"/>
+        <part crc="32a13a9f" name="o17_02.3d" map="0010"/>
+        <part crc="68723dc9" name="o17_03.5d" map="0100"/>
+        <part crc="fe0ecb13" name="o17_04.7d" map="1000"/>
+    </interleave>
+
+    <!-- sound cpu  0x150000-0x157FFF -->
+    <interleave output="8">            
+        <part crc="43523032" name="hd647180.017" />
+    </interleave>
+    
+  </rom>
+</misterromdescription>
