@@ -20,7 +20,7 @@
   </switches>
 
   <!-- ROM data -->
-  <rom zip="hellfire1.zip" md5="none">
+  <rom zip="truxton.zip" md5="none">
     <!-- main cpu   0x000000-0x00FFFF 64K  -->
     <interleave output="16">            
         <part crc="1a62379a" name="b65_11.bin" map="01" />
