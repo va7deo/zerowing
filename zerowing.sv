@@ -32,7 +32,7 @@ module emu
     input         RESET,
 
     //Must be passed to hps_io module
-    inout  [45:0] HPS_BUS,
+    inout  [47:0] HPS_BUS,
 
     //Base video clock. Usually equals to CLK_SYS.
     output        CLK_VIDEO,
@@ -58,6 +58,7 @@ module emu
 
     input  [11:0] HDMI_WIDTH,
     input  [11:0] HDMI_HEIGHT,
+    output        HDMI_FREEZE,
 
 `ifdef MISTER_FB
     // Use framebuffer in DDRAM (USE_FB=1 in qsf)
@@ -180,6 +181,7 @@ assign {UART_RTS, UART_TXD, UART_DTR} = 0;
 
 assign VGA_F1    = 0;
 assign VGA_SCALER= 0;
+assign HDMI_FREEZE = 0;
 
 assign USER_OUT  = '1;
 assign AUDIO_MIX = 0;
@@ -188,23 +190,20 @@ assign LED_DISK  = 0;
 assign LED_POWER = 0;
 assign BUTTONS = 0;
 
-wire [1:0] aspect_ratio = status[2:1];
+wire [1:0] ar = status[2:1];
 wire orientation = ~status[3];
 wire [2:0] scan_lines = status[6:4];
 
 wire [7:0] dipA = status[17:10];
 wire [7:0] dipB = status[25:18];
 
-assign VIDEO_ARX = (!aspect_ratio) ? (orientation  ? 8'd4 : 8'd3) : (aspect_ratio - 1'd1);
-assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
+assign VIDEO_ARX = (!ar) ? (orientation  ? 8'd4 : 8'd3) : (ar - 1'd1);
+assign VIDEO_ARY = (!ar) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
 
 `include "build_id.v" 
 localparam CONF_STR = {
     "A. zerowing;;",
     "F,rom;",
-    "O12,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
-    "O3,Orientation,Horz,Vert;",
-    "O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
     "O12,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
     "O3,Orientation,Horz,Vert;",
     "O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
