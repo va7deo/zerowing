@@ -200,9 +200,16 @@ wire [7:0] dipB = status[25:18];
 assign VIDEO_ARX = (!ar) ? (orientation  ? 8'd4 : 8'd3) : (ar - 1'd1);
 assign VIDEO_ARY = (!ar) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
 
+// Status Bit Map:
+//             Upper                             Lower              
+// 0         1         2         3          4         5         6   
+// 01234567890123456789012345678901 23456789012345678901234567890123
+// 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
+//  XXXXXX   XXXXXXXXXXXXXXXX
+
 `include "build_id.v" 
 localparam CONF_STR = {
-    "A. zerowing;;",
+    "A.Toaplan1;;",
     "F,rom;",
     "O12,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
     "O3,Orientation,Horz,Vert;",
