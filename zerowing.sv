@@ -384,8 +384,6 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
     .clk_sys(clk_sys),
     .HPS_BUS(HPS_BUS),
 
-    .conf_str(CONF_STR),
-
     .buttons(buttons),
     .status(status),
     .status_menumask(direct_video),
