@@ -1,5 +1,5 @@
 <misterromdescription>
-  <name>Hellfire (1P set, older)</name>
+  <name>Hellfire (1P set)</name>
   <mameversion>0220</mameversion>
   <setname>hellfire</setname>
   <mratimestamp>20200531</mratimestamp>
@@ -20,11 +20,11 @@
   </switches>
 
   <!-- ROM data -->
-  <rom zip="hellfire1a.zip" md5="none">
+  <rom zip="hellfire1.zip" md5="none">
     <!-- main cpu   0x000000-0x00FFFF 64K  -->
     <interleave output="16">            
-        <part crc="a3141ea5" name="b90_14x.0" map="01" />
-        <part crc="e864daf4" name="b90_15x.1" map="10" />
+        <part crc="034966d3" name="b90_01.10m" map="01" />
+        <part crc="06dd24c7" name="b90_02.9m" map="10" />
     </interleave>
      
     <!-- gfx1       0x050000-0x0CFFFF 512K -->
@@ -45,7 +45,7 @@
 
     <!-- sound cpu  0x150000-0x157FFF -->
     <interleave output="8">            
-        <part crc="f58c368f" name="b90_03x.2" />
+        <part crc="4058fa67" name="b90_03.2" />
     </interleave>
     
   </rom>
