@@ -20,7 +20,7 @@
   </switches>
 
   <!-- ROM data -->
-  <rom zip="zerowing.zip" md5="none">
+  <rom zip="zerowingw.zip" md5="none">
     <!-- main cpu   0x000000-0x00FFFF 64K  -->
     <interleave output="16">            
         <part crc="e697ecb9" name="o15-11iiw.bin" map="01" />
