@@ -1,0 +1,52 @@
+<misterromdescription>
+  <name>Hellfire (2P set)</name>
+  <mameversion>0220</mameversion>
+  <setname>hellfire</setname>
+  <mratimestamp>20200531</mratimestamp>
+  <year>1989</year>
+  <manufacturer>Toaplan</manufacturer>
+  <category>Shooter</category>
+  <rbf>zerowing</rbf>
+
+  <buttons names="Fire,Jump,Start,Coin,Pause" default="A,B,R,L,Start" />
+
+  <switches default="40,80">
+    <dip bits="0,1" name="Coinage" ids="2c/1cr,1c/1cr,1c/2cr,1c/3cr" values="1,0,2,3" />
+    <dip bits="4,5" name="Lives" ids="2,3,4,5" values="3,0,1,2" />
+    <dip bits="8,9" name="Bonus Life" ids="50K 200K 500K,100K 300K 600K,200K 500K,100K" />
+    <dip bits="12,13" name="Difficulty" ids="Easy,Normal,Hard,Hardest" />
+    <dip bits="14" name="2P Start Anytime" ids="No,Yes" />
+    <dip bits="15" name="Allow Continue" ids="No,Yes" />
+  </switches>
+
+  <!-- ROM data -->
+  <rom zip="hellfire1a.zip" md5="none">
+    <!-- main cpu   0x000000-0x00FFFF 64K  -->
+    <interleave output="16">            
+        <part crc="a3141ea5" name="b90_14x.0" map="01" />
+        <part crc="e864daf4" name="b90_15x.1" map="10" />
+    </interleave>
+     
+    <!-- gfx1       0x050000-0x0CFFFF 512K -->
+    <interleave output="32">    
+        <part crc="ea6150fc" name="b90_04.3" map="0001"/>
+        <part crc="bb52c507" name="b90_05.4" map="0010"/>
+        <part crc="cf5b0252" name="b90_06.5" map="0100"/>
+        <part crc="b98af263" name="b90_07.6" map="1000"/>
+    </interleave>
+
+    <!-- gfx2       0x0D0000-0x14FFFF 512K -->
+    <interleave output="32">    
+        <part crc="c33e543c" name="b90_11.10" map="0001"/>
+        <part crc="35fd1092" name="b90_10.9" map="0010"/>
+        <part crc="cf01009e" name="b90_09.8" map="0100"/>
+        <part crc="3404a5e3" name="b90_08.7" map="1000"/>
+    </interleave>
+
+    <!-- sound cpu  0x150000-0x157FFF -->
+    <interleave output="8">            
+        <part crc="f58c368f" name="b90_03x.2" />
+    </interleave>
+    
+  </rom>
+</misterromdescription>
