@@ -2,7 +2,7 @@
   <name>Zerowing</name>
   <mameversion>0220</mameversion>
   <setname>zerowing</setname>
-  <mratimestamp>20200531</mratimestamp>
+  <mratimestamp>20210124</mratimestamp>
   <year>1986</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Platform</category>
@@ -50,9 +50,7 @@
     </interleave>
 
     <!-- sound cpu  0x150000-0x157FFF -->
-    <interleave output="8">            
-        <part crc="e7b72383" name="o15-13.rom" />
-    </interleave>
+    <part crc="e7b72383" name="o15-13.rom" />
     
   </rom>
 </misterromdescription>

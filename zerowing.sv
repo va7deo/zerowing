@@ -200,7 +200,7 @@ assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
 
 `include "build_id.v" 
 localparam CONF_STR = {
-    "A. zerowing;;",
+    "Zero Wing;;",
     "F,rom;",
     "O12,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
     "O3,Orientation,Horz,Vert;",
@@ -1425,6 +1425,7 @@ rom_controller rom_controller
     // IOCTL interface
     .ioctl_addr(ioctl_addr),
     .ioctl_data(ioctl_dout),
+    .ioctl_index(ioctl_index),
     .ioctl_wr(ioctl_wr),
     .ioctl_download(ioctl_download),
 
