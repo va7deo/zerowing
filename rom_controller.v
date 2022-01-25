@@ -26,7 +26,7 @@ module rom_controller
     // character ROM interface
     input tile_rom_cs,
     input tile_rom_oe,
-    input  [18:0] tile_rom_addr,
+    input  [19:0] tile_rom_addr,
     output [31:0] tile_rom_data,
     output tile_rom_data_valid,    
 
@@ -129,7 +129,7 @@ download_buffer #(.SIZE(4) ) download_buffer
 
 segment 
 #(
-    .ROM_ADDR_WIDTH(16),
+    .ROM_ADDR_WIDTH(18),
     .ROM_DATA_WIDTH(16),
     .ROM_OFFSET(24'h000000)
 ) prog_rom_1_segment 
@@ -152,7 +152,7 @@ segment
 #(
     .ROM_ADDR_WIDTH(18),
     .ROM_DATA_WIDTH(16),
-    .ROM_OFFSET(24'h010000)
+    .ROM_OFFSET(24'h040000)
 ) prog_rom_2_segment
 (
     .reset(reset),
@@ -171,9 +171,9 @@ segment
 
 segment 
 #(
-    .ROM_ADDR_WIDTH(18),
+    .ROM_ADDR_WIDTH(19),
     .ROM_DATA_WIDTH(32),
-    .ROM_OFFSET(24'h050000)
+    .ROM_OFFSET(24'h080000)
 ) tile_rom_segment
 (
     .reset(reset),
@@ -194,7 +194,7 @@ segment
 #(
     .ROM_ADDR_WIDTH(18),
     .ROM_DATA_WIDTH(32),
-    .ROM_OFFSET(24'h0D0000)
+    .ROM_OFFSET(24'h180000)
 ) sprite_rom_segment
 (
     .reset(reset),
@@ -215,7 +215,7 @@ segment
 #(
     .ROM_ADDR_WIDTH(16),
     .ROM_DATA_WIDTH(8),
-    .ROM_OFFSET(24'h150000)
+    .ROM_OFFSET(24'h200000)
 ) sound_rom_1_segment
 (
     .reset(reset),

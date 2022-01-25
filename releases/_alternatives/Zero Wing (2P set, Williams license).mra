@@ -1,0 +1,58 @@
+<misterromdescription>
+  <name>Zero Wing</name>
+  <mameversion>0229</mameversion>
+  <setname>zerowingw</setname>
+  <mratimestamp>20210125</mratimestamp>
+  <year>1986</year>
+  <manufacturer>Toaplan</manufacturer>
+  <category>Platform</category>
+  <rbf>zerowing</rbf>
+
+  <buttons names="Fire,Jump,Start,Coin,Pause" default="A,B,R,L,Start" />
+
+  <switches default="40,80">
+    <dip bits="0,1" name="Coinage" ids="2c/1cr,1c/1cr,1c/2cr,1c/3cr" values="1,0,2,3" />
+    <dip bits="4,5" name="Lives" ids="2,3,4,5" values="3,0,1,2" />
+    <dip bits="8,9" name="Bonus Life" ids="50K 200K 500K,100K 300K 600K,200K 500K,100K" />
+    <dip bits="12,13" name="Difficulty" ids="Easy,Normal,Hard,Hardest" />
+    <dip bits="14" name="2P Start Anytime" ids="No,Yes" />
+    <dip bits="15" name="Allow Continue" ids="No,Yes" />
+  </switches>
+
+  <!-- ROM data -->
+  <rom zip="zerowing.zip" md5="none">
+    <!-- main cpu   0x000000-0x00ffff 256K -->
+    <interleave output="16">
+        <part crc="38b0bb5b" name="o15-11iiw.bin" map="01" />
+        <part crc="74c91e6f" name="o15-12iiw.bin" map="10" />
+    </interleave>
+    <part repeat="0x30000">ff</part>
+
+    <!-- main cpu   0x040000-0x07ffff 256K -->
+    <interleave output="16">
+        <part crc="13764e95" name="o15-09.rom" map="01" />
+        <part crc="351ba71a" name="o15-10.rom" map="10" />
+    </interleave>
+
+    <!-- gfx1       0x080000-0x17ffff 1M -->
+    <interleave output="32">
+        <part crc="4e5dd246" name="o15-05.rom" map="0001"/>
+        <part crc="c8c6d428" name="o15-06.rom" map="0010"/>
+        <part crc="efc40e99" name="o15-07.rom" map="0100"/>
+        <part crc="1b019eab" name="o15-08.rom" map="1000"/>
+    </interleave>
+    <part repeat="0x80000">ff</part>
+
+    <!-- gfx2       0x180000-0x1fffff 512K -->
+    <interleave output="32">
+        <part crc="7f245fd3" name="o15-03.rom" map="0001"/>
+        <part crc="0b1a1289" name="o15-04.rom" map="0010"/>
+        <part crc="70570e43" name="o15-01.rom" map="0100"/>
+        <part crc="724b487f" name="o15-02.rom" map="1000"/>
+    </interleave>
+
+    <!-- sound cpu  0x200000-0x207FFF 32K -->
+    <part crc="e7b72383" name="o15-13.rom" />
+
+  </rom>
+</misterromdescription>

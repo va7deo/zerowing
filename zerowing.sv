@@ -737,7 +737,7 @@ T80pa u_cpu(
 
 // 68k address decoder
 
-wire prog_rom_1_cs   = ( cpu_a <= 24'h00ffff ) & !cpu_as_n  ; 
+wire prog_rom_1_cs   = ( cpu_a <= 24'h03ffff ) & !cpu_as_n  ;
 wire prog_rom_2_cs   = ( cpu_a >= 24'h040000 && cpu_a <= 24'h07ffff ) & !cpu_as_n  ;  
 
 wire scroll_ofs_x_cs = ( cpu_a >= 24'h0c0000 && cpu_a <= 24'h0c0001 ) & !cpu_as_n  ;  

@@ -1,8 +1,8 @@
 <misterromdescription>
-  <name>Zerowing</name>
-  <mameversion>0220</mameversion>
-  <setname>zerowing</setname>
-  <mratimestamp>20210124</mratimestamp>
+  <name>Zero Wing</name>
+  <mameversion>0229</mameversion>
+  <setname>zerowing1</setname>
+  <mratimestamp>20210125</mratimestamp>
   <year>1986</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Platform</category>
@@ -20,37 +20,40 @@
   </switches>
 
   <!-- ROM data -->
-  <rom zip="zerowing1.zip" md5="none">
-    <!-- main cpu   0x000000-0x00FFFF 64K  -->
-    <interleave output="16">            
+  <rom zip="zerowing.zip" md5="none">
+    <!-- main cpu   0x000000-0x00ffff 64K -->
+    <interleave output="16">
         <part crc="6FF2B9A0" name="o15-11.rom" map="01" />
-        <part crc="45F85D18" name="o15-12.rom" map="10" />
+        <part crc="9773e60b" name="o15-12.rom" map="10" />
     </interleave>
 
-    <!-- main cpu   0x010000-0x04FFFF 256K -->
-    <interleave output="16">            
-        <part crc="351ba71a" name="o15-09.rom" map="10" />
-        <part crc="13764e95" name="o15-10.rom" map="01" />
+    <!-- main cpu   0x010000-0x03ffff 192K -->
+    <part repeat="0x30000">ff</part>
+
+    <!-- main cpu   0x040000-0x07ffff 256K -->
+    <interleave output="16">
+        <part crc="13764e95" name="o15-09.rom" map="01" />
+        <part crc="351ba71a" name="o15-10.rom" map="10" />
     </interleave>
-     
-    <!-- gfx1       0x050000-0x0CFFFF 512K -->
-    <interleave output="32">    
+
+    <!-- gfx1       0x080000-0x17ffff 1M -->
+    <interleave output="32">
         <part crc="4e5dd246" name="o15-05.rom" map="0001"/>
         <part crc="c8c6d428" name="o15-06.rom" map="0010"/>
         <part crc="efc40e99" name="o15-07.rom" map="0100"/>
         <part crc="1b019eab" name="o15-08.rom" map="1000"/>
     </interleave>
+    <part repeat="0x80000">ff</part>
 
-    <!-- gfx2       0x0D0000-0x14FFFF 512K -->
-    <interleave output="32">    
+    <!-- gfx2       0x180000-0x1fffff 512K -->
+    <interleave output="32">
         <part crc="7f245fd3" name="o15-03.rom" map="0001"/>
         <part crc="0b1a1289" name="o15-04.rom" map="0010"/>
         <part crc="70570e43" name="o15-01.rom" map="0100"/>
         <part crc="724b487f" name="o15-02.rom" map="1000"/>
     </interleave>
 
-    <!-- sound cpu  0x150000-0x157FFF -->
+    <!-- sound cpu  0x200000-0x207FFF 32K -->
     <part crc="e7b72383" name="o15-13.rom" />
-    
   </rom>
 </misterromdescription>
