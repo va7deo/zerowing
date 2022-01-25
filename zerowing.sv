@@ -192,8 +192,17 @@ wire [1:0] aspect_ratio = status[2:1];
 wire orientation = ~status[3];
 wire [2:0] scan_lines = status[6:4];
 
+// Status Bit Map:
+//              Upper                          Lower
+// 0         1         2         3          4         5         6
+// 01234567890123456789012345678901 23456789012345678901234567890123
+// 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
+
+
+// todo: m
 wire [7:0] dipA = status[17:10];
 wire [7:0] dipB = status[25:18];
+wire [7:0] dipC = { 6'b0 , status[27:26] };
 
 assign VIDEO_ARX = (!aspect_ratio) ? (orientation  ? 8'd4 : 8'd3) : (aspect_ratio - 1'd1);
 assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
@@ -205,13 +214,11 @@ localparam CONF_STR = {
     "O12,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
     "O3,Orientation,Horz,Vert;",
     "O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
-    "O12,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
-    "O3,Orientation,Horz,Vert;",
-    "O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
     "OA,Cocktail,Off,On;",
     "OB,Flip Screen,Off,On;",
     "OC,Test Mode,Off,On;",
     "OD,Demo Sounds,On,Off;",
+    "-;",
     "OEF,Slot A,1c/1cr,1c/2cr,2c/1cr,2c/3cr;",
     "OGH,Slot B,1c/1cr,1c/2cr,2c/1cr,2c/3cr;",
     "OIJ,Difficulty,Normal,Easy,Hard,Extra Hard;",
@@ -219,6 +226,7 @@ localparam CONF_STR = {
     "OMN,Lifes,3,5,4,2;",
     "OO,Invulnerable,Off,On;",
     "OP,Continue Play,On,Off;",
+    "OQR,Region,Japan,USA,Europe 1,Europe 2;",    
     "-;",
     "R0,Reset;",
     "J1,Fire,Capture,Start 1P,Start 2P,Coin,Pause;",
@@ -464,9 +472,6 @@ video_timing video_timing (
 
 reg  [23:0] rgb_out;
 
-
-wire pwr_up_reset_n = !reset  ;
-
 // ===============================================================
 // 68000 CPU
 // ===============================================================
@@ -516,13 +521,11 @@ assign cpu_a[0] = 0;           // odd memory address should cause cpu exception
      
 fx68k fx68k (
     // input
-    .clk( clk_10M & ~ioctl_download ),
-//    .clk( clk_sys & ~ioctl_download ),
+    .clk( clk_10M ),
     .enPhi1(fx68_phi1),
     .enPhi2(fx68_phi2),
-    .extReset(!pwr_up_reset_n),
-    .pwrUp(!pwr_up_reset_n),
-//    .HALTn(pwr_up_reset_n),
+    .extReset(reset),
+    .pwrUp(reset),
 
     // output
     .eRWn(cpu_rw),
@@ -606,7 +609,11 @@ reg z80_int;
 
 
 always @ (posedge clk_sys) begin
-    if ( clk_7M == 1 ) begin
+    if ( reset == 1 ) begin
+        z80_wait_n <= 0;
+        sound_wr <= 0 ;
+    end else if ( clk_7M == 1 ) begin
+
         z80_wait_n <= 1;
         
         if ( ioctl_download | ( z80_rd_n == 0 && sound_rom_1_data_valid == 0 && sound_rom_1_cs == 1 ) ) begin
@@ -629,6 +636,8 @@ always @ (posedge clk_sys) begin
                 z80_din <= dipA; //dsw1;
             end else if ( sound_io_28_cs ) begin
                 z80_din <= dipB; //dsw2;
+            end else if ( sound_io_88_cs ) begin
+                z80_din <= dipC; //dsw3;
             end else if ( sound_io_80_cs ) begin
                 z80_din <= { 1'b0, 1'b0, start_1, start_2, coin, 1'b0, 1'b0, 1'b0 };
             end else if ( sound_io_a8_cs ) begin    
@@ -699,7 +708,7 @@ opl3_intf opl
 
   
 T80pa u_cpu(
-    .RESET_n    ( pwr_up_reset_n ),
+    .RESET_n    ( ~reset ),
     .CLK        ( clk_7M ),
     .CEN_p      ( 1'b1 ),     
     .CEN_n      ( 1'b1 ),
@@ -725,26 +734,6 @@ T80pa u_cpu(
     .Stop       (),
     .REG        ()
 );
-
-//    map(0x000000, 0x00ffff).rom();
-//    map(0x040000, 0x07ffff).rom();
-//    map(0x080000, 0x087fff).ram();
-//    map(0x0c0000, 0x0c0003).w(FUNC(toaplan1_state::tile_offsets_w));
-//    map(0x0c0006, 0x0c0006).w(FUNC(toaplan1_state::fcu_flipscreen_w));
-//  map(0x400000, 0x400001).r(FUNC(toaplan1_state::frame_done_r));
-//    map(0x400003, 0x400003).w(FUNC(toaplan1_state::intenable_w));
-//    map(0x400008, 0x40000f).w(FUNC(toaplan1_state::bcu_control_w)); 
-//    map(0x404000, 0x4047ff).ram().w(FUNC(toaplan1_state::bgpalette_w)).share("bgpalette");      
-//    map(0x406000, 0x4067ff).ram().w(FUNC(toaplan1_state::fgpalette_w)).share("fgpalette");      // sprites
-//    map(0x440000, 0x440fff).rw(FUNC(toaplan1_state::shared_r), FUNC(toaplan1_state::shared_w)).umask16(0x00ff);
-//    map(0x480001, 0x480001).w(FUNC(toaplan1_state::bcu_flipscreen_w));
-//    map(0x480002, 0x480003).rw(FUNC(toaplan1_state::tileram_offs_r), FUNC(toaplan1_state::tileram_offs_w));
-//    map(0x480004, 0x480007).rw(FUNC(toaplan1_state::tileram_r), FUNC(toaplan1_state::tileram_w));
-//    map(0x480010, 0x48001f).rw(FUNC(toaplan1_state::scroll_regs_r), FUNC(toaplan1_state::scroll_regs_w));
-//    map(0x4c0000, 0x4c0001).r(FUNC(toaplan1_state::frame_done_r));
-//    map(0x4c0002, 0x4c0003).rw(FUNC(toaplan1_state::spriteram_offs_r), FUNC(toaplan1_state::spriteram_offs_w));
-//    map(0x4c0004, 0x4c0005).rw(FUNC(toaplan1_state::spriteram_r), FUNC(toaplan1_state::spriteram_w));
-//    map(0x4c0006, 0x4c0007).rw(FUNC(toaplan1_state::spritesizeram_r), FUNC(toaplan1_state::spritesizeram_w));
 
 // 68k address decoder
 
@@ -804,10 +793,10 @@ reg [1:0] vbl_sr;
 always @ (posedge clk_sys ) begin
     if ( reset == 1 ) begin
         ipl2_n <= 1 ;
+        int_ack <= 0;
     end else begin
         vbl_sr <= { vbl_sr[0], vbl };
         
-//        if ( clk10_prev == 0 && clk_10M ) begin
         if ( clk_10M == 1 ) begin
             int_ack <= ( cpu_as_n == 0 ) && ( cpu_fc == 3'b111 ); // cpu acknowledged the interrupt
         end
@@ -844,7 +833,7 @@ always @ (posedge clk_sys) begin
 //        
 //        scroll_ofs_x <= 16'h01b7;
 //        scroll_ofs_y <= 16'h0102;
-        
+        int_en <= 0;
     end else begin
         // write asserted and rising cpu clock
         if (  clk_10M == 1 && cpu_rw == 0 ) begin        
@@ -1053,226 +1042,234 @@ wire [8:0] sprite_width     = { sprite_size_dout[3:0], 3'b0 } /* synthesis keep 
 
 always @ (posedge clk_sys) begin
     
-    // render sprites 
-    // triggered when the tile rendering starts
-    if ( sprite_state == 0 && draw_state > 0 ) begin
-        sprite_num <= 8'hff;
-        sprite_buf_active <= 0;
-        sprite_x <= 0;
-        sprite_fb_w <= 1;
-        sprite_state <= 1;
-        sprite_fb_din <= 0;
-        sprite_fb_addr_w <= { y[0], 9'b0 }  ;  
-    end else if ( sprite_state == 1 ) begin           
-        // erase line buffer
-        sprite_fb_addr_w <= { y[0], 9'b0 } + sprite_x ;  
-        sprite_priority_buf[sprite_x] <= 0;
-        if ( sprite_x < 319 ) begin
-            sprite_x <= sprite_x + 1;
-        end else begin
-            sprite_x <= 0;
-            sprite_fb_w <= 0;
-            sprite_buf_active <= 1;
-            sprite_state <= 2 ;
-        end
-    end else if ( sprite_state == 2 ) begin     
-        // sprite num is valid now
-        sprite_state <= 3 ;
-    end else if ( sprite_state == 3 ) begin                
-        // sprite attr valid now.  
-        // delay one more cycle to read sprite size
-        sprite_state <= 4 ;
-    end else if ( sprite_state == 4 ) begin        
-        // start loop
+    if ( reset == 1 ) begin
+        sprite_state <= 0;
+        draw_state <= 0;
         sprite_rom_cs <= 0;
-        sprite_fb_w <= 0;
-
-        sprite_y <= ( y - sprite_pos_y ) ;
-        
-        // is sprite visible and is current y in sprite y range
-        if ( sprite_hidden == 0 && sprite_width > 0 && y >= sprite_pos_y && y < ( sprite_pos_y + sprite_height ) ) begin
-            sprite_state <= 5 ;
-        end else begin
-            sprite_num <= sprite_num - 1;
-            sprite_state <= 2 ;
-        end
-
-    end else if ( sprite_state == 5 ) begin        
-        sprite_rom_addr <= { sprite_index, 3'b0 } + { sprite_x[8:3], 3'b0 } + ( sprite_y[8:3] * sprite_width ) + sprite_y[2:0];
-        sprite_rom_cs <= 1;
-        sprite_state <= 6 ;            
-    end else if ( sprite_state == 6 ) begin        
-        // wait for sprite bitmap ready
-        if ( sprite_rom_data_valid ) begin
-            // latch data and deassert cs
-            sprite_data <= sprite_rom_data;
-            sprite_rom_cs <= 0;
-            sprite_state <= 7;
-        end 
-    end else if ( sprite_state == 7 ) begin                    
-        sprite_fb_w <= 0;
-        // draw if pixel value not zero and priority >= previous sprite data
-        if ( sprite_pix > 0 && sprite_priority_buf[sprite_buf_x] < sprite_priority ) begin  
-            sprite_fb_din <= { 2'b11, sprite_priority, sprite_pal_addr, sprite_pix };   
-            sprite_fb_addr_w <= { y[0], 9'b0 } + sprite_buf_x ;            
-            sprite_priority_buf[sprite_buf_x] <= sprite_priority ;
-            sprite_fb_w <= 1;
-        end 
-
-        if ( sprite_x < ( sprite_width - 1 ) ) begin
-            sprite_x <= sprite_x + 1;
-
-            if ( sprite_x[2:0] == 7 ) begin
-                // do recalc bitmap address
-                sprite_state <= 5 ;
-            end
-        end else if ( sprite_num > 0 ) begin
-            sprite_num <= sprite_num - 1;
-            sprite_x <= 0;
-            // need to load new attributes and size
-            sprite_state <= 2 ;
-        end else begin
-            // tile state machine will reset sprite_state when line completes.
-            sprite_state <= 15; // done
-        end            
-    end
-    
-    // copy tile ram and scroll info
-    // not sure if this is needed. need to check to see when tile ram is updated.
-    if (  tile_copy_state == 0 && vc == 256  ) begin 
-        tile_copy_state <= 1;
-    end else begin
-        // copy scroll registers
-        scroll_x_latch[0] <= scroll_x[0] - scroll_ofs_x;
-        scroll_x_latch[1] <= scroll_x[1] - scroll_ofs_x;
-        scroll_x_latch[2] <= scroll_x[2] - scroll_ofs_x;
-        scroll_x_latch[3] <= scroll_x[3] - scroll_ofs_x;
-
-        scroll_y_latch[0] <= scroll_y[0] - scroll_ofs_y;
-        scroll_y_latch[1] <= scroll_y[1] - scroll_ofs_y;
-        scroll_y_latch[2] <= scroll_y[2] - scroll_ofs_y;
-        scroll_y_latch[3] <= scroll_y[3] - scroll_ofs_y;
-               
-    end 
-    
-    if (  sprite_copy_state == 0 && vc == 240  ) begin 
-        sprite_copy_state <= 1;
-    end else if ( sprite_copy_state == 1 ) begin 
-        sprite_num_copy <= 8'h00;
-        sprite_copy_state <= 2 ;
-    end else if ( sprite_copy_state == 2 ) begin
-        sprite_buf_w <= 1;
-
-        // wait for read from source
-        sprite_copy_state <= 3 ;
-    end else if ( sprite_copy_state == 3 ) begin
-        sprite_buf_w <= 0;
-        sprite_copy_state <= 2 ;
-        
-        if ( sprite_num_copy < 8'hff ) begin 
-            sprite_num_copy <= sprite_num_copy + 1;
-        end else begin
-            sprite_copy_state <= 0; // till next time
-        end
-    end
-
-    // tile state machine
-    
-    if ( draw_state == 0 && vc == 269 ) begin
-        layer <= 3;
-        y <= 0;
-        draw_state <= 2;
-    end else if ( draw_state == 2 ) begin
-        x <= 0;
-
-        x_ofs <= 495 + 6 +  scroll_x_latch[layer] - { layer, 1'b0 } ; 
-        y_ofs <= 257 + 16 + scroll_y_latch[layer] ;
-
-        // latch offset info
-        draw_state <= 3;
+        tile_rom_cs <= 0;
+        tile_copy_state <= 0;
+        sprite_copy_state <= 0;
         tile_draw_state <= 0;
-    end else if ( draw_state == 3 ) begin
-
-        if ( tile_draw_state == 0 ) begin
-            tile <=  { layer[1:0], curr_y[8:3], curr_x[8:3] };  // works
-            
-            tile_draw_state <= 4'h1;
-        end else if ( tile_draw_state == 1 ) begin
-            
-            
-            tile_draw_state <= 2;
-        end else if ( tile_draw_state == 2 ) begin            
-
-        // latch attribute
-            tile_attr <= tile_attr_dout;
-            //tile_attr <= tile_buf_dout;
-        
-            tile_draw_state <= 3;
-        end else if ( tile_draw_state == 3 ) begin
-            // read bitmap info
-            tile_rom_cs <= 1;
-            tile_rom_addr <= { tile_idx, curr_y[2:0] }  ;  
-            tile_draw_state <= 4;
-        end else if ( tile_draw_state == 4 ) begin     
-
-            // wait for bitmap ram ready
-            if ( tile_rom_data_valid ) begin
-                // latch data and deassert cs
-                tile_data <= tile_rom_data;
-                tile_draw_state <= 5 ;
-                tile_rom_cs <= 0;
-            end
-        end else if ( tile_draw_state == 5 ) begin   
-         
-            tile_fb_w <= 0;
-            // force render of first layer.
-            // don't draw transparent pixels
-            if ( layer == 3 ) begin            
-           
-                tile_priority_buf[x] <= (tile_hidden == 1 || tile_pix == 0 ) ? 4'b0 : tile_priority;
-                
-                // if tile hidden then make the pallette index 0. ie transparent
-                fb_din <= { layer, (tile_hidden == 1 || tile_pix == 0 ) ? 4'b0 : tile_priority, tile_palette_idx,  tile_pix };
-                tile_fb_w <= 1;
-            end else if (tile_hidden == 0 && tile_pix > 0 && tile_priority >= tile_priority_buf[x]) begin
-                tile_priority_buf[x] <= tile_priority;
-                
-                // if tile hidden then make the pallette index 0. ie transparent
-                fb_din <= { layer, tile_priority, tile_palette_idx,  tile_pix };
-                tile_fb_w <= 1;
-            end
-            
-            if ( x < 319 ) begin // 319
-                // do we need to read another tile?
-                if ( curr_x[2:0] == 7 ) begin
-                    draw_state <= 3;
-                    tile_draw_state <= 0;
-                end 
-                x <= x + 1 ;
-            end else if ( layer > 0 ) begin
-                layer <= layer - 1;
-                tile_fb_w <= 0;
-                draw_state <= 2;
+    end else begin
+        // render sprites 
+        // triggered when the tile rendering starts
+        if ( sprite_state == 0 && draw_state > 0 ) begin
+            sprite_num <= 8'hff;
+            sprite_buf_active <= 0;
+            sprite_x <= 0;
+            sprite_fb_w <= 1;
+            sprite_state <= 1;
+            sprite_fb_din <= 0;
+            sprite_fb_addr_w <= { y[0], 9'b0 }  ;  
+        end else if ( sprite_state == 1 ) begin           
+            // erase line buffer
+            sprite_fb_addr_w <= { y[0], 9'b0 } + sprite_x ;  
+            sprite_priority_buf[sprite_x] <= 0;
+            if ( sprite_x < 319 ) begin
+                sprite_x <= sprite_x + 1;
             end else begin
-                // done
-                tile_draw_state <= 7 ;
-                tile_fb_w <= 0;
+                sprite_x <= 0;
+                sprite_fb_w <= 0;
+                sprite_buf_active <= 1;
+                sprite_state <= 2 ;
             end
-        end else if ( tile_draw_state == 7 ) begin      
-            // wait for next line or quit
-            if ( y == 239 ) begin
-                draw_state <= 0;            
-            end else if ( hc == 449 ) begin
-                y <= y + 1;
-                draw_state <= 2;
-                sprite_state <= 0 ;
-                layer <= 3;
+        end else if ( sprite_state == 2 ) begin     
+            // sprite num is valid now
+            sprite_state <= 3 ;
+        end else if ( sprite_state == 3 ) begin                
+            // sprite attr valid now.  
+            // delay one more cycle to read sprite size
+            sprite_state <= 4 ;
+        end else if ( sprite_state == 4 ) begin        
+            // start loop
+            sprite_rom_cs <= 0;
+            sprite_fb_w <= 0;
+
+            sprite_y <= ( y - sprite_pos_y ) ;
+            
+            // is sprite visible and is current y in sprite y range
+            if ( sprite_hidden == 0 && sprite_width > 0 && y >= sprite_pos_y && y < ( sprite_pos_y + sprite_height ) ) begin
+                sprite_state <= 5 ;
+            end else begin
+                sprite_num <= sprite_num - 1;
+                sprite_state <= 2 ;
+            end
+
+        end else if ( sprite_state == 5 ) begin        
+            sprite_rom_addr <= { sprite_index, 3'b0 } + { sprite_x[8:3], 3'b0 } + ( sprite_y[8:3] * sprite_width ) + sprite_y[2:0];
+            sprite_rom_cs <= 1;
+            sprite_state <= 6 ;            
+        end else if ( sprite_state == 6 ) begin        
+            // wait for sprite bitmap ready
+            if ( sprite_rom_data_valid ) begin
+                // latch data and deassert cs
+                sprite_data <= sprite_rom_data;
+                sprite_rom_cs <= 0;
+                sprite_state <= 7;
+            end 
+        end else if ( sprite_state == 7 ) begin                    
+            sprite_fb_w <= 0;
+            // draw if pixel value not zero and priority >= previous sprite data
+            if ( sprite_pix > 0 && sprite_priority_buf[sprite_buf_x] < sprite_priority ) begin  
+                sprite_fb_din <= { 2'b11, sprite_priority, sprite_pal_addr, sprite_pix };   
+                sprite_fb_addr_w <= { y[0], 9'b0 } + sprite_buf_x ;            
+                sprite_priority_buf[sprite_buf_x] <= sprite_priority ;
+                sprite_fb_w <= 1;
+            end 
+
+            if ( sprite_x < ( sprite_width - 1 ) ) begin
+                sprite_x <= sprite_x + 1;
+
+                if ( sprite_x[2:0] == 7 ) begin
+                    // do recalc bitmap address
+                    sprite_state <= 5 ;
+                end
+            end else if ( sprite_num > 0 ) begin
+                sprite_num <= sprite_num - 1;
+                sprite_x <= 0;
+                // need to load new attributes and size
+                sprite_state <= 2 ;
+            end else begin
+                // tile state machine will reset sprite_state when line completes.
+                sprite_state <= 15; // done
+            end            
+        end
+        
+        // copy tile ram and scroll info
+        // not sure if this is needed. need to check to see when tile ram is updated.
+        if (  tile_copy_state == 0 && vc == 256  ) begin 
+            tile_copy_state <= 1;
+        end else begin
+            // copy scroll registers
+            scroll_x_latch[0] <= scroll_x[0] - scroll_ofs_x;
+            scroll_x_latch[1] <= scroll_x[1] - scroll_ofs_x;
+            scroll_x_latch[2] <= scroll_x[2] - scroll_ofs_x;
+            scroll_x_latch[3] <= scroll_x[3] - scroll_ofs_x;
+
+            scroll_y_latch[0] <= scroll_y[0] - scroll_ofs_y;
+            scroll_y_latch[1] <= scroll_y[1] - scroll_ofs_y;
+            scroll_y_latch[2] <= scroll_y[2] - scroll_ofs_y;
+            scroll_y_latch[3] <= scroll_y[3] - scroll_ofs_y;
+                   
+        end 
+        
+        if (  sprite_copy_state == 0 && vc == 240  ) begin 
+            sprite_copy_state <= 1;
+        end else if ( sprite_copy_state == 1 ) begin 
+            sprite_num_copy <= 8'h00;
+            sprite_copy_state <= 2 ;
+        end else if ( sprite_copy_state == 2 ) begin
+            sprite_buf_w <= 1;
+
+            // wait for read from source
+            sprite_copy_state <= 3 ;
+        end else if ( sprite_copy_state == 3 ) begin
+            sprite_buf_w <= 0;
+            sprite_copy_state <= 2 ;
+            
+            if ( sprite_num_copy < 8'hff ) begin 
+                sprite_num_copy <= sprite_num_copy + 1;
+            end else begin
+                sprite_copy_state <= 0; // till next time
+            end
+        end
+
+        // tile state machine
+        
+        if ( draw_state == 0 && vc == 269 ) begin
+            layer <= 3;
+            y <= 0;
+            draw_state <= 2;
+        end else if ( draw_state == 2 ) begin
+            x <= 0;
+
+            x_ofs <= 495 + 6 +  scroll_x_latch[layer] - { layer, 1'b0 } ; 
+            y_ofs <= 257 + 16 + scroll_y_latch[layer] ;
+
+            // latch offset info
+            draw_state <= 3;
+            tile_draw_state <= 0;
+        end else if ( draw_state == 3 ) begin
+
+            if ( tile_draw_state == 0 ) begin
+                tile <=  { layer[1:0], curr_y[8:3], curr_x[8:3] };  // works
+                
+                tile_draw_state <= 4'h1;
+            end else if ( tile_draw_state == 1 ) begin
+                
+                
+                tile_draw_state <= 2;
+            end else if ( tile_draw_state == 2 ) begin            
+
+            // latch attribute
+                tile_attr <= tile_attr_dout;
+                //tile_attr <= tile_buf_dout;
+            
+                tile_draw_state <= 3;
+            end else if ( tile_draw_state == 3 ) begin
+                // read bitmap info
+                tile_rom_cs <= 1;
+                tile_rom_addr <= { tile_idx, curr_y[2:0] }  ;  
+                tile_draw_state <= 4;
+            end else if ( tile_draw_state == 4 ) begin     
+
+                // wait for bitmap ram ready
+                if ( tile_rom_data_valid ) begin
+                    // latch data and deassert cs
+                    tile_data <= tile_rom_data;
+                    tile_draw_state <= 5 ;
+                    tile_rom_cs <= 0;
+                end
+            end else if ( tile_draw_state == 5 ) begin   
+             
+                tile_fb_w <= 0;
+                // force render of first layer.
+                // don't draw transparent pixels
+                if ( layer == 3 ) begin            
+               
+                    tile_priority_buf[x] <= (tile_hidden == 1 || tile_pix == 0 ) ? 4'b0 : tile_priority;
+                    
+                    // if tile hidden then make the pallette index 0. ie transparent
+                    fb_din <= { layer, (tile_hidden == 1 || tile_pix == 0 ) ? 4'b0 : tile_priority, tile_palette_idx,  tile_pix };
+                    tile_fb_w <= 1;
+                end else if (tile_hidden == 0 && tile_pix > 0 && tile_priority >= tile_priority_buf[x]) begin
+                    tile_priority_buf[x] <= tile_priority;
+                    
+                    // if tile hidden then make the pallette index 0. ie transparent
+                    fb_din <= { layer, tile_priority, tile_palette_idx,  tile_pix };
+                    tile_fb_w <= 1;
+                end
+                
+                if ( x < 319 ) begin // 319
+                    // do we need to read another tile?
+                    if ( curr_x[2:0] == 7 ) begin
+                        draw_state <= 3;
+                        tile_draw_state <= 0;
+                    end 
+                    x <= x + 1 ;
+                end else if ( layer > 0 ) begin
+                    layer <= layer - 1;
+                    tile_fb_w <= 0;
+                    draw_state <= 2;
+                end else begin
+                    // done
+                    tile_draw_state <= 7 ;
+                    tile_fb_w <= 0;
+                end
+            end else if ( tile_draw_state == 7 ) begin      
+                // wait for next line or quit
+                if ( y == 239 ) begin
+                    draw_state <= 0;            
+                end else if ( hc == 449 ) begin
+                    y <= y + 1;
+                    draw_state <= 2;
+                    sprite_state <= 0 ;
+                    layer <= 3;
+                end
             end
         end
     end
 end
-
-
 
 // render 
 reg draw_sprite;
