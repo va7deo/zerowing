@@ -250,25 +250,25 @@ always @ (posedge clk, posedge reset) begin
         // a new request has been started)
         if ( sdram_ack == 1 ) begin
             pending_rom <= rom;
-        end 
-        
+        end
+
         sdram_valid_reg <= sdram_valid;
     end
 end
 
 reg sdram_valid_reg;
 
-// select cpu data input based on what is active 
+// select cpu data input based on what is active
 assign prog_rom_1_data_valid  = prog_rom_1_cs &  ( prog_rom_1_ctrl_hit  | (pending_rom == PROG_ROM_1  ?  sdram_valid  : 0) ) & ~reset;
 assign prog_rom_2_data_valid  = prog_rom_2_cs &  ( prog_rom_2_ctrl_hit  | (pending_rom == PROG_ROM_2  ?  sdram_valid  : 0) ) & ~reset;
 assign tile_rom_data_valid    = tile_rom_cs   &  ( tile_rom_ctrl_hit    | (pending_rom == TILE_ROM    ?  sdram_valid  : 0) ) & ~reset;
 assign sprite_rom_data_valid  = sprite_rom_cs &  ( sprite_rom_ctrl_hit  | (pending_rom == SPRITE_ROM  ?  sdram_valid  : 0) ) & ~reset;
 assign sound_rom_1_data_valid = sound_rom_1_cs & ( sound_rom_1_ctrl_hit | (pending_rom == SOUND_ROM_1 ?  sdram_valid  : 0) ) & ~reset;
-                                   
+
 always @ (*) begin
 
     // mux the next ROM in priority order
-    
+
     next_rom <= NONE;  // default
     case (1)
         prog_rom_1_ctrl_req:    next_rom <= PROG_ROM_1;
