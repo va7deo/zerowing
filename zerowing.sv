@@ -209,7 +209,7 @@ assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
 
 `include "build_id.v" 
 localparam CONF_STR = {
-    "Zero Wing;;",
+    "ZeroWing;;",
     "F,rom;",
     "O12,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
     "O3,Orientation,Horz,Vert;",
@@ -462,7 +462,7 @@ video_timing video_timing (
     .hc(hc),  
     .vc(vc),  
 
-    .hbl(hbl),
+    .hbl_delay(hbl),
     .vbl(vbl),
     
     .hsync(hsync),     
@@ -944,7 +944,7 @@ wire        tile_hidden      = tile_attr[15] ;
 reg  [15:0] fb_dout;
 wire [15:0] tile_fb_out;
 wire [15:0] sprite_fb_out;
-reg  [15:0] fb_din ;
+reg  [15:0] fb_din;
 reg  [15:0] sprite_fb_din ;
 
 reg tile_fb_w;
@@ -989,8 +989,8 @@ reg [3:0] tile_copy_state ;
 reg [3:0] sprite_copy_state ;
 
 
-wire [8:0] curr_x = x + x_ofs ;
-wire [8:0] curr_y = y + y_ofs ;
+wire [8:0] curr_x = x + x_ofs;
+wire [8:0] curr_y = y + y_ofs;
 
 // pixel 4 bit colour 
 wire [3:0] tile_pix ;
@@ -1000,7 +1000,8 @@ wire [2:0] sprite_bit = sprite_x[2:0];
 wire [3:0] sprite_pix ;
 assign sprite_pix = { sprite_data[7-sprite_bit], sprite_data[15-sprite_bit], sprite_data[23-sprite_bit], sprite_data[31-sprite_bit] };
 
-wire [9:0] tile_fb_addr_w   = { y[0], 9'b0 } + x ;
+// two lines of buffer alternate 
+reg  [9:0] tile_fb_addr_w;
 wire [9:0] fb_addr_r        = {vc[0], 9'b0 } + hc;
 
 reg [9:0] sprite_fb_addr_w ;
@@ -1065,7 +1066,7 @@ always @ (posedge clk_sys) begin
             // erase line buffer
             sprite_fb_addr_w <= { y[0], 9'b0 } + sprite_x ;  
             sprite_priority_buf[sprite_x] <= 0;
-            if ( sprite_x < 319 ) begin
+            if ( sprite_x < 320 ) begin
                 sprite_x <= sprite_x + 1;
             end else begin
                 sprite_x <= 0;
@@ -1222,7 +1223,8 @@ always @ (posedge clk_sys) begin
                 end
             end else if ( tile_draw_state == 5 ) begin   
              
-                tile_fb_w <= 0;
+                tile_fb_w <= 0; 
+                tile_fb_addr_w   <= { y[0], 9'b0 } + x ;
                 // force render of first layer.
                 // don't draw transparent pixels
                 if ( layer == 3 ) begin            
@@ -1240,7 +1242,7 @@ always @ (posedge clk_sys) begin
                     tile_fb_w <= 1;
                 end
                 
-                if ( x < 319 ) begin // 319
+                if ( x < 320 ) begin // 319
                     // do we need to read another tile?
                     if ( curr_x[2:0] == 7 ) begin
                         draw_state <= 3;
@@ -1283,12 +1285,12 @@ reg draw_sprite;
 // there are 10 70MHz cycles per pixel. clk7_count from 0-9
 // 
 always @ (posedge clk_sys) begin
-    if ( clk7_count == 5 ) begin
-        tile_palette_addr   <= tile_fb_out[9:0] ; 
+    if ( clk7_count == 4 ) begin
+        tile_palette_addr  <= tile_fb_out[9:0] ; 
         sprite_palette_addr <= sprite_fb_out[9:0] ; 
-    end else if ( clk7_count == 7 ) begin
-        if ( vbl | hbl ) begin
-            rgb_out <= 0;
+    end else if ( clk7_count == 6 ) begin
+        if ( vbl ) begin
+            rgb_out <= { 8'hee, 7'h0, hc };
         end else begin  
             // if palette index is zero then it's from layer 3 and is transparent render as blank (black).
             rgb_out <= ( tile_fb_out[3:0] == 0 ) ? 0 : { tile_palette_dout[4:0], 3'b0, tile_palette_dout[9:5], 3'b0, tile_palette_dout[14:10], 3'b0 };
