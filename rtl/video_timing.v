@@ -13,7 +13,7 @@ module video_timing
     output reg [8:0] hc,
     output reg [8:0] vc,
 
-    output reg  hbl,
+    output reg  hbl_delay,
     output reg  hsync,
     output reg  vbl,
     output reg  vsync
@@ -31,6 +31,8 @@ localparam VSSTART = 250;
 localparam VSEND   = 253;
 localparam VTOTAL  = 270;
 
+reg  hbl;
+
 always @ (posedge clk) begin
 
     if (reset) begin
@@ -38,12 +40,14 @@ always @ (posedge clk) begin
         vc <= 0;
 
         hbl <= 0;
+        hbl_delay <= 0;
         vbl <= 0;
         hsync <= 0;
         vsync <= 0;
     end else begin
         // counter
-        if (hc == HTOTAL-1) begin
+        hbl_delay <= hbl;
+        if (hc == HTOTAL) begin
             hc <= 0;
             hbl <= 0;
 
