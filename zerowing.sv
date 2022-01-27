@@ -294,6 +294,21 @@ always @(posedge clk_sys) begin
     end
 end
 
+// Select PCB Title
+reg [7:0] title;
+reg [15:0] scroll_y_offset;
+always @(posedge clk_sys) begin
+    if (ioctl_wr && (ioctl_index==1)) begin
+        title <= ioctl_dout;
+
+	if (ioctl_dout == 1) begin
+             scroll_y_offset <= 16;
+        end else begin
+             scroll_y_offset <= 0;
+	end
+    end
+end
+
 // Status bits
 wire [31:0] status;
 
@@ -1039,7 +1054,7 @@ wire [5:0] sprite_size_addr = sprite_attr_1_buf_dout[11:6] /* synthesis keep */;
 wire [5:0] sprite_pal_addr  = sprite_attr_1_buf_dout[5:0] /* synthesis keep */;
 
 wire [8:0] sprite_pos_x  = sprite_attr_2_buf_dout[15:7]  ;
-wire [8:0] sprite_pos_y  = sprite_attr_3_buf_dout[15:7] - 16/* synthesis keep */;
+wire [8:0] sprite_pos_y  = sprite_attr_3_buf_dout[15:7] - 16 + scroll_y_offset /* synthesis keep */;
 
 // valid 1 cycle after sprite attr ready
 wire [8:0] sprite_height    = { sprite_size_dout[7:4], 3'b0 } /* synthesis keep */;  // in pixels
@@ -1151,11 +1166,11 @@ always @ (posedge clk_sys) begin
             scroll_x_latch[2] <= scroll_x[2] - scroll_ofs_x;
             scroll_x_latch[3] <= scroll_x[3] - scroll_ofs_x;
 
-            scroll_y_latch[0] <= scroll_y[0] - scroll_ofs_y;
-            scroll_y_latch[1] <= scroll_y[1] - scroll_ofs_y;
-            scroll_y_latch[2] <= scroll_y[2] - scroll_ofs_y;
-            scroll_y_latch[3] <= scroll_y[3] - scroll_ofs_y;
-                   
+            scroll_y_latch[0] <= scroll_y[0] - scroll_ofs_y - scroll_y_offset;
+            scroll_y_latch[1] <= scroll_y[1] - scroll_ofs_y - scroll_y_offset;
+            scroll_y_latch[2] <= scroll_y[2] - scroll_ofs_y - scroll_y_offset;
+            scroll_y_latch[3] <= scroll_y[3] - scroll_ofs_y - scroll_y_offset;
+
         end 
         
         if (  sprite_copy_state == 0 && vc == 240  ) begin 
