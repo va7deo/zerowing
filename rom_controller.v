@@ -26,7 +26,7 @@ module rom_controller
     // character ROM interface
     input tile_rom_cs,
     input tile_rom_oe,
-    input  [18:0] tile_rom_addr,
+    input  [19:0] tile_rom_addr,
     output [31:0] tile_rom_data,
     output tile_rom_data_valid,    
 
@@ -129,7 +129,7 @@ download_buffer #(.SIZE(4) ) download_buffer
 
 segment 
 #(
-    .ROM_ADDR_WIDTH(16),
+    .ROM_ADDR_WIDTH(18),
     .ROM_DATA_WIDTH(16),
     .ROM_OFFSET(24'h000000)
 ) prog_rom_1_segment 
@@ -152,7 +152,7 @@ segment
 #(
     .ROM_ADDR_WIDTH(18),
     .ROM_DATA_WIDTH(16),
-    .ROM_OFFSET(24'h010000)
+    .ROM_OFFSET(24'h040000)
 ) prog_rom_2_segment
 (
     .reset(reset),
@@ -171,9 +171,9 @@ segment
 
 segment 
 #(
-    .ROM_ADDR_WIDTH(18),
+    .ROM_ADDR_WIDTH(19),
     .ROM_DATA_WIDTH(32),
-    .ROM_OFFSET(24'h050000)
+    .ROM_OFFSET(24'h080000)
 ) tile_rom_segment
 (
     .reset(reset),
@@ -194,7 +194,7 @@ segment
 #(
     .ROM_ADDR_WIDTH(18),
     .ROM_DATA_WIDTH(32),
-    .ROM_OFFSET(24'h0D0000)
+    .ROM_OFFSET(24'h180000)
 ) sprite_rom_segment
 (
     .reset(reset),
@@ -215,7 +215,7 @@ segment
 #(
     .ROM_ADDR_WIDTH(16),
     .ROM_DATA_WIDTH(8),
-    .ROM_OFFSET(24'h150000)
+    .ROM_OFFSET(24'h200000)
 ) sound_rom_1_segment
 (
     .reset(reset),
@@ -250,25 +250,25 @@ always @ (posedge clk, posedge reset) begin
         // a new request has been started)
         if ( sdram_ack == 1 ) begin
             pending_rom <= rom;
-        end 
-        
+        end
+
         sdram_valid_reg <= sdram_valid;
     end
 end
 
 reg sdram_valid_reg;
 
-// select cpu data input based on what is active 
+// select cpu data input based on what is active
 assign prog_rom_1_data_valid  = prog_rom_1_cs &  ( prog_rom_1_ctrl_hit  | (pending_rom == PROG_ROM_1  ?  sdram_valid  : 0) ) & ~reset;
 assign prog_rom_2_data_valid  = prog_rom_2_cs &  ( prog_rom_2_ctrl_hit  | (pending_rom == PROG_ROM_2  ?  sdram_valid  : 0) ) & ~reset;
 assign tile_rom_data_valid    = tile_rom_cs   &  ( tile_rom_ctrl_hit    | (pending_rom == TILE_ROM    ?  sdram_valid  : 0) ) & ~reset;
 assign sprite_rom_data_valid  = sprite_rom_cs &  ( sprite_rom_ctrl_hit  | (pending_rom == SPRITE_ROM  ?  sdram_valid  : 0) ) & ~reset;
 assign sound_rom_1_data_valid = sound_rom_1_cs & ( sound_rom_1_ctrl_hit | (pending_rom == SOUND_ROM_1 ?  sdram_valid  : 0) ) & ~reset;
-                                   
+
 always @ (*) begin
 
     // mux the next ROM in priority order
-    
+
     next_rom <= NONE;  // default
     case (1)
         prog_rom_1_ctrl_req:    next_rom <= PROG_ROM_1;

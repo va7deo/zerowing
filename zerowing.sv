@@ -32,7 +32,7 @@ module emu
     input         RESET,
 
     //Must be passed to hps_io module
-    inout  [45:0] HPS_BUS,
+    inout  [47:0] HPS_BUS,
 
     //Base video clock. Usually equals to CLK_SYS.
     output        CLK_VIDEO,
@@ -58,6 +58,7 @@ module emu
 
     input  [11:0] HDMI_WIDTH,
     input  [11:0] HDMI_HEIGHT,
+    output        HDMI_FREEZE,
 
 `ifdef MISTER_FB
     // Use framebuffer in DDRAM (USE_FB=1 in qsf)
@@ -180,6 +181,7 @@ assign {UART_RTS, UART_TXD, UART_DTR} = 0;
 
 assign VGA_F1    = 0;
 assign VGA_SCALER= 0;
+assign HDMI_FREEZE = 0;
 
 assign USER_OUT  = '1;
 assign AUDIO_MIX = 0;
@@ -198,41 +200,34 @@ wire [2:0] scan_lines = status[6:4];
 // 01234567890123456789012345678901 23456789012345678901234567890123
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
 
-
-// todo: m
-wire [7:0] dipA = status[17:10];
-wire [7:0] dipB = status[25:18];
-wire [7:0] dipC = { 6'b0 , status[27:26] };
-
 assign VIDEO_ARX = (!aspect_ratio) ? (orientation  ? 8'd4 : 8'd3) : (aspect_ratio - 1'd1);
 assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
 
 `include "build_id.v" 
 localparam CONF_STR = {
-    "ZeroWing;;",
-    "F,rom;",
-    "O12,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
-    "O3,Orientation,Horz,Vert;",
-    "O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
-    "OA,Cocktail,Off,On;",
-    "OB,Flip Screen,Off,On;",
-    "OC,Test Mode,Off,On;",
-    "OD,Demo Sounds,On,Off;",
+    "Zero Wing;;",
     "-;",
-    "OEF,Slot A,1c/1cr,1c/2cr,2c/1cr,2c/3cr;",
-    "OGH,Slot B,1c/1cr,1c/2cr,2c/1cr,2c/3cr;",
-    "OIJ,Difficulty,Normal,Easy,Hard,Extra Hard;",
-    "OKL,Extend,200K/500K,500K/1000K,500K,None;",    
-    "OMN,Lifes,3,5,4,2;",
-    "OO,Invulnerable,Off,On;",
-    "OP,Continue Play,On,Off;",
-    "OQR,Region,Japan,USA,Europe 1,Europe 2;",    
     "-;",
+    "P1,Video Settings;",
+    "P1-;",
+    "P1O12,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
+    "P1O3,Orientation,Horz,Vert;",
+    "P1-;",
+    "P1O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
+    "P1OOR,H-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
+    "P1OSV,V-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
+    "P1-;",
+    //"P1OB,Flip Screen,Off,On;",
+
+    "DIP;",
+    "-;",
+
     "R0,Reset;",
     "J1,Fire,Capture,Start 1P,Start 2P,Coin,Pause;",
     "jn,A,Start,Select,R,L;",
     "V,v",`BUILD_DATE
 };
+
 
 
 // CLOCKS
@@ -242,7 +237,7 @@ wire pll_locked;
 wire  clk_sys;
 wire  clk_70M;
 
-reg  clk_7M;    
+reg  clk_7M;
 reg  clk_10M;   // 20MHz.  68k core needs twice freq
 reg  clk_14M;
 
@@ -299,11 +294,18 @@ always @(posedge clk_sys) begin
     end
 end
 
+// Status bits
 wire [31:0] status;
-wire  [1:0] buttons;
+
+// Video settings
 wire        forced_scandoubler;
 wire        direct_video;
 
+wire [3:0] hs_offset = status[27:24];
+wire [3:0] vs_offset = status[31:28];
+
+// Controls
+wire  [1:0] buttons;
 wire [15:0] joystick_0, joystick_1;
 wire [15:0] joy = joystick_0 | joystick_1;
 
@@ -388,12 +390,10 @@ wire        ioctl_wait;
 
 //
 
-hps_io #(.STRLEN($size(CONF_STR)>>3)) hps_io
+hps_io #(.CONF_STR(CONF_STR)) hps_io
 (
     .clk_sys(clk_sys),
     .HPS_BUS(HPS_BUS),
-
-    .conf_str(CONF_STR),
 
     .buttons(buttons),
     .status(status),
@@ -430,8 +430,9 @@ wire [8:0] hc;
 wire [8:0] vc;
 
 wire no_rotate = orientation | direct_video;
-//wire rotate_ccw = 1;
-//screen_rotate screen_rotate (.*);
+wire rotate_ccw = 1;
+wire flip = 0;
+screen_rotate screen_rotate (.*);
 
 arcade_video #(320,24) arcade_video
 (
@@ -441,7 +442,7 @@ arcade_video #(320,24) arcade_video
         .ce_pix(clk_7M),
 
         .RGB_in(rgb_out[23:0]),
-        
+
         .HBlank(hbl),
         .VBlank(vbl),
         .HSync(hsync),
@@ -451,13 +452,16 @@ arcade_video #(320,24) arcade_video
 );
 
 wire reset;
-assign reset = RESET | status[0] | ioctl_download | buttons[1];
+assign reset = RESET | status[0] | (ioctl_download & !ioctl_index) | buttons[1];
 
 wire vid_clk = clk_7M;
 
 video_timing video_timing (
     .clk( vid_clk ),       // pixel clock
     .reset(reset),      // reset
+
+    .hs_offset(hs_offset),
+    .vs_offset(vs_offset),
 
     .hc(hc),  
     .vc(vc),  
@@ -468,7 +472,7 @@ video_timing video_timing (
     .hsync(hsync),     
     .vsync(vsync)   
     );
-    
+
 
 reg  [23:0] rgb_out;
 
@@ -633,11 +637,11 @@ always @ (posedge clk_sys) begin
             end else if ( sound_io_00_cs ) begin
                 z80_din <= { 1'b0, 1'b0, capture, fire, right, left, down, up };
             end else if ( sound_io_20_cs ) begin
-                z80_din <= dipA; //dsw1;
+                z80_din <= sw[0];
             end else if ( sound_io_28_cs ) begin
-                z80_din <= dipB; //dsw2;
+                z80_din <= sw[1];
             end else if ( sound_io_88_cs ) begin
-                z80_din <= dipC; //dsw3;
+                z80_din <= sw[3];
             end else if ( sound_io_80_cs ) begin
                 z80_din <= { 1'b0, 1'b0, start_1, start_2, coin, 1'b0, 1'b0, 1'b0 };
             end else if ( sound_io_a8_cs ) begin    
@@ -737,7 +741,7 @@ T80pa u_cpu(
 
 // 68k address decoder
 
-wire prog_rom_1_cs   = ( cpu_a <= 24'h00ffff ) & !cpu_as_n  ; 
+wire prog_rom_1_cs   = ( cpu_a <= 24'h03ffff ) & !cpu_as_n  ;
 wire prog_rom_2_cs   = ( cpu_a >= 24'h040000 && cpu_a <= 24'h07ffff ) & !cpu_as_n  ;  
 
 wire scroll_ofs_x_cs = ( cpu_a >= 24'h0c0000 && cpu_a <= 24'h0c0001 ) & !cpu_as_n  ;  
