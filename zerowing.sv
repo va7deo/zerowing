@@ -430,8 +430,8 @@ wire [8:0] hc;
 wire [8:0] vc;
 
 wire no_rotate = orientation | direct_video;
-//wire rotate_ccw = 1;
-//screen_rotate screen_rotate (.*);
+wire rotate_ccw = 1;
+screen_rotate screen_rotate (.*);
 
 arcade_video #(320,24) arcade_video
 (

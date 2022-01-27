@@ -2,21 +2,32 @@
   <name>Zero Wing</name>
   <mameversion>0229</mameversion>
   <setname>zerowing1</setname>
-  <mratimestamp>20210125</mratimestamp>
-  <year>1986</year>
+  <mratimestamp>20210126</mratimestamp>
+  <year>1989</year>
   <manufacturer>Toaplan</manufacturer>
-  <category>Platform</category>
+  <category>Shoot 'em up</category>
   <rbf>zerowing</rbf>
 
-  <buttons names="Fire,Jump,Start,Coin,Pause" default="A,B,R,L,Start" />
+  <buttons names="Shot,Shield,Start,Coin" default="A,B,R,L"/>
 
-  <switches default="40,80">
-    <dip bits="0,1" name="Coinage" ids="2c/1cr,1c/1cr,1c/2cr,1c/3cr" values="1,0,2,3" />
-    <dip bits="4,5" name="Lives" ids="2,3,4,5" values="3,0,1,2" />
-    <dip bits="8,9" name="Bonus Life" ids="50K 200K 500K,100K 300K 600K,200K 500K,100K" />
-    <dip bits="12,13" name="Difficulty" ids="Easy,Normal,Hard,Hardest" />
-    <dip bits="14" name="2P Start Anytime" ids="No,Yes" />
-    <dip bits="15" name="Allow Continue" ids="No,Yes" />
+  <switches page_id="1" page_name="Switches" base="8" default="01,00,00,00,00,00,00,00">
+    <!-- DSWA -->
+    <dip name="Cabinet" bits="0" ids="Cocktail,Upright"/>
+    <dip name="Flip Screen" bits="1" ids="Off,On"/>
+    <dip name="Service Mode" bits="2" ids="Off,On"/>
+    <dip name="Demo Sounds" bits="3" ids="On,Off"/>
+    <dip name="Coin A" bits="4,5" ids="1/1,2/1,1/2,3/1,2/1,4/1,2/3"/>
+    <dip name="Coin B" bits="6,7" ids="1/1,1/2,1/2,1/3,2/1,1/4,2/3,1/6"/>
+    <!-- DSWB -->
+    <dip name="Difficulty" bits="8,9" ids="Normal,Easy,Hard,Very Hard"/>
+    <dip name="Bonus Life" bits="10,11" ids="200k 700k 500k+,500k 1500k 1000k+,500k Only,None"/>
+    <dip name="Lives" bits="12,13" ids="3,5,4,2"/>
+    <dip name="Invulnerability" bits="14" ids="Off,On"/>
+    <dip name="Allow Continue" bits="15" ids="Yes,No"/>
+    <!-- SYSTEM -->
+    <dip name="Test Switch" bits="18" ids="Off,On"/>
+    <!-- TJUMP -->
+    <dip name="Region" bits="24,25" ids="Japan,USA,Europe,Europe"/>
   </switches>
 
   <!-- ROM data -->
