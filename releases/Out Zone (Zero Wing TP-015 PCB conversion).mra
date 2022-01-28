@@ -28,9 +28,12 @@
     <dip name="Region" bits="24,27" ids="Japan,USA,Europe,Hong Kong,Korea,Taiwan"/>
   </switches>
 
+  <!-- MEM address -->
+  <!-- 
   <rom index="1">
     <part>01</part>
   </rom>
+  -->
 
   <!-- ROM data -->
   <rom index="0" zip="outzone.zip" md5="None">

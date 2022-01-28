@@ -28,9 +28,12 @@
     <dip name="Region" bits="25" ids="USA,Europe"/>
   </switches>
 
+  <!-- MEM address -->
+  <!-- 
   <rom index="1">
     <part>00</part>
   </rom>
+  -->
 
   <!-- ROM data -->
   <rom index="0" zip="zerowing.zip" md5="none">
