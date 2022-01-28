@@ -30,8 +30,12 @@
     <dip name="Region" bits="24,25" ids="Japan,USA,Europe,Europe"/>
   </switches>
 
+  <rom index="1">
+    <part>00</part>
+  </rom>
+
   <!-- ROM data -->
-  <rom zip="zerowing.zip" md5="none">
+  <rom index="0" zip="zerowing.zip" md5="none">
     <!-- main cpu   0x000000-0x00ffff 64K -->
     <interleave output="16">
         <part crc="6FF2B9A0" name="o15-11.rom" map="01" />
