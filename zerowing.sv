@@ -1054,8 +1054,8 @@ wire [8:0] sprite_pos_x  = sprite_attr_2_buf_dout[15:7]  ;
 wire [8:0] sprite_pos_y  = sprite_attr_3_buf_dout[15:7] - 16 + scroll_y_offset /* synthesis keep */;
 
 // valid 1 cycle after sprite attr ready
-wire [8:0] sprite_height    = { sprite_size_dout[7:4], 3'b0 } /* synthesis keep */;  // in pixels
-wire [8:0] sprite_width     = { sprite_size_dout[3:0], 3'b0 } /* synthesis keep */;
+wire [8:0] sprite_height    = { sprite_size_buf_dout[7:4], 3'b0 } /* synthesis keep */;  // in pixels
+wire [8:0] sprite_width     = { sprite_size_buf_dout[3:0], 3'b0 } /* synthesis keep */;
 
 always @ (posedge clk_sys) begin
     
@@ -1531,11 +1531,24 @@ ram256bx16dp sprite_ram_size (
     .q_a ( sprite_size_cpu_dout ),
 
     .clock_b ( clk_sys ),
-    .address_b ( sprite_size_addr ),
+    .address_b ( sprite_num_copy ),
     .wren_b ( 0 ),
     .q_b ( sprite_size_dout )
     );    
     
+ram256bx16dp sprite_ram_size_buf (
+    .clock_a ( clk_sys ),
+    .address_a ( sprite_num_copy ),
+    .wren_a ( sprite_buf_w ),
+    .data_a ( sprite_size_dout ),
+    .q_a (  ),
+
+    .clock_b ( clk_sys ),
+    .address_b ( sprite_size_addr ),
+    .wren_b ( 0 ),
+    .q_b ( sprite_size_buf_dout )
+    
+    ); 
   
 
     
