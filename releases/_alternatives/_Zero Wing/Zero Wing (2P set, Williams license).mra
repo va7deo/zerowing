@@ -28,8 +28,12 @@
     <dip name="Region" bits="25" ids="USA,Europe"/>
   </switches>
 
+  <rom index="1">
+    <part>00</part>
+  </rom>
+
   <!-- ROM data -->
-  <rom zip="zerowing.zip" md5="none">
+  <rom index="0" zip="zerowing.zip" md5="none">
     <!-- main cpu   0x000000-0x00ffff 256K -->
     <interleave output="16">
         <part crc="38b0bb5b" name="o15-11iiw.bin" map="01" />
@@ -62,6 +66,5 @@
 
     <!-- sound cpu  0x200000-0x207FFF 32K -->
     <part crc="e7b72383" name="o15-13.rom" />
-
   </rom>
 </misterromdescription>

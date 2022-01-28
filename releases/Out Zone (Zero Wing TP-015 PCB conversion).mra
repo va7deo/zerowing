@@ -28,6 +28,10 @@
     <dip name="Region" bits="24,27" ids="Japan,USA,Europe,Hong Kong,Korea,Taiwan,Taiwan,USA,Hong Kong & China,Japan,Japan,Japan,Japan,Japan,Japan,Japan"/>
   </switches>
 
+  <rom index="1">
+    <part>01</part>
+  </rom>
+
   <!-- ROM data -->
   <rom index="0" zip="outzone.zip" md5="None">
     <!-- main cpu - starts at 0x0 -->
