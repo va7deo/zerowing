@@ -9,19 +9,12 @@ module rom_controller
     // clock
     input clk,
 
-    // program ROM #1 interface
-    input  prog_rom_1_cs,
-    input  prog_rom_1_oe,
-    input  [23:1] prog_rom_1_addr,
-    output [15:0] prog_rom_1_data,
-    output prog_rom_1_data_valid,
-
-    // program ROM #2 interface
-    input  prog_rom_2_cs,
-    input  prog_rom_2_oe,
-    input  [23:1] prog_rom_2_addr,
-    output [15:0] prog_rom_2_data,
-    output prog_rom_2_data_valid,    
+    // program ROM interface
+    input  prog_rom_cs,
+    input  prog_rom_oe,
+    input  [23:1] prog_rom_addr,
+    output [15:0] prog_rom_data,
+    output prog_rom_data_valid,
 
     // character ROM interface
     input tile_rom_cs,
@@ -62,11 +55,10 @@ module rom_controller
   );
 
 localparam NONE         = 0; 
-localparam PROG_ROM_1   = 1;
-localparam PROG_ROM_2   = 2;
-localparam TILE_ROM     = 3;
-localparam SPRITE_ROM   = 4;
-localparam SOUND_ROM_1  = 5;
+localparam PROG_ROM     = 1;
+localparam TILE_ROM     = 2;
+localparam SPRITE_ROM   = 3;
+localparam SOUND_ROM_1  = 4;
   
 // ROM wires
 reg [2:0] rom;
@@ -74,35 +66,30 @@ reg [2:0] next_rom;
 reg [2:0] pending_rom;
 
 // ROM request wires
-reg prog_rom_1_ctrl_req;
-reg prog_rom_2_ctrl_req;
+reg prog_rom_ctrl_req;
 reg tile_rom_ctrl_req;
 reg sprite_rom_ctrl_req;
 reg sound_rom_1_ctrl_req;
 
 // ROM acknowledge wires
-reg prog_rom_1_ctrl_ack;
-reg prog_rom_2_ctrl_ack;
+reg prog_rom_ctrl_ack;
 reg tile_rom_ctrl_ack;
 reg sprite_rom_ctrl_ack;
 reg sound_rom_1_ctrl_ack;
 
-reg prog_rom_1_ctrl_hit;
-reg prog_rom_2_ctrl_hit;
+reg prog_rom_ctrl_hit;
 reg tile_rom_ctrl_hit;
 reg sprite_rom_ctrl_hit;
 reg sound_rom_1_ctrl_hit;
 
 // ROM valid wires
-reg prog_rom_1_ctrl_valid;
-reg prog_rom_2_ctrl_valid;
+reg prog_rom_ctrl_valid;
 reg tile_rom_ctrl_valid;
 reg sprite_rom_ctrl_valid;
 reg sound_rom_1_ctrl_valid;
 
 // address mux wires
-reg [22:0] prog_rom_1_ctrl_addr;
-reg [22:0] prog_rom_2_ctrl_addr;
+reg [22:0] prog_rom_ctrl_addr;
 reg [22:0] tile_rom_ctrl_addr;
 reg [22:0] sprite_rom_ctrl_addr;
 reg [22:0] sound_rom_1_ctrl_addr;
@@ -129,44 +116,23 @@ download_buffer #(.SIZE(4) ) download_buffer
 
 segment 
 #(
-    .ROM_ADDR_WIDTH(18),
+    .ROM_ADDR_WIDTH(19),
     .ROM_DATA_WIDTH(16),
     .ROM_OFFSET(24'h000000)
-) prog_rom_1_segment 
+) prog_rom_segment 
 (
     .reset(reset),
     .clk(clk),
-    .cs(prog_rom_1_cs & !ioctl_download),
-    .oe(prog_rom_1_oe),
-    .ctrl_addr(prog_rom_1_ctrl_addr),
-    .ctrl_req(prog_rom_1_ctrl_req),
-    .ctrl_ack(prog_rom_1_ctrl_ack),
-    .ctrl_valid(prog_rom_1_ctrl_valid),
-    .ctrl_hit(prog_rom_1_ctrl_hit),
+    .cs(prog_rom_cs & !ioctl_download),
+    .oe(prog_rom_oe),
+    .ctrl_addr(prog_rom_ctrl_addr),
+    .ctrl_req(prog_rom_ctrl_req),
+    .ctrl_ack(prog_rom_ctrl_ack),
+    .ctrl_valid(prog_rom_ctrl_valid),
+    .ctrl_hit(prog_rom_ctrl_hit),
     .ctrl_data(sdram_q),
-    .rom_addr(prog_rom_1_addr),
-    .rom_data(prog_rom_1_data)
-);
-
-segment 
-#(
-    .ROM_ADDR_WIDTH(18),
-    .ROM_DATA_WIDTH(16),
-    .ROM_OFFSET(24'h040000)
-) prog_rom_2_segment
-(
-    .reset(reset),
-    .clk(clk),
-    .cs(prog_rom_2_cs & !ioctl_download),
-    .oe(prog_rom_2_oe),
-    .ctrl_addr(prog_rom_2_ctrl_addr),
-    .ctrl_req(prog_rom_2_ctrl_req),
-    .ctrl_ack(prog_rom_2_ctrl_ack),
-    .ctrl_valid(prog_rom_2_ctrl_valid),
-    .ctrl_hit(prog_rom_2_ctrl_hit),
-    .ctrl_data(sdram_q),
-    .rom_addr(prog_rom_2_addr),
-    .rom_data(prog_rom_2_data)
+    .rom_addr(prog_rom_addr),
+    .rom_data(prog_rom_data)
 );
 
 segment 
@@ -259,8 +225,7 @@ end
 reg sdram_valid_reg;
 
 // select cpu data input based on what is active
-assign prog_rom_1_data_valid  = prog_rom_1_cs &  ( prog_rom_1_ctrl_hit  | (pending_rom == PROG_ROM_1  ?  sdram_valid  : 0) ) & ~reset;
-assign prog_rom_2_data_valid  = prog_rom_2_cs &  ( prog_rom_2_ctrl_hit  | (pending_rom == PROG_ROM_2  ?  sdram_valid  : 0) ) & ~reset;
+assign prog_rom_data_valid    = prog_rom_cs   &  ( prog_rom_ctrl_hit    | (pending_rom == PROG_ROM    ?  sdram_valid  : 0) ) & ~reset;
 assign tile_rom_data_valid    = tile_rom_cs   &  ( tile_rom_ctrl_hit    | (pending_rom == TILE_ROM    ?  sdram_valid  : 0) ) & ~reset;
 assign sprite_rom_data_valid  = sprite_rom_cs &  ( sprite_rom_ctrl_hit  | (pending_rom == SPRITE_ROM  ?  sdram_valid  : 0) ) & ~reset;
 assign sound_rom_1_data_valid = sound_rom_1_cs & ( sound_rom_1_ctrl_hit | (pending_rom == SOUND_ROM_1 ?  sdram_valid  : 0) ) & ~reset;
@@ -271,23 +236,20 @@ always @ (*) begin
 
     next_rom <= NONE;  // default
     case (1)
-        prog_rom_1_ctrl_req:    next_rom <= PROG_ROM_1;
-        prog_rom_2_ctrl_req:    next_rom <= PROG_ROM_2;
+        prog_rom_ctrl_req:      next_rom <= PROG_ROM;
         sound_rom_1_ctrl_req:   next_rom <= SOUND_ROM_1;
         tile_rom_ctrl_req:      next_rom <= TILE_ROM;
         sprite_rom_ctrl_req:    next_rom <= SPRITE_ROM;
     endcase
 
     // route SDRAM acknowledge wire to the current ROM
-    prog_rom_1_ctrl_ack <= 0;
-    prog_rom_2_ctrl_ack <= 0;
+    prog_rom_ctrl_ack <= 0;
     sound_rom_1_ctrl_ack <= 0;
     tile_rom_ctrl_ack <= 0;
     sprite_rom_ctrl_ack <= 0;
 
     case (rom)
-        PROG_ROM_1:     prog_rom_1_ctrl_ack <= sdram_ack;
-        PROG_ROM_2:     prog_rom_2_ctrl_ack <= sdram_ack;
+        PROG_ROM:       prog_rom_ctrl_ack <= sdram_ack;
         SOUND_ROM_1:    sound_rom_1_ctrl_ack <= sdram_ack;
         TILE_ROM:       tile_rom_ctrl_ack <= sdram_ack;
         SPRITE_ROM:     sprite_rom_ctrl_ack <= sdram_ack;
@@ -295,15 +257,13 @@ always @ (*) begin
 
     
     // route SDRAM valid wire to the pending ROM
-    prog_rom_1_ctrl_valid  <= 0;
-    prog_rom_2_ctrl_valid  <= 0;
+    prog_rom_ctrl_valid  <= 0;
     tile_rom_ctrl_valid    <= 0;
     sprite_rom_ctrl_valid  <= 0;
     sound_rom_1_ctrl_valid <= 0;
 
     case (pending_rom)
-        PROG_ROM_1:     prog_rom_1_ctrl_valid  <= sdram_valid;
-        PROG_ROM_2:     prog_rom_2_ctrl_valid  <= sdram_valid;
+        PROG_ROM:       prog_rom_ctrl_valid  <= sdram_valid;
         SOUND_ROM_1:    sound_rom_1_ctrl_valid <= sdram_valid;
         TILE_ROM:       tile_rom_ctrl_valid    <= sdram_valid;
         SPRITE_ROM:     sprite_rom_ctrl_valid  <= sdram_valid;
@@ -311,8 +271,7 @@ always @ (*) begin
 
 
     // mux ROM request
-    ctrl_req <= prog_rom_1_ctrl_req |
-                prog_rom_2_ctrl_req |
+    ctrl_req <= prog_rom_ctrl_req |
                 tile_rom_ctrl_req |
                 sprite_rom_ctrl_req |
                 sound_rom_1_ctrl_req;
@@ -321,8 +280,7 @@ always @ (*) begin
      sdram_addr <= 0;
      case (1)
         ioctl_download:         sdram_addr <= download_addr;
-        prog_rom_1_ctrl_req:    sdram_addr <= prog_rom_1_ctrl_addr;
-        prog_rom_2_ctrl_req:    sdram_addr <= prog_rom_2_ctrl_addr;
+        prog_rom_ctrl_req:    sdram_addr <= prog_rom_ctrl_addr;
         sound_rom_1_ctrl_req:   sdram_addr <= sound_rom_1_ctrl_addr;
         tile_rom_ctrl_req:      sdram_addr <= tile_rom_ctrl_addr;
         sprite_rom_ctrl_req:    sdram_addr <= sprite_rom_ctrl_addr;
