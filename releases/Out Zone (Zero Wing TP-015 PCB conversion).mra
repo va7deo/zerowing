@@ -2,7 +2,7 @@
   <name>Out Zone (Zero Wing TP-015 PCB conversion)</name>
   <mameversion>0229</mameversion>
   <setname>outzonecv</setname>
-  <mratimestamp>20210126</mratimestamp>
+  <mratimestamp>20210127</mratimestamp>
   <year>1990</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Run 'n Gun</category>
@@ -60,5 +60,8 @@
 
     <!-- audiocpu - starts at 0x200000 -->
     <part name="tp_018_09+.bin" crc="b7201606"/>
+  </rom>
+  <rom index="1" md5="None">
+    <part>01</part>
   </rom>
 </misterromdescription>

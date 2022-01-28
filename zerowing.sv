@@ -294,6 +294,21 @@ always @(posedge clk_sys) begin
     end
 end
 
+// Select PCB Title
+reg [7:0] title;
+reg [15:0] scroll_y_offset;
+always @(posedge clk_sys) begin
+    if (ioctl_wr && (ioctl_index==1)) begin
+        title <= ioctl_dout;
+
+	if (ioctl_dout == 1) begin
+             scroll_y_offset <= 16;
+        end else begin
+             scroll_y_offset <= 0;
+	end
+    end
+end
+
 // Status bits
 wire [31:0] status;
 
@@ -565,13 +580,11 @@ fx68k fx68k (
 always @ (posedge clk_sys) begin
 
     // tell 68k to wait for valid data. 0=ready 1=wait
-    dtack_n <= prog_rom_1_cs ? !prog_rom_1_data_valid :
-        prog_rom_2_cs ? !prog_rom_2_data_valid : 
+    dtack_n <= prog_rom_cs ? !prog_rom_data_valid :
         ram_cs ? 0 : 0;  // always ack
 
 // select cpu data input based on what is active 
-    cpu_din <= prog_rom_1_cs ? prog_rom_1_data :
-        prog_rom_2_cs ? prog_rom_2_data :
+    cpu_din <= prog_rom_cs ? prog_rom_data :
         ram_cs ? ram_dout :
         tile_palette_cs ?  tile_palette_cpu_dout :
         sprite_palette_cs ?  sprite_palette_cpu_dout :
@@ -741,8 +754,7 @@ T80pa u_cpu(
 
 // 68k address decoder
 
-wire prog_rom_1_cs   = ( cpu_a <= 24'h03ffff ) & !cpu_as_n  ;
-wire prog_rom_2_cs   = ( cpu_a >= 24'h040000 && cpu_a <= 24'h07ffff ) & !cpu_as_n  ;  
+wire prog_rom_cs     = ( cpu_a <= 24'h07ffff ) & !cpu_as_n  ;
 
 wire scroll_ofs_x_cs = ( cpu_a >= 24'h0c0000 && cpu_a <= 24'h0c0001 ) & !cpu_as_n  ;  
 wire scroll_ofs_y_cs = ( cpu_a >= 24'h0c0002 && cpu_a <= 24'h0c0003 ) & !cpu_as_n  ;  
@@ -1039,7 +1051,7 @@ wire [5:0] sprite_size_addr = sprite_attr_1_buf_dout[11:6] /* synthesis keep */;
 wire [5:0] sprite_pal_addr  = sprite_attr_1_buf_dout[5:0] /* synthesis keep */;
 
 wire [8:0] sprite_pos_x  = sprite_attr_2_buf_dout[15:7]  ;
-wire [8:0] sprite_pos_y  = sprite_attr_3_buf_dout[15:7] - 16/* synthesis keep */;
+wire [8:0] sprite_pos_y  = sprite_attr_3_buf_dout[15:7] - 16 + scroll_y_offset /* synthesis keep */;
 
 // valid 1 cycle after sprite attr ready
 wire [8:0] sprite_height    = { sprite_size_dout[7:4], 3'b0 } /* synthesis keep */;  // in pixels
@@ -1151,11 +1163,11 @@ always @ (posedge clk_sys) begin
             scroll_x_latch[2] <= scroll_x[2] - scroll_ofs_x;
             scroll_x_latch[3] <= scroll_x[3] - scroll_ofs_x;
 
-            scroll_y_latch[0] <= scroll_y[0] - scroll_ofs_y;
-            scroll_y_latch[1] <= scroll_y[1] - scroll_ofs_y;
-            scroll_y_latch[2] <= scroll_y[2] - scroll_ofs_y;
-            scroll_y_latch[3] <= scroll_y[3] - scroll_ofs_y;
-                   
+            scroll_y_latch[0] <= scroll_y[0] - scroll_ofs_y - scroll_y_offset;
+            scroll_y_latch[1] <= scroll_y[1] - scroll_ofs_y - scroll_y_offset;
+            scroll_y_latch[2] <= scroll_y[2] - scroll_ofs_y - scroll_y_offset;
+            scroll_y_latch[3] <= scroll_y[3] - scroll_ofs_y - scroll_y_offset;
+
         end 
         
         if (  sprite_copy_state == 0 && vc == 240  ) begin 
@@ -1342,23 +1354,15 @@ wire        sdram_ack;
 wire        sdram_valid;
 wire [31:0] sdram_q;
 
-wire prog_rom_1_data_valid;
-wire prog_rom_2_data_valid;
+wire prog_rom_data_valid;
 wire tile_rom_data_valid;
 wire sprite_rom_data_valid;
 wire sound_rom_1_data_valid;
 
-//wire prog_rom_1_cs;
-wire prog_rom_1_oe;
-wire [23:1] prog_rom_1_addr;
-wire [15:0] prog_rom_1_data;
-wire prog_rom_1_ctrl_valid;
-
-//wire prog_rom_2_cs;
-wire prog_rom_2_oe;
-wire [23:1] prog_rom_2_addr;
-wire [15:0] prog_rom_2_data;
-wire prog_rom_2_ctrl_valid;
+wire prog_rom_oe;
+wire [23:1] prog_rom_addr;
+wire [15:0] prog_rom_data;
+wire prog_rom_ctrl_valid;
 
 reg tile_rom_cs;
 reg tile_rom_oe;
@@ -1379,8 +1383,6 @@ wire [15:0] sound_rom_1_addr;
 wire [7:0] sound_rom_1_data;
 wire sound_rom_1_ctrl_valid;
 
-wire [23:0] rom_2_addr = cpu_a - 24'h040000  ;
-
 // sdram priority based rom controller
 // is a oe needed?
 rom_controller rom_controller 
@@ -1390,19 +1392,12 @@ rom_controller rom_controller
     // clock
     .clk(clk_sys),
 
-    // program ROM #1 interface
-    .prog_rom_1_cs(prog_rom_1_cs),
-    .prog_rom_1_oe(1),
-    .prog_rom_1_addr(cpu_a[23:1]),
-    .prog_rom_1_data(prog_rom_1_data),
-    .prog_rom_1_data_valid(prog_rom_1_data_valid),
-
-    // program ROM #2 interface
-    .prog_rom_2_cs(prog_rom_2_cs),
-    .prog_rom_2_oe(1),
-    .prog_rom_2_addr( rom_2_addr[23:1] ),
-    .prog_rom_2_data(prog_rom_2_data),
-    .prog_rom_2_data_valid(prog_rom_2_data_valid),
+    // program ROM interface
+    .prog_rom_cs(prog_rom_cs),
+    .prog_rom_oe(1),
+    .prog_rom_addr(cpu_a[23:1]),
+    .prog_rom_data(prog_rom_data),
+    .prog_rom_data_valid(prog_rom_data_valid),
 
     // character ROM interface
     .tile_rom_cs(tile_rom_cs),
