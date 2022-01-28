@@ -1,7 +1,7 @@
 <misterromdescription>
-  <name>Out Zone (Zero Wing TP-015 PCB conversion)</name>
+  <name>Out Zone (older set)</name>
   <mameversion>0229</mameversion>
-  <setname>outzonecv</setname>
+  <setname>outzoneb</setname>
   <mratimestamp>20210126</mratimestamp>
   <year>1990</year>
   <manufacturer>Toaplan</manufacturer>
@@ -10,7 +10,7 @@
 
   <buttons names="Shot,Bomb,Start,Coin" default="A,B,R,L"/>
 
-  <switches page_id="1" page_name="Switches" base="8" default="00,00,00,09,00,00,00,00">
+  <switches page_id="1" page_name="Switches" base="8" default="00,00,00,00,00,00,00,00">
     <!-- DSWA -->
     <dip name="Flip Screen" bits="1" ids="Off,On"/>
     <dip name="Service Mode" bits="2" ids="Off,On"/>
@@ -29,15 +29,15 @@
   </switches>
 
   <rom index="1">
-    <part>01</part>
+    <part>02</part>
   </rom>
 
   <!-- ROM data -->
   <rom index="0" zip="outzone.zip" md5="None">
     <!-- maincpu - starts at 0x0 -->
     <interleave output="16">
-        <part name="tp_018_07+.bin" crc="8768d843" map="01"/>
-        <part name="tp_018_08+.bin" crc="af238f71" map="10"/>
+        <part name="tp07.bin" crc="a85a1d48" map="01"/>
+        <part name="tp08.bin" crc="d8cc44af" map="10"/>
     </interleave>
     <part repeat="0x40000">ff</part>
 
@@ -56,6 +56,6 @@
     </interleave>
 
     <!-- audiocpu - starts at 0x200000 -->
-    <part name="tp_018_09+.bin" crc="b7201606"/>
+    <part name="tp09.bin" crc="dd56041f"/>
   </rom>
 </misterromdescription>
