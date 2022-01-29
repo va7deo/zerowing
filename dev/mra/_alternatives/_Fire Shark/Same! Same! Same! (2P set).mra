@@ -1,0 +1,67 @@
+<misterromdescription>
+  <name>Same! Same! Same! (2P set)</name>
+  <mameversion>0229</mameversion>
+  <setname>samesame2</setname>
+  <mratimestamp>20210129</mratimestamp>
+  <year>1989</year>
+  <manufacturer>Toaplan</manufacturer>
+  <category>Shoot 'em up</category>
+  <rbf>zerowing</rbf>
+
+  <buttons names="Shot,Bomb,Start,Coin" default="A,B,R,L"/>
+
+    <switches default="00,00,00,00">
+        <!-- DSWA -->
+        <dip name="Flip Screen" bits="1" ids="Off,On"/>
+        <dip name="Service Mode" bits="2" ids="Off,On"/>
+        <dip name="Demo Sounds" bits="3" ids="On,Off"/>
+        <dip name="Coin A" bits="4,5" ids="1/1,2/1,3/1,4/1"/>
+        <dip name="Coin B" bits="6,7" ids="1/2,1/3,1/4,1/6"/>
+        <!-- DSWB -->
+        <dip name="Difficulty" bits="8,9" ids="Medium,Easy,Hard,Hardest"/>
+        <dip name="Bonus Life" bits="10,11" ids="70K, every 200K,50K, every 150K,100K,None"/>
+        <dip name="Lives" bits="12,13" ids="3,5,4,2"/>
+        <dip name="Invulnerability" bits="14" ids="Off,On"/>
+        <dip name="Allow Continue" bits="15" ids="Yes,No"/>
+        <!-- TJUMP -->
+        <dip name="Show Territory Notice" bits="16,17" ids="Yes,No"/>
+    </switches>
+
+  <rom index="1">
+    <part>05</part>
+  </rom>
+
+  <!-- ROM data -->
+  <rom index="0" zip="fireshrk.zip" md5="None">
+    <!-- maincpu - starts at 0x0 -->
+    <interleave output="16">
+        <part name="o17_09x.8j" crc="3472e03e" map="01"/>
+        <part name="o17_10x.8l" crc="a3ac49b5" map="10"/>
+    </interleave>
+    <part repeat="0x30000"> FF</part>
+    <interleave output="16">
+        <part name="o17_11ii.7j" crc="6beac378" map="01"/>
+        <part name="o17_12ii.7l" crc="6adb6eb5" map="10"/>
+    </interleave>
+
+    <!-- gfx1 - starts at 0x180000 -->
+    <interleave output="32">
+        <part name="o17_05.12j" crc="565315f8" map="0001"/>
+        <part name="o17_06.13j" crc="95262d4c" map="0010"/>
+        <part name="o17_07.12l" crc="4c4b735c" map="0100"/>
+        <part name="o17_08.13l" crc="95c6586c" map="1000"/>
+    </interleave>
+    <part repeat="0x80000">ff</part>
+
+    <!-- gfx2 - starts at 0x200000 -->
+    <interleave output="32">
+        <part name="o17_01.1d" crc="ea12e491" map="0001"/>
+        <part name="o17_02.3d" crc="32a13a9f" map="0010"/>
+        <part name="o17_03.5d" crc="68723dc9" map="0100"/>
+        <part name="o17_04.7d" crc="fe0ecb13" map="1000"/>
+    </interleave>
+
+    <!-- audiocpu - starts at 0x180000 -->
+    <part name="hd647180.017" crc="43523032"/>
+  </rom>
+</misterromdescription>

@@ -1,4 +1,5 @@
 
+
 # Toaplan Version 1 FPGA Implemenation for [MiSTerFPGA](https://github.com/MiSTer-devel/Main_MiSTer/wiki)
 
 FPGA compatible core for Toaplan Version 1 arcade hardware for MiSTerFPGA written by Darren Olafson. This core is based on Zero Wing and will be verified against physical hardware (Out Zone/Zero Wing Conversion). 
@@ -12,14 +13,14 @@ This FPGA compatible core is in active development with assistance from [**ùïì
 Game                |  Status | Released
 --------------------|---------|---------
 [**Zero Wing**](https://en.wikipedia.org/wiki/Zero_Wing) | Implemented | **Yes**
-[**Out Zone (Zero Wing TP-015 PCB conversion)**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | **Yes**
+[**Out Zone (Zero Wing TP-015 PCB conversion)**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | **Pending**
 [**Out Zone**](https://en.wikipedia.org/wiki/Out_Zone) | Ongoing | No
-[**Fire Shark**](https://en.wikipedia.org/wiki/Fire_Shark) | Ongoing | No
-[**Hellfire**](https://en.wikipedia.org/wiki/Hellfire_%28video_game%29) | Ongoing | No
+[**Hellfire**](https://en.wikipedia.org/wiki/Hellfire_%28video_game%29) | Implemented | **Pending**
 [**Truxton**](https://en.wikipedia.org/wiki/Truxton_%28video_game%29) | Ongoing | No
 [**Vimana**](https://en.wikipedia.org/wiki/Vimana_%28video_game%29) | Ongoing | No
+[**Fire Shark**](https://en.wikipedia.org/wiki/Fire_Shark) | Ongoing | No
 [**Rally Bike**](https://en.wikipedia.org/wiki/Rally_Bike) | Ongoing | No
-[**Demon's World**](https://en.wikipedia.org/wiki/Demon%27s_World) | FPGA Implementation slatted by [**Jotego**](https://github.com/jotego) | No
+[**Demon's World**](https://en.wikipedia.org/wiki/Demon%27s_World) | FPGA Implementation slated by [**Jotego**](https://github.com/jotego) | **N/A**
 
 
 # Known Issues
@@ -29,6 +30,7 @@ Game                |  Status | Released
 -Clock domains need to be verified  
 -Sprites disappearing when they touch the first scanline or first pixel of a scanline (Out Zone)  
 -OPL2 sound implementation (W.I.P)  
+-HD647180X sound implementation (Fire Shark / Vimana)  
 
 # PCB Check List
 
