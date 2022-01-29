@@ -1,8 +1,8 @@
 <misterromdescription>
-    <name>Rally Bike / Dash Yarou</name>
-    <mameversion>0229</mameversion>
-    <setname>rallybik</setname>
-  <mratimestamp>20210126</mratimestamp>
+  <name>Rally Bike / Dash Yarou</name>
+  <mameversion>0229</mameversion>
+  <setname>rallybik</setname>
+  <mratimestamp>20210129</mratimestamp>
   <year>1989</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Racing</category>
@@ -10,7 +10,7 @@
 
   <buttons names="Accelerate,Brake,Start,Coin" default="A,B,R,L"/>
 
-  <switches page_id="1" page_name="Switches" base="8" default="ff,ff,ff">
+  <switches default="00,00,00,00">
     <!-- DSWA -->
     <dip name="Cabinet" bits="0" ids="Cocktail,Upright"/>
     <dip name="Flip Screen" bits="1" ids="Off,On"/>
@@ -26,10 +26,6 @@
     <!-- SYSTEM -->
     <dip name="Test Switch" bits="18" ids="Off,On"/>
   </switches>
-
-  <rom index="1">
-    <part>07</part>
-  </rom>
 
   <!-- ROM data -->
     <rom index="0" zip="rallybik.zip" md5="None">
@@ -51,14 +47,19 @@
         <part name="b45-07.bin" crc="cd3748b4" map="0100"/>
         <part name="b45-06.bin" crc="144b085c" map="1000"/>
     </interleave>
+    <part repeat="0x100000">ff</part>
 
-    <!-- audiocpu - starts at 0x100000 -->
+    <!-- audiocpu - starts at 0x200000 -->
     <part name="b45-05.rom" crc="10814601"/>
 
-    <!-- scu - starts at 0x104000 -->
+    <!-- scu - starts at 0x204000 -->
     <part name="b45-11.rom" crc="0d56e8bb"/>
     <part name="b45-10.rom" crc="dbb7c57e"/>
     <part name="b45-12.rom" crc="cf5aae4e"/>
     <part name="b45-13.rom" crc="1683b07c"/>
+  </rom>
+
+  <rom index="1">
+    <part>07</part>
   </rom>
 </misterromdescription>

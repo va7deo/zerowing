@@ -2,7 +2,7 @@
   <name>Zero Wing</name>
   <mameversion>0229</mameversion>
   <setname>zerowing</setname>
-  <mratimestamp>20210126</mratimestamp>
+  <mratimestamp>20210129</mratimestamp>
   <year>1989</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Shoot 'em up</category>
@@ -10,7 +10,7 @@
 
   <buttons names="Shot,Shield,Start,Coin" default="A,B,R,L"/>
 
-  <switches page_id="1" page_name="Switches" base="8" default="00,80,00,00,00,00,00,00">
+  <switches default="00,80,00,00">
     <!-- DSWA -->
     <dip name="Flip Screen" bits="1" ids="Off,On"/>
     <dip name="Service Mode" bits="2" ids="Off,On"/>
@@ -27,13 +27,6 @@
     <!-- TJUMP -->
     <dip name="Region" bits="25" ids="USA,Europe"/>
   </switches>
-
-  <!-- MEM address -->
-  <!-- 
-  <rom index="1">
-    <part>00</part>
-  </rom>
-  -->
 
   <!-- ROM data -->
   <rom index="0" zip="zerowing.zip" md5="none">
@@ -70,4 +63,10 @@
     <!-- sound cpu  0x200000-0x207FFF 32K -->
     <part crc="e7b72383" name="o15-13.rom" />
   </rom>
+
+  <!-- 
+  <rom index="1">
+    <part>00</part>
+  </rom>
+  -->
 </misterromdescription>
