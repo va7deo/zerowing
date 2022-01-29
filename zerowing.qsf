@@ -70,10 +70,10 @@ set_global_assignment -name ROUTER_TIMING_OPTIMIZATION_LEVEL NORMAL
 set_global_assignment -name PLACEMENT_EFFORT_MULTIPLIER 2.0
 set_global_assignment -name SDC_FILE rtl/sdram.sdc
 set_global_assignment -name QIP_FILE sys/sys.qip
-set_global_assignment -name QIP_FILE sys/pll.13.qip
+set_global_assignment -name QIP_FILE sys/pll.17.qip
 set_global_assignment -name QIP_FILE sys/pll_cfg.qip
 set_global_assignment -name CDF_FILE jtag.cdf
 set_global_assignment -name QIP_FILE sys/pll_hdmi.qip
-set_global_assignment -name QIP_FILE sys/pll_audio.13.qip
+set_global_assignment -name QIP_FILE sys/pll_audio.17.qip
 
 set_instance_assignment -name PARTITION_HIERARCHY root_partition -to | -section_id Top
