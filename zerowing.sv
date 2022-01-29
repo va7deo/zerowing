@@ -1041,14 +1041,13 @@ reg  [9:0] sprite_y;
 reg  sprite_buf_active;
 wire [9:0] sprite_buf_x = sprite_x + sprite_pos_x ;     // offset from left of frame
 
-wire       sprite_hidden    = sprite_attr_0_buf_dout[15] /* synthesis keep */;
 wire [14:0] sprite_index    = sprite_attr_0_buf_dout[14:0] /* synthesis keep */;
-
-wire [3:0] sprite_priority  = sprite_attr_1_buf_dout[15:12] /* synthesis keep */;
-wire [5:0] sprite_size_addr = sprite_attr_1_buf_dout[11:6] /* synthesis keep */;
+wire       sprite_hidden    = sprite_attr_0_buf_dout[15] /* synthesis keep */;
 //reg [5:0] sprite_size_addr;
 
 wire [5:0] sprite_pal_addr  = sprite_attr_1_buf_dout[5:0] /* synthesis keep */;
+wire [5:0]  sprite_size_addr = sprite_attr_1_buf_dout[11:6] /* synthesis keep */;
+wire [3:0]  sprite_priority  = sprite_attr_1_buf_dout[15:12] /* synthesis keep */;
 
 wire [8:0] sprite_pos_x  = sprite_attr_2_buf_dout[15:7]  ;
 wire [8:0] sprite_pos_y  = sprite_attr_3_buf_dout[15:7] - 16 + scroll_y_offset /* synthesis keep */;
@@ -1056,6 +1055,8 @@ wire [8:0] sprite_pos_y  = sprite_attr_3_buf_dout[15:7] - 16 + scroll_y_offset /
 // valid 1 cycle after sprite attr ready
 wire [8:0] sprite_height    = { sprite_size_buf_dout[7:4], 3'b0 } /* synthesis keep */;  // in pixels
 wire [8:0] sprite_width     = { sprite_size_buf_dout[3:0], 3'b0 } /* synthesis keep */;
+
+reg [7:0] sprite_buf_num;
 
 always @ (posedge clk_sys) begin
     
@@ -1107,9 +1108,11 @@ always @ (posedge clk_sys) begin
             // is sprite visible and is current y in sprite y range
             if ( sprite_hidden == 0 && sprite_width > 0 && y >= sprite_pos_y && y < ( sprite_pos_y + sprite_height ) ) begin
                 sprite_state <= 5 ;
-            end else begin
+            end else if ( sprite_num > 0 ) begin 
                 sprite_num <= sprite_num - 1;
                 sprite_state <= 2 ;
+            end else begin
+                sprite_state <= 15 ;
             end
 
         end else if ( sprite_state == 5 ) begin        
@@ -1170,25 +1173,23 @@ always @ (posedge clk_sys) begin
 
         end 
         
+        // copy sprite attr/size to buffer
         if (  sprite_copy_state == 0 && vc == 240  ) begin 
             sprite_copy_state <= 1;
-        end else if ( sprite_copy_state == 1 ) begin 
+            sprite_buf_w <= 0;
             sprite_num_copy <= 8'h00;
-            sprite_copy_state <= 2 ;
-        end else if ( sprite_copy_state == 2 ) begin
+        end else if ( sprite_copy_state == 1 ) begin 
+            sprite_num_copy <= sprite_num_copy + 1;
+            sprite_buf_num <= sprite_num_copy;
             sprite_buf_w <= 1;
 
             // wait for read from source
-            sprite_copy_state <= 3 ;
-        end else if ( sprite_copy_state == 3 ) begin
-            sprite_buf_w <= 0;
-            sprite_copy_state <= 2 ;
-            
-            if ( sprite_num_copy < 8'hff ) begin 
-                sprite_num_copy <= sprite_num_copy + 1;
-            end else begin
-                sprite_copy_state <= 0; // till next time
+            if ( sprite_num_copy == 8'hff ) begin 
+                sprite_copy_state <= 2 ;
             end
+        end else if ( sprite_copy_state == 2 ) begin
+            sprite_buf_w <= 0;
+            sprite_copy_state <= 0 ;
         end
 
         // tile state machine
@@ -1538,7 +1539,7 @@ ram256bx16dp sprite_ram_size (
     
 ram256bx16dp sprite_ram_size_buf (
     .clock_a ( clk_sys ),
-    .address_a ( sprite_num_copy ),
+    .address_a ( sprite_buf_num ),
     .wren_a ( sprite_buf_w ),
     .data_a ( sprite_size_dout ),
     .q_a (  ),
@@ -1557,7 +1558,7 @@ ram256bx16dp sprite_ram_size_buf (
 // split up so 64 bits can be read in a single clock
 ram256bx16dp sprite_ram_0_buf (
     .clock_a ( clk_sys ),
-    .address_a ( sprite_num_copy ),
+    .address_a ( sprite_buf_num ),
     .wren_a ( sprite_buf_w ),
     .data_a ( sprite_attr_0_dout[15:0] ),
     .q_a (  ),
@@ -1570,7 +1571,7 @@ ram256bx16dp sprite_ram_0_buf (
 
 ram256bx16dp sprite_ram_1_buf (
     .clock_a ( clk_sys ),
-    .address_a ( sprite_num_copy ),
+    .address_a ( sprite_buf_num ),
     .wren_a ( sprite_buf_w ),
     .data_a ( sprite_attr_1_dout[15:0] ),
     .q_a (  ),
@@ -1583,7 +1584,7 @@ ram256bx16dp sprite_ram_1_buf (
 
 ram256bx16dp sprite_ram_2_buf (
     .clock_a ( clk_sys ),
-    .address_a ( sprite_num_copy ),
+    .address_a ( sprite_buf_num ),
     .wren_a ( sprite_buf_w ),
     .data_a ( sprite_attr_2_dout[15:0] ),
     .q_a (  ),
@@ -1596,7 +1597,7 @@ ram256bx16dp sprite_ram_2_buf (
 
 ram256bx16dp sprite_ram_3_buf (
     .clock_a ( clk_sys ),
-    .address_a ( sprite_num_copy ),
+    .address_a ( sprite_buf_num ),
     .wren_a ( sprite_buf_w ),
     .data_a ( sprite_attr_3_dout[15:0] ),
     .q_a (  ),
