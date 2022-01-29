@@ -1,8 +1,8 @@
 <misterromdescription>
-  <name>Out Zone (older set)</name>
+  <name>Out Zone (old set)</name>
   <mameversion>0229</mameversion>
-  <setname>outzoneb</setname>
-  <mratimestamp>20210126</mratimestamp>
+  <setname>outzonea</setname>
+  <mratimestamp>20210129</mratimestamp>
   <year>1990</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Run 'n Gun</category>
@@ -10,7 +10,7 @@
 
   <buttons names="Shot,Bomb,Start,Coin" default="A,B,R,L"/>
 
-  <switches page_id="1" page_name="Switches" base="8" default="00,00,00,00,00,00,00,00">
+  <switches default="00,00,00,00">
     <!-- DSWA -->
     <dip name="Flip Screen" bits="1" ids="Off,On"/>
     <dip name="Service Mode" bits="2" ids="Off,On"/>
@@ -28,16 +28,12 @@
     <dip name="Region" bits="24,27" ids="Japan,USA,Europe,Hong Kong,Korea,Taiwan"/>
   </switches>
 
-  <rom index="1">
-    <part>02</part>
-  </rom>
-
   <!-- ROM data -->
   <rom index="0" zip="outzone.zip" md5="None">
     <!-- maincpu - starts at 0x0 -->
     <interleave output="16">
-        <part name="tp07.bin" crc="a85a1d48" map="01"/>
-        <part name="tp08.bin" crc="d8cc44af" map="10"/>
+        <part name="18.bin" crc="31a171bb" map="01"/>
+        <part name="19.bin" crc="804ecfd1" map="10"/>
     </interleave>
     <part repeat="0x40000">ff</part>
 
@@ -56,6 +52,10 @@
     </interleave>
 
     <!-- audiocpu - starts at 0x200000 -->
-    <part name="tp09.bin" crc="dd56041f"/>
+    <part name="tp_018_09.bin" crc="73d8e235"/>
+  </rom>
+
+  <rom index="1">
+    <part>02</part>
   </rom>
 </misterromdescription>

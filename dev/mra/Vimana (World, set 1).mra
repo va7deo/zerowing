@@ -1,8 +1,8 @@
 <misterromdescription>
-  <name>Vimana (Japan)</name>
+  <name>Vimana (World, set 1)</name>
   <mameversion>0229</mameversion>
-  <setname>vimanaj</setname>
-  <mratimestamp>20210126</mratimestamp>
+  <setname>vimana</setname>
+  <mratimestamp>20210129</mratimestamp>
   <year>1989</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Shoot 'em up</category>
@@ -10,7 +10,7 @@
 
   <buttons names="Shot,Bomb,Start,Coin" default="A,B,R,L"/>
 
-  <switches page_id="1" page_name="Switches" base="8" default="00,00,00,00,00,00,00,00">
+  <switches default="00,00,00,00">
     <!-- DSWA -->
     <dip name="Flip Screen" bits="1" ids="Off,On"/>
     <dip name="Service Mode" bits="2" ids="Off,On"/>
@@ -29,33 +29,35 @@
     <dip name="Region" bits="24,27" ids="Japan,USA,Europe,Hong Kong,Korea,Taiwan"/>
   </switches>
 
-  <rom index="1">
-    <part>06</part>
-  </rom>
-
   <!-- ROM data -->
   <rom index="0" zip="vimana.zip" md5="None">
     <!-- maincpu - starts at 0x0 -->
     <interleave output="16">
-        <part name="vim07.bin" crc="1efaea84" map="01"/>
-        <part name="vim08.bin" crc="e45b7def" map="10"/>
+        <part name="tp019-7a.bin" crc="5a4bf73e" map="01"/>
+        <part name="tp019-8a.bin" crc="03ba27e8" map="10"/>
     </interleave>
+    <part repeat="0x40000">ff</part>
 
-    <!-- gfx1 - starts at 0x40000 -->
+    <!-- gfx1 - starts at 0x80000 -->
     <interleave output="32">
         <part name="vim6.bin" crc="2886878d" map="0001"/>
         <part name="vim5.bin" crc="61a63d7a" map="0010"/>
         <part name="vim4.bin" crc="b0515768" map="0100"/>
         <part name="vim3.bin" crc="0b539131" map="1000"/>
     </interleave>
+    <part repeat="0x80000">ff</part>
 
-    <!-- gfx2 - starts at 0xC0000 -->
+    <!-- gfx2 - starts at 0x180000 -->
     <interleave output="32">
         <part name="vim1.bin" crc="cdde26cd" map="0021"/>
         <part name="vim2.bin" crc="1dbfc118" map="2100"/>
     </interleave>
 
-    <!-- audiocpu - starts at 0x1C0000 -->
+    <!-- audiocpu - starts at 0x280000 -->
     <part name="hd647180.019" crc="41a97ebe"/>
+  </rom>
+
+  <rom index="1">
+    <part>06</part>
   </rom>
 </misterromdescription>

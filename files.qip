@@ -2,7 +2,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE zerowing.sv
 set_global_assignment -name SDC_FILE zerowing.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/video_timing.v
 
-set_global_assignment -name VERILOG_FILE rom_controller.v
+set_global_assignment -name VERILOG_FILE hdl/rom_controller.v
 set_global_assignment -name VHDL_FILE rtl/mem/sdram.vhd
 set_global_assignment -name VHDL_FILE rtl/mem/download_buffer.vhd
 set_global_assignment -name VHDL_FILE rtl/mem/segment.vhd
@@ -14,13 +14,13 @@ set_global_assignment -name VERILOG_FILE rtl/fx68kAlu.v
 set_global_assignment -name VERILOG_FILE rtl/fx68k.v
 set_global_assignment -name VERILOG_FILE rtl/fx86k/cpu_68k.v
 
-set_global_assignment -name QIP_FILE ram1kx8dp.qip
-set_global_assignment -name QIP_FILE ram4kx8dp.qip
-set_global_assignment -name QIP_FILE ram16kx8dp.qip
-set_global_assignment -name QIP_FILE ram256bx16dp.qip
-set_global_assignment -name QIP_FILE ram1kx16dp.qip
-set_global_assignment -name QIP_FILE ram16kx16dp.qip
-set_global_assignment -name QIP_FILE ram16kx32dp.qip
+set_global_assignment -name QIP_FILE hdl/ram1kx8dp.qip
+set_global_assignment -name QIP_FILE hdl/ram4kx8dp.qip
+set_global_assignment -name QIP_FILE hdl/ram16kx8dp.qip
+set_global_assignment -name QIP_FILE hdl/ram256bx16dp.qip
+set_global_assignment -name QIP_FILE hdl/ram1kx16dp.qip
+set_global_assignment -name QIP_FILE hdl/ram16kx16dp.qip
+set_global_assignment -name QIP_FILE hdl/ram16kx32dp.qip
 
 set_global_assignment -name VHDL_FILE rtl/t80/T80_Reg.vhd
 set_global_assignment -name VHDL_FILE rtl/t80/T80_MCode.vhd
