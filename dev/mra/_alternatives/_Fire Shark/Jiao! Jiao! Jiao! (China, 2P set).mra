@@ -1,22 +1,22 @@
 <misterromdescription>
-  <name>Fire Shark</name>
+  <name>Jiao! Jiao! Jiao! (China, 2P set)</name>
   <mameversion>0229</mameversion>
-  <setname>fireshrk</setname>
-  <mratimestamp>20210126</mratimestamp>
+  <setname>samesamecn</setname>
+  <mratimestamp>20210129</mratimestamp>
   <year>1990</year>
-  <manufacturer>Toaplan</manufacturer>
+  <manufacturer>Toaplan (Hong Kong Honest Trading license)</manufacturer>
   <category>Shoot 'em up</category>
   <rbf>zerowing</rbf>
 
   <buttons names="Shot,Bomb,Start,Coin" default="A,B,R,L"/>
 
-  <switches page_id="1" page_name="Switches" base="8" default="00,00,00,00,00,00,00,00">
+  <switches default="00,00,00,00">
     <!-- DSWA -->
     <dip name="Flip Screen" bits="1" ids="Off,On"/>
     <dip name="Service Mode" bits="2" ids="Off,On"/>
     <dip name="Demo Sounds" bits="3" ids="On,Off"/>
-    <dip name="Coin A" bits="4,5" ids="1/1,2/1,3/1,4/1"/>
-    <dip name="Coin B" bits="6,7" ids="1/2,1/3,1/4,1/6"/>
+    <dip name="Coin A" bits="4,5" ids="1/1,1/1,2/1,1/2,3/1,2/1,4/1,2/3"/>
+    <dip name="Coin B" bits="6,7" ids="1/2,1/1,1/3,1/2,1/4,2/1,1/6,2/3"/>
     <!-- DSWB -->
     <dip name="Difficulty" bits="8,9" ids="Medium,Easy,Hard,Hardest"/>
     <dip name="Bonus Life" bits="10,11" ids="70K, every 200K,50K, every 150K,100K,None"/>
@@ -24,8 +24,7 @@
     <dip name="Invulnerability" bits="14" ids="Off,On"/>
     <dip name="Allow Continue" bits="15" ids="Yes,No"/>
     <!-- TJUMP -->
-    <dip name="Show Territory Notice" bits="16" ids="Yes,No"/>
-    <dip name="Region" bits="17,18" ids="USA,Europe"/>
+    <dip name="Coinage Style" bits="16" ids="Same! Same! Same!,Fire Shark"/>
   </switches>
 
   <rom index="1">
@@ -36,24 +35,25 @@
   <rom index="0" zip="fireshrk.zip" md5="None">
     <!-- maincpu - starts at 0x0 -->
     <interleave output="16">
-        <part name="09.8j" crc="f0c70e6f" map="01"/>
-        <part name="10.8l" crc="9d253d77" map="10"/>
+        <part name="o17-09-h2.8j" crc="fc8c2420" map="01"/>
+        <part name="o17_10-h2.8l" crc="cc0ffbeb" map="10"/>
     </interleave>
     <part repeat="0x30000"> FF</part>
     <interleave output="16">
-        <part name="o17_11ii.7j" crc="6beac378" map="01"/>
-        <part name="o17_12ii.7l" crc="6adb6eb5" map="10"/>
+        <part name="o17-11-2.7j" crc="6beac378" map="01"/>
+        <part name="o17-12-2.7l" crc="6adb6eb5" map="10"/>
     </interleave>
 
-    <!-- gfx1 - starts at 0x80000 -->
+    <!-- gfx1 - starts at 0x180000 -->
     <interleave output="32">
         <part name="o17_05.12j" crc="565315f8" map="0001"/>
         <part name="o17_06.13j" crc="95262d4c" map="0010"/>
         <part name="o17_07.12l" crc="4c4b735c" map="0100"/>
         <part name="o17_08.13l" crc="95c6586c" map="1000"/>
     </interleave>
+    <part repeat="0x80000">ff</part>
 
-    <!-- gfx2 - starts at 0x100000 -->
+    <!-- gfx2 - starts at 0x200000 -->
     <interleave output="32">
         <part name="o17_01.1d" crc="ea12e491" map="0001"/>
         <part name="o17_02.3d" crc="32a13a9f" map="0010"/>
