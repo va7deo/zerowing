@@ -19,7 +19,7 @@ Game                |  Status | Released
 [**Truxton**](https://en.wikipedia.org/wiki/Truxton_%28video_game%29) | Ongoing | No
 [**Vimana**](https://en.wikipedia.org/wiki/Vimana_%28video_game%29) | Ongoing | No
 [**Rally Bike**](https://en.wikipedia.org/wiki/Rally_Bike) | Ongoing | No
-[**Demon's World**](https://en.wikipedia.org/wiki/Demon%27s_World) | FPGA Implementation slated by [**Jotego**](https://github.com/jotego) | No
+[**Demon's World**](https://en.wikipedia.org/wiki/Demon%27s_World) | FPGA Implementation slatted by [**Jotego**](https://github.com/jotego) | No
 
 
 # Known Issues

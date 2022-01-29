@@ -1,8 +1,8 @@
 <misterromdescription>
-  <name>Fire Shark (Korea, set 1, easier)</name>
+  <name>Fire Shark (Korea, set 2, harder)</name>
   <mameversion>0229</mameversion>
-  <setname>fireshrkd</setname>
-  <mratimestamp>20210129</mratimestamp>
+  <setname>fireshrkdh</setname>
+  <mratimestamp>20210126</mratimestamp>
   <year>1990</year>
   <manufacturer>Toaplan (Dooyong license)</manufacturer>
   <category>Shoot 'em up</category>
@@ -10,7 +10,7 @@
 
   <buttons names="Shot,Bomb,Start,Coin" default="A,B,R,L"/>
 
-  <switches default="00,00,00,00">
+  <switches page_id="1" page_name="Switches" base="8" default="00,00,00,00,00,00,00,00">
     <!-- DSWA -->
     <dip name="Flip Screen" bits="1" ids="Off,On"/>
     <dip name="Service Mode" bits="2" ids="Off,On"/>
@@ -35,8 +35,8 @@
   <rom index="0" zip="fireshrk.zip" md5="None">
     <!-- maincpu - starts at 0x0 -->
     <interleave output="16">
-        <part name="o17_09dyn.8j" crc="e25eee27" map="01"/>
-        <part name="o17_10dyn.8l" crc="c4c58cf6" map="10"/>
+        <part name="o17_09dyh.8j" crc="7b4c14dd" map="01"/>
+        <part name="o17_10dyh.8l" crc="a3f159f9" map="10"/>
     </interleave>
     <part repeat="0x20000"> FF</part>
     <interleave output="16">
@@ -44,16 +44,15 @@
         <part name="o17_12ii.7l" crc="6adb6eb5" map="10"/>
     </interleave>
 
-    <!-- gfx1 - starts at 0x180000 -->
+    <!-- gfx1 - starts at 0x80000 -->
     <interleave output="32">
         <part name="o17_05.12j" crc="565315f8" map="0001"/>
         <part name="o17_06.13j" crc="95262d4c" map="0010"/>
         <part name="o17_07.12l" crc="4c4b735c" map="0100"/>
         <part name="o17_08.13l" crc="95c6586c" map="1000"/>
     </interleave>
-    <part repeat="0x80000">ff</part>
 
-    <!-- gfx2 - starts at 0x200000 -->
+    <!-- gfx2 - starts at 0x100000 -->
     <interleave output="32">
         <part name="o17_01.1d" crc="ea12e491" map="0001"/>
         <part name="o17_02.3d" crc="32a13a9f" map="0010"/>

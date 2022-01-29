@@ -2,15 +2,14 @@
   <name>Truxton / Tatsujin</name>
   <mameversion>0229</mameversion>
   <setname>truxton</setname>
-  <mratimestamp>20210129</mratimestamp>
+  <mratimestamp>20210126</mratimestamp>
   <year>1989</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Shoot 'em up</category>
   <rbf>zerowing</rbf>
 
   <buttons names="Shot,Bomb,Start,Coin" default="A,B,R,L"/>
-
-  <switches default="00,00,00,00">
+  <switches page_id="1" page_name="Switches" base="8" default="00,00,00,00,00,00,00,00">
     <!-- DSWA -->
     <dip name="Cabinet" bits="0" ids="Cocktail,Upright"/>
     <dip name="Flip Screen" bits="1" ids="Off,On"/>
@@ -30,6 +29,10 @@
     <dip name="Region" bits="24,26" ids="Japan,USA,Europe"/>
   </switches>
 
+  <rom index="1">
+    <part>06</part>
+  </rom>
+
   <!-- ROM data -->
   <rom index="0" zip="truxton.zip" md5="None">
     <!-- maincpu - starts at 0x0 -->
@@ -37,18 +40,16 @@
         <part name="b65_11.bin" crc="1a62379a" map="01"/>
         <part name="b65_10.bin" crc="aff5195d" map="10"/>
     </interleave>
-    <part repeat="0x40000">ff</part>
 
-    <!-- gfx1 - starts at 0x80000 -->
+    <!-- gfx1 - starts at 0x40000 -->
     <interleave output="32">
         <part name="b65_08.bin" crc="d2315b37" map="0001"/>
         <part name="b65_07.bin" crc="fb83252a" map="0010"/>
         <part name="b65_06.bin" crc="36cedcbe" map="0100"/>
         <part name="b65_05.bin" crc="81cd95f1" map="1000"/>
     </interleave>
-    <part repeat="0x80000">ff</part>
 
-    <!-- gfx2 - starts at 0x180000 -->
+    <!-- gfx2 - starts at 0xC0000 -->
     <interleave output="32">
         <part name="b65_04.bin" crc="8c6ff461" map="0001"/>
         <part name="b65_03.bin" crc="58b1350b" map="0010"/>
@@ -56,11 +57,7 @@
         <part name="b65_01.bin" crc="e974937f" map="1000"/>
     </interleave>
 
-    <!-- audiocpu - starts at 0x200000 -->
+    <!-- audiocpu - starts at 0x140000 -->
     <part name="b65_09.bin" crc="1bdd4ddc"/>
-  </rom>
-
-  <rom index="1">
-    <part>06</part>
   </rom>
 </misterromdescription>
