@@ -207,7 +207,6 @@ assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
 localparam CONF_STR = {
     "Zero Wing;;",
     "-;",
-    "-;",
     "P1,Video Settings;",
     "P1-;",
     "P1O12,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
@@ -227,8 +226,6 @@ localparam CONF_STR = {
     "jn,A,Start,Select,R,L;",
     "V,v",`BUILD_DATE
 };
-
-
 
 // CLOCKS
 
@@ -291,21 +288,6 @@ reg [7:0] sw[8];
 always @(posedge clk_sys) begin
     if (ioctl_wr && (ioctl_index==254) && !ioctl_addr[24:3]) begin
         sw[ioctl_addr[2:0]] <= ioctl_dout;
-    end
-end
-
-// Select PCB Title
-reg [7:0] title;
-reg [15:0] scroll_y_offset;
-always @(posedge clk_sys) begin
-    if (ioctl_wr && (ioctl_index==1)) begin
-        title <= ioctl_dout;
-
-	if (ioctl_dout == 1) begin
-             scroll_y_offset <= 16;
-        end else begin
-             scroll_y_offset <= 0;
-	end
     end
 end
 
@@ -598,7 +580,7 @@ always @ (posedge clk_sys) begin
         sprite_2_cs ? sprite_2_dout :
         sprite_3_cs ? sprite_3_dout :
         sprite_size_cs ? sprite_size_cpu_dout :
-        vblank_cs ? { 16 { vbl } } : // get vblank state
+        frame_done_cs ? { 16 { vbl } } : // get vblank state
         int_en_cs ? 16'hffff :
         16'd0;
         
@@ -647,17 +629,17 @@ always @ (posedge clk_sys) begin
                 end
             end else if ( sound_ram_1_cs ) begin
                 z80_din <= z80_shared_dout;
-            end else if ( sound_io_00_cs ) begin
+            end else if ( z80_p1_cs ) begin
                 z80_din <= { 1'b0, 1'b0, capture, fire, right, left, down, up };
-            end else if ( sound_io_20_cs ) begin
+            end else if ( z80_dswa_cs ) begin
                 z80_din <= sw[0];
-            end else if ( sound_io_28_cs ) begin
+            end else if ( z80_dswb_cs ) begin
                 z80_din <= sw[1];
-            end else if ( sound_io_88_cs ) begin
+            end else if ( z80_tjump_cs ) begin
                 z80_din <= sw[3];
-            end else if ( sound_io_80_cs ) begin
+            end else if ( z80_system_cs ) begin
                 z80_din <= { 1'b0, 1'b0, start_1, start_2, coin, 1'b0, 1'b0, 1'b0 };
-            end else if ( sound_io_a8_cs ) begin    
+            end else if ( z80_sound0_cs ) begin    
                 z80_din <= opl_dout;
             end else begin
                 z80_din <= 8'h00;
@@ -666,10 +648,10 @@ always @ (posedge clk_sys) begin
         
         sound_wr <= 0 ;
         if ( z80_wr_n == 0 ) begin 
-            if ( sound_io_a8_cs | sound_io_a9_cs ) begin    
+            if ( z80_sound0_cs | z80_sound1_cs ) begin    
                 sound_data  <= z80_dout;
-                sound_addr <= { 1'b0, sound_io_a9_cs }; // opl3
-//                sound_addr <= sound_io_a9_cs ;  // opl2 is single bit address
+                sound_addr <= { 1'b0, z80_sound1_cs }; // opl3
+//                sound_addr <= z80_sound1_cs ;  // opl2 is single bit address
                 sound_wr <= 1;
             end
         end
@@ -717,7 +699,7 @@ opl3_intf opl
     .din(sound_data),
     .dout(opl_dout),
     .we(sound_wr),
-    .rd(sound_io_a8_cs & ~z80_rd_n ),
+    .rd(z80_sound0_cs & ~z80_rd_n ),
 
     .sample_l(AUDIO_L),
     .sample_r(AUDIO_R)
@@ -752,37 +734,44 @@ T80pa u_cpu(
     .REG        ()
 );
 
-// 68k address decoder
+// Chip select mux
+wire prog_rom_cs;
+wire scroll_ofs_x_cs;
+wire scroll_ofs_y_cs;
+wire ram_cs;
+wire vblank_cs;
+wire int_en_cs;
+wire tile_ofs_cs;
+wire tile_attr_cs;
+wire tile_num_cs;
+wire scroll_cs;
+wire shared_ram_cs;
+wire frame_done_cs; // word
+wire tile_palette_cs;
+wire sprite_palette_cs ;
+wire sprite_ofs_cs;
+wire sprite_cs; // *** offset needs to be auto-incremented
+wire sprite_size_cs; // *** offset needs to be auto-incremented
 
-wire prog_rom_cs     = ( cpu_a <= 24'h07ffff ) & !cpu_as_n  ;
+wire z80_p1_cs;
+wire z80_p2_cs;
+wire z80_dswa_cs;
+wire z80_dswb_cs;
+wire z80_system_cs;
+wire z80_tjump_cs;
+wire z80_sound0_cs;
+wire z80_sound1_cs;
 
-wire scroll_ofs_x_cs = ( cpu_a >= 24'h0c0000 && cpu_a <= 24'h0c0001 ) & !cpu_as_n  ;  
-wire scroll_ofs_y_cs = ( cpu_a >= 24'h0c0002 && cpu_a <= 24'h0c0003 ) & !cpu_as_n  ;  
 
-wire ram_cs          = ( cpu_a >= 24'h080000 && cpu_a <= 24'h087fff ) & !cpu_as_n  ;  
+// Select PCB Title and set chip select lines
+reg   [7:0] pcb;
+wire [15:0] scroll_y_offset;
 
-wire frame_done_cs   = ( cpu_a >= 24'h400000 && cpu_a <= 24'h400001 ) & !cpu_as_n  ;
+always @(posedge clk_sys)
+    if (ioctl_wr && (ioctl_index==1))
+        pcb <= ioctl_dout;
 
-wire int_en_cs       = ( cpu_a >= 24'h400002 && cpu_a <= 24'h400003 ) & !cpu_as_n  ;  
-wire start_cs        = ( cpu_a >= 24'h400004 && cpu_a <= 24'h400005 ) & !cpu_as_n  ;  
-
-wire tile_ofs_cs     = ( cpu_a >= 24'h480002 && cpu_a <= 24'h480003 ) & !cpu_as_n  ;  
-
-wire tile_attr_cs    = ( cpu_a >= 24'h480004 && cpu_a <= 24'h480005 ) & !cpu_as_n  ;  
-wire tile_num_cs     = ( cpu_a >= 24'h480006 && cpu_a <= 24'h480007 ) & !cpu_as_n  ; 
-
-wire scroll_cs       = ( cpu_a >= 24'h480010 && cpu_a <= 24'h48001f ) & !cpu_as_n  ; 
-
-wire shared_ram_cs   = ( cpu_a >= 24'h440000 && cpu_a <= 24'h440fff ) & !cpu_as_n  ;  
-
-wire vblank_cs       = ( cpu_a >= 24'h4c0000 && cpu_a <= 24'h4c0001 ) & !cpu_as_n  ;  // word
-
-wire tile_palette_cs   = ( cpu_a >= 24'h404000 && cpu_a <= 24'h4047ff ) & !cpu_as_n  ;
-wire sprite_palette_cs = ( cpu_a >= 24'h406000 && cpu_a <= 24'h4067ff ) & !cpu_as_n  ;
-
-wire sprite_ofs_cs    = ( cpu_a >= 24'h4c0002 && cpu_a <= 24'h4c0003 ) & !cpu_as_n  ;
-wire sprite_cs        = ( cpu_a >= 24'h4c0004 && cpu_a <= 24'h4c0005 ) & !cpu_as_n  ; // *** offset needs to be auto-incremented
-wire sprite_size_cs   = ( cpu_a >= 24'h4c0006 && cpu_a <= 24'h4c0007 ) & !cpu_as_n  ; // *** offset needs to be auto-incremented
+chip_select cs (.*);
 
 wire sprite_0_cs      = ( curr_sprite_ofs[1:0] == 2'b00 ) & sprite_cs ;
 wire sprite_1_cs      = ( curr_sprite_ofs[1:0] == 2'b01 ) & sprite_cs ;
@@ -791,16 +780,7 @@ wire sprite_3_cs      = ( curr_sprite_ofs[1:0] == 2'b11 ) & sprite_cs ;
 
 wire sound_rom_1_cs   = ( MREQ_n == 0 && z80_addr <= 16'h7fff )  ;
 wire sound_ram_1_cs   = ( MREQ_n == 0 && z80_addr >= 16'h8000 && z80_addr <= 16'h87ff ) ;
- 
-wire sound_io_00_cs   = ( IORQ_n == 0 && z80_addr[7:0] == 8'h00 ) ; // P1
-wire sound_io_08_cs   = ( IORQ_n == 0 && z80_addr[7:0] == 8'h08 ) ; // P2
-wire sound_io_20_cs   = ( IORQ_n == 0 && z80_addr[7:0] == 8'h20 ) ; // DSWA
-wire sound_io_28_cs   = ( IORQ_n == 0 && z80_addr[7:0] == 8'h28 ) ; // DSWB
-wire sound_io_80_cs   = ( IORQ_n == 0 && z80_addr[7:0] == 8'h80 ) ; // SYSTEM
-wire sound_io_88_cs   = ( IORQ_n == 0 && z80_addr[7:0] == 8'h88 ) ; // TJUMP
-wire sound_io_a8_cs   = ( IORQ_n == 0 && z80_addr[7:0] == 8'ha8 ) ; // sound
-wire sound_io_a9_cs   = ( IORQ_n == 0 && z80_addr[7:0] == 8'ha9 ) ; // sound
- 
+
 reg int_en ;
 reg int_ack ;
 
@@ -812,11 +792,11 @@ always @ (posedge clk_sys ) begin
         int_ack <= 0;
     end else begin
         vbl_sr <= { vbl_sr[0], vbl };
-        
+
         if ( clk_10M == 1 ) begin
             int_ack <= ( cpu_as_n == 0 ) && ( cpu_fc == 3'b111 ); // cpu acknowledged the interrupt
         end
-        
+
         if ( vbl_sr == 2'b01 ) begin // rising edge
             ipl2_n <= ~int_en;
         end else if ( int_ack == 1 || vbl_sr == 2'b10 ) begin
