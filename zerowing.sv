@@ -976,8 +976,18 @@ ram1kx16dp sprite_line_buffer (
     .q_b ( sprite_fb_out )
     );
 
-reg [8:0] x_ofs,x;
-reg [8:0] y_ofs,y;
+reg [9:0] x_ofs;
+reg [9:0] x;
+
+reg [9:0] y_ofs;
+
+// y needs to be one line ahaed of the visible line
+// render the first line at the end of the previous frame
+// this depends on the timing that the sprite list is valid
+// sprites values are copied at the start of vblank (line 240)
+
+reg [9:0] y ;
+
 
 reg [3:0] draw_state ;
 reg [3:0] sprite_state ;
@@ -985,8 +995,8 @@ reg [3:0] tile_copy_state ;
 reg [3:0] sprite_copy_state ;
 
 
-wire [8:0] curr_x = x + x_ofs;
-wire [8:0] curr_y = y + y_ofs;
+wire [9:0] curr_x = x + x_ofs;
+wire [9:0] curr_y = y + y_ofs;
 
 // pixel 4 bit colour 
 wire [3:0] tile_pix ;
@@ -1029,8 +1039,8 @@ wire [5:0] sprite_pal_addr  = sprite_attr_1_buf_dout[5:0] /* synthesis keep */;
 wire [5:0]  sprite_size_addr = sprite_attr_1_buf_dout[11:6] /* synthesis keep */;
 wire [3:0]  sprite_priority  = sprite_attr_1_buf_dout[15:12] /* synthesis keep */;
 
-wire [8:0] sprite_pos_x  = sprite_attr_2_buf_dout[15:7]  ;
-wire [8:0] sprite_pos_y  = sprite_attr_3_buf_dout[15:7] - 16 + scroll_y_offset /* synthesis keep */;
+wire [9:0] sprite_pos_x  = ( sprite_attr_2_buf_dout[15:7] < 9'h180 ) ? sprite_attr_2_buf_dout[15:7]  : ( sprite_attr_2_buf_dout[15:7] - 9'h1fe )  ;
+wire [9:0] sprite_pos_y  = ( sprite_attr_3_buf_dout[15:7] < 9'h180 ) ? sprite_attr_3_buf_dout[15:7]  : ( sprite_attr_3_buf_dout[15:7] - 9'h1fe )  ;  //- 16 + scroll_y_offset /* synthesis keep */; )
 
 // valid 1 cycle after sprite attr ready
 wire [8:0] sprite_height    = { sprite_size_buf_dout[7:4], 3'b0 } /* synthesis keep */;  // in pixels
@@ -1086,7 +1096,8 @@ always @ (posedge clk_sys) begin
             sprite_y <= ( y - sprite_pos_y ) ;
             
             // is sprite visible and is current y in sprite y range
-            if ( sprite_hidden == 0 && sprite_width > 0 && y >= sprite_pos_y && y < ( sprite_pos_y + sprite_height ) ) begin
+			// sprite pos can be negative
+            if ( sprite_hidden == 0 && sprite_width > 0 && ( $signed(y) >= $signed(sprite_pos_y) ) && $signed(y) < ( $signed(sprite_pos_y) + $signed(sprite_height) ) ) begin
                 sprite_state <= 5 ;
             end else if ( sprite_num > 0 ) begin 
                 sprite_num <= sprite_num - 1;
