@@ -12,7 +12,7 @@ This FPGA compatible core is in active development with assistance from [**ùïì
 
 Game                |  Status | Released
 --------------------|---------|---------
-[**Zero Wing**](https://en.wikipedia.org/wiki/Zero_Wing) | Implemented | **Yes**
+[**Zero Wing**](https://en.wikipedia.org/wiki/Zero_Wing) | Implemented | **Pending**
 [**Out Zone (Zero Wing TP-015 PCB conversion)**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | **Pending**
 [**Out Zone**](https://en.wikipedia.org/wiki/Out_Zone) | Ongoing | No
 [**Hellfire**](https://en.wikipedia.org/wiki/Hellfire_%28video_game%29) | Implemented | **Pending**
