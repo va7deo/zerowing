@@ -8,7 +8,7 @@
   <category>Shoot 'em up</category>
   <rbf>zerowing</rbf>
 
-  <buttons names="Shot,Bomb,Start,Coin" default="A,B,R,L"/>
+  <buttons names="Shot,Bomb,-,Start,Coin" default="A,B,R,L"/>
 
   <switches page_id="1" page_name="Switches" base="8" default="ff,ff,ff">
     <!-- DSWA -->
