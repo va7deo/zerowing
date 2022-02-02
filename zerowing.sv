@@ -222,8 +222,8 @@ localparam CONF_STR = {
     "-;",
 
     "R0,Reset;",
-    "J1,Fire,Capture,Start 1P,Start 2P,Coin,Pause;",
-    "jn,A,Start,Select,R,L;",
+    "J1,Button 1,Button 2,Button 3,Start,Coin,Pause;",
+    "jn,A,B,X,R,L,Start;",	       // name mapping
     "V,v",`BUILD_DATE
 };
 
@@ -303,65 +303,47 @@ wire [3:0] vs_offset = status[31:28];
 
 // Controls
 wire  [1:0] buttons;
-wire [15:0] joystick_0, joystick_1;
-wire [15:0] joy = joystick_0 | joystick_1;
+wire [15:0] joy0, joy1;
 
 wire [21:0] gamma_bus;
 
-wire b_up      = joy[3];
-wire b_down    = joy[2];
-wire b_left    = joy[1];
-wire b_right   = joy[0];
-wire b_fire    = joy[4];
+wire       p1_up      = joy0[3];
+wire       p1_down    = joy0[2];
+wire       p1_left    = joy0[1];
+wire       p1_right   = joy0[0];
+wire [2:0] p1_buttons = joy0[6:4];
 
-wire b_up_2    = joy[3];
-wire b_down_2  = joy[2];
-wire b_left_2  = joy[1];
-wire b_right_2 = joy[0];
-wire b_fire_2  = joy[4];
+wire       p2_up      = joy1[3];
+wire       p2_down    = joy1[2];
+wire       p2_left    = joy1[1];
+wire       p2_right   = joy1[0];
+wire [2:0] p2_buttons = joy1[6:4];
 
-wire b_start1  = joy[5];
-wire b_start2  = joy[6];
-wire b_coin    = joy[7];
-wire b_pause   = joy[8];
+wire p1_start = joy0[7];
+wire p2_start = joy1[7];
+wire p1_coin  = joy0[8];
+wire p2_coin  = joy1[8];
+wire b_pause  = joy0[9] | joy1[9];
 
 // PAUSE SYSTEM
-reg                pause;                                    // Pause signal (active-high)
-reg                pause_toggle = 1'b0;                    // User paused (active-high)
-reg [31:0]        pause_timer;                            // Time since pause
-reg [31:0]        pause_timer_dim = 31'h11E1A300;    // Time until screen dim (10 seconds @ 48Mhz)
-reg             dim_video = 1'b0;                        // Dim video output (active-high)
+reg        pause;                                    // Pause signal (active-high)
+reg        pause_toggle = 1'b0;                    // User paused (active-high)
+reg [31:0] pause_timer;                            // Time since pause
+reg [31:0] pause_timer_dim = 31'h11E1A300;    // Time until screen dim (10 seconds @ 48Mhz)
+reg        dim_video = 1'b0;                        // Dim video output (active-high)
 
 // Pause when highscore module requires access, user has pressed pause, or OSD is open and option is set
 assign pause =  pause_toggle | (OSD_STATUS && ~status[7]);
 assign dim_video = (pause_timer >= pause_timer_dim);
 
-reg coin,start_1,start_2,up,down,left,right,fire,capture ;
-
-
 reg [1:0] adj_layer ;
-reg [15:0] prev_joy;
 reg [15:0] scroll_adj_x [3:0];
 reg [15:0] scroll_adj_y [3:0];
 reg layer_en [3:0];
 
 reg old_pause;
 
-always @ ( posedge clk_sys ) begin
-    right <= prev_joy[0];
-    left <= prev_joy[1];
-    down <= prev_joy[2];
-    up <= prev_joy[3];
-    fire <= prev_joy[4];
-    capture <= prev_joy[5];
-    start_1 <= prev_joy[6];
-    start_2 <= prev_joy[7];
-    coin <= prev_joy[8];
-end
-
 always @(posedge clk_sys) begin
-    prev_joy <= joy;
-
     old_pause <= b_pause;
     if (~old_pause & b_pause) begin
         pause_toggle <= ~pause_toggle;
@@ -408,8 +390,8 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
     .ioctl_index(ioctl_index),
     .ioctl_wait(ioctl_wait),
 
-    .joystick_0(joystick_0),
-    .joystick_1(joystick_1)
+    .joystick_0(joy0),
+    .joystick_1(joy1)
 );
 
 
@@ -630,7 +612,9 @@ always @ (posedge clk_sys) begin
             end else if ( sound_ram_1_cs ) begin
                 z80_din <= z80_shared_dout;
             end else if ( z80_p1_cs ) begin
-                z80_din <= { 1'b0, 1'b0, capture, fire, right, left, down, up };
+                z80_din <= { 1'b0, p1_buttons, p1_right, p1_left, p1_down, p1_up };
+            end else if ( z80_p2_cs ) begin
+                z80_din <= { 1'b0, p2_buttons, p2_right, p2_left, p2_down, p2_up };
             end else if ( z80_dswa_cs ) begin
                 z80_din <= sw[0];
             end else if ( z80_dswb_cs ) begin
@@ -638,8 +622,8 @@ always @ (posedge clk_sys) begin
             end else if ( z80_tjump_cs ) begin
                 z80_din <= sw[3];
             end else if ( z80_system_cs ) begin
-                z80_din <= { 1'b0, 1'b0, start_1, start_2, coin, 1'b0, 1'b0, 1'b0 };
-            end else if ( z80_sound0_cs ) begin    
+                z80_din <= { 1'b0, p2_start, p1_start, p2_coin, p1_coin, 1'b0, 1'b0, 1'b0 };
+            end else if ( z80_sound0_cs ) begin
                 z80_din <= opl_dout;
             end else begin
                 z80_din <= 8'h00;

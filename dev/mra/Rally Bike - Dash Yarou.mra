@@ -8,7 +8,7 @@
   <category>Racing</category>
   <rbf>zerowing</rbf>
 
-  <buttons names="Accelerate,Brake,Start,Coin" default="A,B,R,L"/>
+  <buttons names="Accelerate,Brake,-,Start,Coin" default="A,B,R,L"/>
 
   <switches default="00,00,00,00">
     <!-- DSWA -->
