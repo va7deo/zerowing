@@ -515,7 +515,6 @@ reg  bgack_n = 1'b1;           // Bus grant ack
 reg  ipl0_n = 1'b1 ;            // Interrupt request signals
 reg  ipl1_n = 1'b1;
 reg  ipl2_n ;//= 1'b1;
-reg  m68k_int_ack;
 
 assign cpu_a[0] = 0;           // odd memory address should cause cpu exception
 
@@ -544,7 +543,7 @@ fx68k fx68k (
 
     // input
     .VPAn(cpu_as_n & ipl2_n),       // autovector int ack needs VPA low and DTACK high
-    .DTACKn(dtack_n | ~ipl2_n),     // 
+    .DTACKn(dtack_n & ipl2_n),     // 
     .BERRn(berr_n), 
     .BRn(cpu_br_n),  
     .BGACKn(bgack_n),
@@ -562,8 +561,8 @@ fx68k fx68k (
 always @ (posedge clk_sys) begin
 
     // tell 68k to wait for valid data. 0=ready 1=wait
-    dtack_n <= prog_rom_cs ? !prog_rom_data_valid :
-        ram_cs ? 0 : 0;  // always ack
+    // always ack when it's not program rom
+    dtack_n <= prog_rom_cs ? !prog_rom_data_valid : 0; 
 
 // select cpu data input based on what is active 
     cpu_din <= prog_rom_cs ? prog_rom_data :
@@ -584,7 +583,6 @@ always @ (posedge clk_sys) begin
         int_en_cs ? 16'hffff :
         16'd0;
         
-    m68k_int_ack <= ( cpu_as_n == 0 ) && ( cpu_fc == 3'b111 );  // ack high
 
 end  
 
@@ -843,7 +841,8 @@ always @ (posedge clk_sys) begin
             end
 
             if ( sprite_ofs_cs ) begin
-                curr_sprite_ofs <= cpu_dout;
+                // mask out valid range
+                curr_sprite_ofs <= { 6'b0, cpu_dout[9:0] };
             end
 
             if ( scroll_ofs_x_cs ) begin
@@ -1031,6 +1030,8 @@ reg  [9:0] sprite_y;
 reg  sprite_buf_active;
 wire [9:0] sprite_buf_x = sprite_x + sprite_pos_x ;     // offset from left of frame
 
+wire fetch_tile = layer == 3 || ( tile_priority_buf[x] <= tile_priority && tile_hidden == 0 );
+
 wire [14:0] sprite_index    = sprite_attr_0_buf_dout[14:0] /* synthesis keep */;
 wire       sprite_hidden    = sprite_attr_0_buf_dout[15] /* synthesis keep */;
 //reg [5:0] sprite_size_addr;
@@ -1121,7 +1122,7 @@ always @ (posedge clk_sys) begin
         end else if ( sprite_state == 7 ) begin                    
             sprite_fb_w <= 0;
             // draw if pixel value not zero and priority >= previous sprite data
-            if ( sprite_pix > 0 && sprite_priority_buf[sprite_buf_x] < sprite_priority ) begin  
+            if ( sprite_pix > 0 && sprite_priority_buf[sprite_buf_x] == 0 ) begin  
                 sprite_fb_din <= { 2'b11, sprite_priority, sprite_pal_addr, sprite_pix };   
                 sprite_fb_addr_w <= { y[0], 9'b0 } + sprite_buf_x ;            
                 sprite_priority_buf[sprite_buf_x] <= sprite_priority ;
@@ -1233,6 +1234,7 @@ always @ (posedge clk_sys) begin
              
                 tile_fb_w <= 0; 
                 tile_fb_addr_w   <= { y[0], 9'b0 } + x ;
+                
                 // force render of first layer.
                 // don't draw transparent pixels
                 if ( layer == 3 ) begin            
@@ -1476,6 +1478,19 @@ ram256bx16dp sprite_ram_0 (
     .q_b ( sprite_attr_0_dout[15:0] )
     );
 
+ram256bx16dp sprite_ram_0_buf (
+    .clock_a ( clk_sys ),
+    .address_a ( sprite_buf_num ),
+    .wren_a ( sprite_buf_w ),
+    .data_a ( sprite_attr_0_dout[15:0] ),
+    .q_a (  ),
+
+    .clock_b ( clk_sys ),
+    .address_b ( sprite_num ),
+    .wren_b ( 0 ),
+    .q_b ( sprite_attr_0_buf_dout[15:0] )
+    );
+    
 ram256bx16dp sprite_ram_1 (
     .clock_a ( clk_10M ),
     .address_a ( curr_sprite_ofs[9:2] ),
@@ -1487,6 +1502,19 @@ ram256bx16dp sprite_ram_1 (
     .address_b ( sprite_num_copy ),
     .wren_b ( 0 ),
     .q_b ( sprite_attr_1_dout[15:0] )
+    );
+    
+ram256bx16dp sprite_ram_1_buf (
+    .clock_a ( clk_sys ),
+    .address_a ( sprite_buf_num ),
+    .wren_a ( sprite_buf_w ),
+    .data_a ( sprite_attr_1_dout[15:0] ),
+    .q_a (  ),
+
+    .clock_b ( clk_sys ),
+    .address_b ( sprite_num ),
+    .wren_b ( 0 ),
+    .q_b ( sprite_attr_1_buf_dout[15:0] )
     );
 
 ram256bx16dp sprite_ram_2 (
@@ -1502,6 +1530,19 @@ ram256bx16dp sprite_ram_2 (
     .q_b ( sprite_attr_2_dout[15:0] )
     );
 
+ram256bx16dp sprite_ram_2_buf (
+    .clock_a ( clk_sys ),
+    .address_a ( sprite_buf_num ),
+    .wren_a ( sprite_buf_w ),
+    .data_a ( sprite_attr_2_dout[15:0] ),
+    .q_a (  ),
+
+    .clock_b ( clk_sys ),
+    .address_b ( sprite_num ),
+    .wren_b ( 0 ),
+    .q_b ( sprite_attr_2_buf_dout[15:0] )
+    );
+    
 ram256bx16dp sprite_ram_3 (
     .clock_a ( clk_10M ),
     .address_a ( curr_sprite_ofs[9:2] ),
@@ -1514,6 +1555,19 @@ ram256bx16dp sprite_ram_3 (
     .wren_b ( 0 ),
     .q_b ( sprite_attr_3_dout[15:0] )
     );    
+
+ram256bx16dp sprite_ram_3_buf (
+    .clock_a ( clk_sys ),
+    .address_a ( sprite_buf_num ),
+    .wren_a ( sprite_buf_w ),
+    .data_a ( sprite_attr_3_dout[15:0] ),
+    .q_a (  ),
+
+    .clock_b ( clk_sys ),
+    .address_b ( sprite_num ),
+    .wren_b ( 0 ),
+    .q_b ( sprite_attr_3_buf_dout[15:0] )
+    );       
 
 ram256bx16dp sprite_ram_size (
     .clock_a ( clk_10M ),
@@ -1541,65 +1595,7 @@ ram256bx16dp sprite_ram_size_buf (
     .q_b ( sprite_size_buf_dout )
     
     ); 
-  
 
-    
-// sprite attribute ram.  each tile attribute is 4 16bit words
-// indirect access through offset register
-// split up so 64 bits can be read in a single clock
-ram256bx16dp sprite_ram_0_buf (
-    .clock_a ( clk_sys ),
-    .address_a ( sprite_buf_num ),
-    .wren_a ( sprite_buf_w ),
-    .data_a ( sprite_attr_0_dout[15:0] ),
-    .q_a (  ),
-
-    .clock_b ( clk_sys ),
-    .address_b ( sprite_num ),
-    .wren_b ( 0 ),
-    .q_b ( sprite_attr_0_buf_dout[15:0] )
-    );
-
-ram256bx16dp sprite_ram_1_buf (
-    .clock_a ( clk_sys ),
-    .address_a ( sprite_buf_num ),
-    .wren_a ( sprite_buf_w ),
-    .data_a ( sprite_attr_1_dout[15:0] ),
-    .q_a (  ),
-
-    .clock_b ( clk_sys ),
-    .address_b ( sprite_num ),
-    .wren_b ( 0 ),
-    .q_b ( sprite_attr_1_buf_dout[15:0] )
-    );
-
-ram256bx16dp sprite_ram_2_buf (
-    .clock_a ( clk_sys ),
-    .address_a ( sprite_buf_num ),
-    .wren_a ( sprite_buf_w ),
-    .data_a ( sprite_attr_2_dout[15:0] ),
-    .q_a (  ),
-
-    .clock_b ( clk_sys ),
-    .address_b ( sprite_num ),
-    .wren_b ( 0 ),
-    .q_b ( sprite_attr_2_buf_dout[15:0] )
-    );
-
-ram256bx16dp sprite_ram_3_buf (
-    .clock_a ( clk_sys ),
-    .address_a ( sprite_buf_num ),
-    .wren_a ( sprite_buf_w ),
-    .data_a ( sprite_attr_3_dout[15:0] ),
-    .q_a (  ),
-
-    .clock_b ( clk_sys ),
-    .address_b ( sprite_num ),
-    .wren_b ( 0 ),
-    .q_b ( sprite_attr_3_buf_dout[15:0] )
-    );    
-
-    
       
 // tiles  1024 15 bit values.  index is ( 6 bits from tile attribute, 4 bits from bitmap )
 // background palette ram low    
