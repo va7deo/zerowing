@@ -1169,11 +1169,12 @@ always @ (posedge clk_sys) begin
         end
 
         // tile state machine
-        
-        if ( draw_state == 0 && vc == 269 ) begin
+		
+		 if ( draw_state == 0 && vc == 269 ) begin
             layer <= 3;
             y <= 0;
             draw_state <= 2;
+            sprite_state <= 0;
         end else if ( draw_state == 2 ) begin
             x <= 0;
 
