@@ -8,7 +8,7 @@
   <category>Shoot 'em up</category>
   <rbf>zerowing</rbf>
 
-  <buttons names="Shot,Shot Direction,-,Start,Coin" default="A,B,R,L"/>
+  <buttons names="Shot,Shot Direction,Start,Coin" default="A,B,R,L"/>
 
   <switches default="00,00,00,00">
     <!-- DSWA -->
