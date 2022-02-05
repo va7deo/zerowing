@@ -1074,7 +1074,7 @@ wire [5:0]  sprite_size_addr = sprite_attr_1_buf_dout[11:6] /* synthesis keep */
 wire [3:0]  sprite_priority  = sprite_attr_1_buf_dout[15:12] /* synthesis keep */;
 
 wire [9:0] sprite_pos_x  = sprite_adj_x + (( sprite_attr_2_buf_dout[15:7] < 9'h180 ) ? sprite_attr_2_buf_dout[15:7]  : ( sprite_attr_2_buf_dout[15:7] - 10'h200));
-wire [9:0] sprite_pos_y  = sprite_adj_y + (( sprite_attr_3_buf_dout[15:7] < 9'h180 ) ? sprite_attr_3_buf_dout[15:7]  : ( sprite_attr_3_buf_dout[15:7] - 10'h200));  //- 16 + scroll_y_offset /* synthesis keep */; )
+wire [9:0] sprite_pos_y  = sprite_adj_y + (( sprite_attr_3_buf_dout[15:7] < 9'h180 ) ? sprite_attr_3_buf_dout[15:7]  : ( sprite_attr_3_buf_dout[15:7] - 10'h200)) - 16 + scroll_y_offset /* synthesis keep */;
 
 // valid 1 cycle after sprite attr ready
 wire [8:0] sprite_height    = { sprite_size_buf_dout[7:4], 3'b0 } /* synthesis keep */;  // in pixels
