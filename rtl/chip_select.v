@@ -2,6 +2,7 @@
 
 module chip_select
 (
+    input        clk_sys,
     input  [7:0] pcb,
 
     input [23:0] cpu_a,
