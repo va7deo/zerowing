@@ -301,29 +301,76 @@ wire        direct_video;
 wire [3:0] hs_offset = status[27:24];
 wire [3:0] vs_offset = status[31:28];
 
+wire [9:0] sprite_adj_x = 0;
+wire [9:0] sprite_adj_y = 0;
+
 // Controls
 wire  [1:0] buttons;
 wire [15:0] joy0, joy1;
+wire [10:0] ps2_key;
 
 wire [21:0] gamma_bus;
 
-wire       p1_up      = joy0[3];
-wire       p1_down    = joy0[2];
-wire       p1_left    = joy0[1];
-wire       p1_right   = joy0[0];
-wire [2:0] p1_buttons = joy0[6:4];
+wire       p1_up      = joy0[3] | key_p1_up;
+wire       p1_down    = joy0[2] | key_p1_down;
+wire       p1_left    = joy0[1] | key_p1_left;
+wire       p1_right   = joy0[0] | key_p1_right;
+wire [2:0] p1_buttons = joy0[6:4] | {key_p1_c, key_p1_b, key_p1_a};
 
-wire       p2_up      = joy1[3];
-wire       p2_down    = joy1[2];
-wire       p2_left    = joy1[1];
-wire       p2_right   = joy1[0];
-wire [2:0] p2_buttons = joy1[6:4];
+wire       p2_up      = joy1[3] | key_p2_up;
+wire       p2_down    = joy1[2] | key_p2_down;
+wire       p2_left    = joy1[1] | key_p2_left;
+wire       p2_right   = joy1[0] | key_p2_right;
+wire [2:0] p2_buttons = joy1[6:4] | {key_p2_c, key_p2_b, key_p2_a};
 
-wire p1_start = joy0[7];
-wire p2_start = joy1[7];
-wire p1_coin  = joy0[8];
-wire p2_coin  = joy1[8];
+wire p1_start = joy0[7] | key_p1_start;
+wire p2_start = joy1[7] | key_p2_start;
+wire p1_coin  = joy0[8] | key_p1_coin;
+wire p2_coin  = joy1[8] | key_p2_coin;
 wire b_pause  = joy0[9] | joy1[9];
+
+// Keyboard handler
+
+wire key_p1_start, key_p2_start, key_p1_coin, key_p2_coin;
+wire key_test, key_reset, key_service;
+
+wire key_p1_up, key_p1_left, key_p1_down, key_p1_right, key_p1_a, key_p1_b, key_p1_c;
+wire key_p2_up, key_p2_left, key_p2_down, key_p2_right, key_p2_a, key_p2_b, key_p2_c;
+
+wire pressed = ps2_key[9];
+
+always @(posedge clk_sys) begin
+	reg old_state;
+
+	old_state <= ps2_key[10];
+	if(old_state ^ ps2_key[10]) begin
+		casex(ps2_key[8:0])
+			'h016: key_p1_start <= pressed; // 1
+			'h01e: key_p2_start <= pressed; // 2
+			'h02E: key_p1_coin  <= pressed; // 5
+			'h036: key_p2_coin  <= pressed; // 6
+			'h006: key_test     <= pressed; // F2
+			'h004: key_reset    <= pressed; // F3
+			'h046: key_service  <= pressed; // 9
+
+			'hX75: key_p1_up    <= pressed; // up
+			'hX72: key_p1_down  <= pressed; // down
+			'hX6b: key_p1_left  <= pressed; // left
+			'hX74: key_p1_right <= pressed; // right
+			'h014: key_p1_a     <= pressed; // lctrl
+			'h011: key_p1_b     <= pressed; // lalt
+			'h029: key_p1_c     <= pressed; // space
+
+			'h02d: key_p2_up    <= pressed; // r
+			'h02b: key_p2_down  <= pressed; // f
+			'h023: key_p2_left  <= pressed; // d
+			'h034: key_p2_right <= pressed; // g
+			'h01c: key_p2_a     <= pressed; // a
+			'h01b: key_p2_b     <= pressed; // s
+			'h015: key_p2_c     <= pressed; // q
+		endcase
+	end
+end
 
 // PAUSE SYSTEM
 reg        pause;                                    // Pause signal (active-high)
@@ -375,6 +422,7 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
     .HPS_BUS(HPS_BUS),
 
     .buttons(buttons),
+    .ps2_key(ps2_key),
     .status(status),
     .status_menumask(direct_video),
     .forced_scandoubler(forced_scandoubler),
@@ -431,7 +479,7 @@ arcade_video #(320,24) arcade_video
 );
 
 wire reset;
-assign reset = RESET | status[0] | (ioctl_download & !ioctl_index) | buttons[1];
+assign reset = RESET | status[0] | (ioctl_download & !ioctl_index) | buttons[1] | key_reset;
 
 wire vid_clk = clk_7M;
 
@@ -620,7 +668,7 @@ always @ (posedge clk_sys) begin
             end else if ( z80_tjump_cs ) begin
                 z80_din <= sw[3];
             end else if ( z80_system_cs ) begin
-                z80_din <= { 1'b0, p2_start, p1_start, p2_coin, p1_coin, 1'b0, 1'b0, 1'b0 };
+                z80_din <= { 1'b0, p2_start, p1_start, p2_coin, p1_coin, 1'b0, 1'b0, key_service };
             end else if ( z80_sound0_cs ) begin
                 z80_din <= opl_dout;
             end else begin
@@ -747,6 +795,7 @@ wire z80_sound1_cs;
 
 // Select PCB Title and set chip select lines
 reg   [7:0] pcb;
+wire        tile_priority_type;
 wire [15:0] scroll_y_offset;
 
 always @(posedge clk_sys)
@@ -1024,8 +1073,8 @@ wire [5:0] sprite_pal_addr  = sprite_attr_1_buf_dout[5:0] /* synthesis keep */;
 wire [5:0]  sprite_size_addr = sprite_attr_1_buf_dout[11:6] /* synthesis keep */;
 wire [3:0]  sprite_priority  = sprite_attr_1_buf_dout[15:12] /* synthesis keep */;
 
-wire [9:0] sprite_pos_x  = ( sprite_attr_2_buf_dout[15:7] < 9'h180 ) ? sprite_attr_2_buf_dout[15:7]  : ( sprite_attr_2_buf_dout[15:7] - 9'h1fe )  ;
-wire [9:0] sprite_pos_y  = ( sprite_attr_3_buf_dout[15:7] < 9'h180 ) ? sprite_attr_3_buf_dout[15:7]  : ( sprite_attr_3_buf_dout[15:7] - 9'h1fe )  ;  //- 16 + scroll_y_offset /* synthesis keep */; )
+wire [9:0] sprite_pos_x  = sprite_adj_x + (( sprite_attr_2_buf_dout[15:7] < 9'h180 ) ? sprite_attr_2_buf_dout[15:7]  : ( sprite_attr_2_buf_dout[15:7] - 10'h200));
+wire [9:0] sprite_pos_y  = sprite_adj_y + (( sprite_attr_3_buf_dout[15:7] < 9'h180 ) ? sprite_attr_3_buf_dout[15:7]  : ( sprite_attr_3_buf_dout[15:7] - 10'h200)) - 16 + scroll_y_offset /* synthesis keep */;
 
 // valid 1 cycle after sprite attr ready
 wire [8:0] sprite_height    = { sprite_size_buf_dout[7:4], 3'b0 } /* synthesis keep */;  // in pixels
@@ -1229,7 +1278,7 @@ always @ (posedge clk_sys) begin
                     // if tile hidden then make the pallette index 0. ie transparent
                     fb_din <= { layer, (tile_hidden == 1 || tile_pix == 0 ) ? 4'b0 : tile_priority, tile_palette_idx,  tile_pix };
                     tile_fb_w <= 1;
-                end else if (tile_hidden == 0 && tile_pix > 0 && tile_priority >= tile_priority_buf[x]) begin
+                end else if (tile_hidden == 0 && tile_pix > 0 && (tile_priority_type ? tile_priority > tile_priority_buf[x] : tile_priority >= tile_priority_buf[x])) begin
                     tile_priority_buf[x] <= tile_priority;
                     
                     // if tile hidden then make the pallette index 0. ie transparent
