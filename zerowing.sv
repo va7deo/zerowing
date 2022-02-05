@@ -301,6 +301,9 @@ wire        direct_video;
 wire [3:0] hs_offset = status[27:24];
 wire [3:0] vs_offset = status[31:28];
 
+wire [9:0] sprite_adj_x = 0;
+wire [9:0] sprite_adj_y = 0;
+
 // Controls
 wire  [1:0] buttons;
 wire [15:0] joy0, joy1;
@@ -620,7 +623,7 @@ always @ (posedge clk_sys) begin
             end else if ( z80_tjump_cs ) begin
                 z80_din <= sw[3];
             end else if ( z80_system_cs ) begin
-                z80_din <= { 1'b0, p2_start, p1_start, p2_coin, p1_coin, 1'b0, 1'b0, 1'b0 };
+                z80_din <= { 1'b0, p2_start, p1_start, p2_coin, p1_coin, 1'b0, 1'b0, key_service };
             end else if ( z80_sound0_cs ) begin
                 z80_din <= opl_dout;
             end else begin
@@ -747,6 +750,7 @@ wire z80_sound1_cs;
 
 // Select PCB Title and set chip select lines
 reg   [7:0] pcb;
+wire        tile_priority_type;
 wire [15:0] scroll_y_offset;
 
 always @(posedge clk_sys)
@@ -1024,8 +1028,8 @@ wire [5:0] sprite_pal_addr  = sprite_attr_1_buf_dout[5:0] /* synthesis keep */;
 wire [5:0]  sprite_size_addr = sprite_attr_1_buf_dout[11:6] /* synthesis keep */;
 wire [3:0]  sprite_priority  = sprite_attr_1_buf_dout[15:12] /* synthesis keep */;
 
-wire [9:0] sprite_pos_x  = ( sprite_attr_2_buf_dout[15:7] < 9'h180 ) ? sprite_attr_2_buf_dout[15:7]  : ( sprite_attr_2_buf_dout[15:7] - 9'h1fe )  ;
-wire [9:0] sprite_pos_y  = ( sprite_attr_3_buf_dout[15:7] < 9'h180 ) ? sprite_attr_3_buf_dout[15:7]  : ( sprite_attr_3_buf_dout[15:7] - 9'h1fe )  ;  //- 16 + scroll_y_offset /* synthesis keep */; )
+wire [9:0] sprite_pos_x  = sprite_adj_x + (( sprite_attr_2_buf_dout[15:7] < 9'h180 ) ? sprite_attr_2_buf_dout[15:7]  : ( sprite_attr_2_buf_dout[15:7] - 10'h200));
+wire [9:0] sprite_pos_y  = sprite_adj_y + (( sprite_attr_3_buf_dout[15:7] < 9'h180 ) ? sprite_attr_3_buf_dout[15:7]  : ( sprite_attr_3_buf_dout[15:7] - 10'h200));  //- 16 + scroll_y_offset /* synthesis keep */; )
 
 // valid 1 cycle after sprite attr ready
 wire [8:0] sprite_height    = { sprite_size_buf_dout[7:4], 3'b0 } /* synthesis keep */;  // in pixels
@@ -1229,7 +1233,7 @@ always @ (posedge clk_sys) begin
                     // if tile hidden then make the pallette index 0. ie transparent
                     fb_din <= { layer, (tile_hidden == 1 || tile_pix == 0 ) ? 4'b0 : tile_priority, tile_palette_idx,  tile_pix };
                     tile_fb_w <= 1;
-                end else if (tile_hidden == 0 && tile_pix > 0 && tile_priority >= tile_priority_buf[x]) begin
+                end else if (tile_hidden == 0 && tile_pix > 0 && (tile_priority_type ? tile_priority > tile_priority_buf[x] : tile_priority >= tile_priority_buf[x])) begin
                     tile_priority_buf[x] <= tile_priority;
                     
                     // if tile hidden then make the pallette index 0. ie transparent

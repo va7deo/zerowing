@@ -41,7 +41,8 @@ module chip_select
     output       z80_sound1_cs,
 
     // other params
-    output reg [15:0] scroll_y_offset
+    output reg [15:0] scroll_y_offset,
+    output reg        tile_priority_type
 );
 
 localparam pcb_zero_wing     = 0;
@@ -73,6 +74,11 @@ always @(*) begin
         scroll_y_offset = 16;
     else
         scroll_y_offset = 0;
+
+    if (pcb == pcb_truxton)
+        tile_priority_type = 1;
+    else
+        tile_priority_type = 0;
 
     // Setup lines depending on pcb
     case (pcb)
