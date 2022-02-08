@@ -10,10 +10,6 @@ set_global_assignment -name VHDL_FILE rtl/mem/segment.vhd
 set_global_assignment -name VHDL_FILE rtl/math.vhd
 
 set_global_assignment -name QIP_FILE rtl/fx86k/fx68k.qip
-set_global_assignment -name VERILOG_FILE rtl/uaddrPla.v
-set_global_assignment -name VERILOG_FILE rtl/fx68kAlu.v
-set_global_assignment -name VERILOG_FILE rtl/fx68k.v
-set_global_assignment -name VERILOG_FILE rtl/fx86k/cpu_68k.v
 
 set_global_assignment -name QIP_FILE hdl/ram1kx8dp.qip
 set_global_assignment -name QIP_FILE hdl/ram4kx8dp.qip
@@ -22,6 +18,7 @@ set_global_assignment -name QIP_FILE hdl/ram256bx16dp.qip
 set_global_assignment -name QIP_FILE hdl/ram1kx16dp.qip
 set_global_assignment -name QIP_FILE hdl/ram16kx16dp.qip
 set_global_assignment -name QIP_FILE hdl/ram16kx32dp.qip
+set_global_assignment -name QIP_FILE hdl/ram32kx8dp.qip
 
 set_global_assignment -name VHDL_FILE rtl/t80/T80_Reg.vhd
 set_global_assignment -name VHDL_FILE rtl/t80/T80_MCode.vhd
