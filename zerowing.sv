@@ -962,7 +962,7 @@ reg [7:0] sprite_num_copy;
 
 reg [3:0] tile_draw_state;
 
-reg [1:0] layer;  // 4 layers
+reg [2:0] layer;  // 4 layers + 1 for initial background
 
 wire [14:0] tile_idx         = tile_attr[14:0] ;
 wire  [3:0] tile_priority    = tile_attr[31:28] ;
@@ -1220,15 +1220,15 @@ always @ (posedge clk_sys) begin
         // tile state machine
 		
 		 if ( draw_state == 0 && vc == 269 ) begin
-            layer <= 3;
+            layer <= 4; // layer 4 is layer 0 but draws hidden and transparent
             y <= 0;
             draw_state <= 2;
             sprite_state <= 0;
         end else if ( draw_state == 2 ) begin
             x <= 0;
 
-            x_ofs <= 495 + 6 +  scroll_x_latch[layer] - { layer, 1'b0 } ; 
-            y_ofs <= 257 + 16 + scroll_y_latch[layer] ;
+            x_ofs <= 495 + 6 +  scroll_x_latch[layer[1:0]] - { layer[1:0], 1'b0 } ; 
+            y_ofs <= 257 + 16 + scroll_y_latch[layer[1:0]] ;
 
             // latch offset info
             draw_state <= 3;
@@ -1247,14 +1247,15 @@ always @ (posedge clk_sys) begin
 
             // latch attribute
                 tile_attr <= tile_attr_dout;
-                //tile_attr <= tile_buf_dout;
-            
+
+                
                 tile_draw_state <= 3;
             end else if ( tile_draw_state == 3 ) begin
                 // read bitmap info
                 tile_rom_cs <= 1;
                 tile_rom_addr <= { tile_idx, curr_y[2:0] }  ;  
                 tile_draw_state <= 4;
+
             end else if ( tile_draw_state == 4 ) begin     
 
                 // wait for bitmap ram ready
@@ -1270,26 +1271,25 @@ always @ (posedge clk_sys) begin
                 tile_fb_addr_w   <= { y[0], 9'b0 } + x ;
                 
                 // force render of first layer.
-                // don't draw transparent pixels
-                if ( layer == 3 ) begin            
-               
-                    tile_priority_buf[x] <= (tile_hidden == 1 || tile_pix == 0 ) ? 4'b0 : tile_priority;
-                    
-                    // if tile hidden then make the pallette index 0. ie transparent
-                    fb_din <= { layer, (tile_hidden == 1 || tile_pix == 0 ) ? 4'b0 : tile_priority, tile_palette_idx,  tile_pix };
+                // if layer == 4 then tile_pix == 0 is not transparent
+                // layer 4 is really layer 0
+                if ( layer == 4 ) begin            
+                    tile_priority_buf[x] <= 0; //tile_pix == 0 ? 0  : tile_priority;
+                    //fb_din <= { layer[1:0], tile_priority, tile_palette_idx,  tile_pix };
+                    fb_din <= { layer[1:0], 4'b0, tile_palette_idx,  tile_pix };
                     tile_fb_w <= 1;
-                end else if (tile_hidden == 0 && tile_pix > 0 && (tile_priority_type ? tile_priority > tile_priority_buf[x] : tile_priority >= tile_priority_buf[x])) begin
+                end else if (tile_hidden == 0 && tile_pix > 0 && tile_priority > 0 && tile_priority >= tile_priority_buf[x] ) begin
                     tile_priority_buf[x] <= tile_priority;
                     
                     // if tile hidden then make the pallette index 0. ie transparent
-                    fb_din <= { layer, tile_priority, tile_palette_idx,  tile_pix };
+                    fb_din <= { layer[1:0], tile_priority, tile_palette_idx,  tile_pix };
                     tile_fb_w <= 1;
                 end
                 
                 if ( x < 320 ) begin // 319
                     // do we need to read another tile?
                     if ( curr_x[2:0] == 7 ) begin
-                        draw_state <= 3;
+                        draw_state <= 3; 
                         tile_draw_state <= 0;
                     end 
                     x <= x + 1 ;
@@ -1310,7 +1310,7 @@ always @ (posedge clk_sys) begin
                     y <= y + 1;
                     draw_state <= 2;
                     sprite_state <= 0 ;
-                    layer <= 3;
+                    layer <= 4;
                 end
             end
         end
@@ -1337,7 +1337,7 @@ always @ (posedge clk_sys) begin
             rgb_out <= { 8'hee, 7'h0, hc };
         end else begin  
             // if palette index is zero then it's from layer 3 and is transparent render as blank (black).
-            rgb_out <= ( tile_fb_out[3:0] == 0 ) ? 0 : { tile_palette_dout[4:0], 3'b0, tile_palette_dout[9:5], 3'b0, tile_palette_dout[14:10], 3'b0 };
+            rgb_out <= { tile_palette_dout[4:0], 3'b0, tile_palette_dout[9:5], 3'b0, tile_palette_dout[14:10], 3'b0 };
 
             // if not transparent and sprite is higher priority 
             if ( sprite_fb_out[3:0] > 0 && (sprite_fb_out[13:10] > tile_fb_out[13:10]) ) begin 
@@ -1697,7 +1697,7 @@ ram16kx8dp    ram16kx8_L (
     .address_a ( cpu_a[14:1] ),
     .wren_a ( !cpu_rw & ram_cs & !cpu_lds_n ),
     .data_a ( cpu_dout[7:0]  ),
-    .q_a (  ram_dout[7:0] ),
+    .q_a (  ram_dout[7:0] )
     );
 
 // main 68k ram high    
@@ -1706,7 +1706,7 @@ ram16kx8dp    ram16kx8_H (
     .address_a ( cpu_a[14:1] ),
     .wren_a ( !cpu_rw & ram_cs & !cpu_uds_n ),
     .data_a ( cpu_dout[15:8]  ),
-    .q_a (  ram_dout[15:8] ),
+    .q_a (  ram_dout[15:8] )
     );
 
 
