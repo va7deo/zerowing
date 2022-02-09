@@ -192,6 +192,7 @@ assign BUTTONS = 0;
 
 wire [1:0] aspect_ratio = status[2:1];
 wire orientation = ~status[3];
+wire flip = ~status[11];
 wire [2:0] scan_lines = status[6:4];
 
 // Status Bit Map:
@@ -216,7 +217,7 @@ localparam CONF_STR = {
     "P1OOR,H-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
     "P1OSV,V-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
     "P1-;",
-    //"P1OB,Flip Screen,Off,On;",
+    "P1OB,Flip Screen,Off,On;",
 
     "DIP;",
     "-;",
@@ -458,7 +459,7 @@ wire [8:0] vc;
 
 wire no_rotate = orientation | direct_video;
 wire rotate_ccw = 1;
-wire flip = 0;
+
 screen_rotate screen_rotate (.*);
 
 arcade_video #(320,24) arcade_video
