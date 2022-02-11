@@ -14,27 +14,51 @@ Game                |  Status | Released
 --------------------|---------|---------
 [**Zero Wing**](https://en.wikipedia.org/wiki/Zero_Wing) | Implemented | **Pending**
 [**Out Zone (Zero Wing TP-015 PCB conversion)**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | **Pending**
-[**Out Zone**](https://en.wikipedia.org/wiki/Out_Zone) | Ongoing | No
+[**Out Zone**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | **Pending**
 [**Hellfire**](https://en.wikipedia.org/wiki/Hellfire_%28video_game%29) | Implemented | **Pending**
-[**Truxton**](https://en.wikipedia.org/wiki/Truxton_%28video_game%29) | Ongoing | No
+[**Truxton**](https://en.wikipedia.org/wiki/Truxton_%28video_game%29) | Implemented | **Pending**
 [**Vimana**](https://en.wikipedia.org/wiki/Vimana_%28video_game%29) | Ongoing | No
-[**Fire Shark**](https://en.wikipedia.org/wiki/Fire_Shark) | Ongoing | No
+[**Fire Shark**](https://en.wikipedia.org/wiki/Fire_Shark) | **W.I.P** | No
 [**Rally Bike**](https://en.wikipedia.org/wiki/Rally_Bike) | Ongoing | No
 [**Demon's World**](https://en.wikipedia.org/wiki/Demon%27s_World) | FPGA Implementation slated by [**Jotego**](https://github.com/jotego) | **N/A**
 
 
 # Known Issues
 
--Screen Flip/Cocktail Mode has yet to be implemented  
+-Screen Flip/Cocktail Mode has yet to be implemented **[Implemented]**  
 -Exiting the service menu hangs on a sound error  
--Clock domains need to be verified  
--Sprites disappearing when they touch the first scanline or first pixel of a scanline (Out Zone)  
+-Clock domains need to be verified (W.I.P)  
+-Sprites disappearing when they touch the first scanline or first pixel of a scanline (Out Zone) **[Corrected]**  
 -OPL2 sound implementation (W.I.P)  
 -HD647180X sound implementation (Fire Shark / Vimana)  
 
 # PCB Check List
 
 FPGA core timings will be taken from Out Zone (Zero Wing TP-015 PCB conversion) on loan courtesy of [**@owlnonymous**](https://twitter.com/owlnonymous). More information to follow.
+
+### Clock Information (Out Zone TP-015 PCB conversion)
+
+H-Sync   | V-Sync   | Source    | Title 
+---------|----------|-----------|-------
+15.55kHz | 55.16Hz  | OSSC/RT5X | Out Zone, Rally Bike, Demon's World
+15.55kHz | 57.61Hz  | OSSC/RT5X | All Others
+
+### Crystal Oscillators
+
+Location | Freq (MHz) | Use
+---------|------------|-------
+X1       | 10.00      | M68k
+R1       | 28.000     | Video/Sound
+
+**Pixel clock:** 12.6900 MHz
+
+**Estimated geometry:**
+
+    450 pixels/line  (Out Zone, Rally Bike, Demon's World)
+    282 lines/frame  (Out Zone, Rally Bike, Demon's World)
+  
+    450 pixels/line  (All Others)
+    282 lines/frame  (All Others)
 
 # Licensing
 
