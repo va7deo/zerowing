@@ -40,8 +40,8 @@ FPGA core timings will be taken from Out Zone (Zero Wing TP-015 PCB conversion) 
 
 H-Sync   | V-Sync   | Source    | Title 
 ---------|----------|-----------|-------
-15.55kHz | 55.16Hz  | OSSC/RT5X | Out Zone, Rally Bike, Demon's World
-15.55kHz | 57.61Hz  | OSSC/RT5X | All Others
+15.56kHz | 55.16Hz  | OSSC/RT5X | Out Zone, Rally Bike, Demon's World
+15.56kHz | 57.61Hz  | OSSC/RT5X | All Others
 
 ### Crystal Oscillators
 
@@ -50,7 +50,7 @@ Location | Freq (MHz) | Use
 X1       | 10.00      | M68k
 R1       | 28.000     | Video/Sound
 
-**Pixel clock:** 12.6900 MHz
+**Pixel clock:** 7.00 MHz
 
 **Estimated geometry:**
 
@@ -58,7 +58,7 @@ R1       | 28.000     | Video/Sound
     282 lines/frame  (Out Zone, Rally Bike, Demon's World)
   
     450 pixels/line  (All Others)
-    282 lines/frame  (All Others)
+    270 lines/frame  (All Others)
 
 # Licensing
 
