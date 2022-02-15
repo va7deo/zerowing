@@ -2,7 +2,6 @@
 
 module chip_select
 (
-    input        clk_sys,
     input  [7:0] pcb,
 
     input [23:0] cpu_a,
@@ -26,10 +25,12 @@ module chip_select
     output       shared_ram_cs,
     output       vblank_cs,
     output       tile_palette_cs,
+    output       bcu_flip_cs,
     output       sprite_palette_cs,
     output       sprite_ofs_cs,
     output       sprite_cs,
     output       sprite_size_cs,
+    output       fcu_flip_cs,
 
     // Z80 selects
     output       z80_p1_cs,
@@ -42,8 +43,8 @@ module chip_select
     output       z80_sound1_cs,
 
     // other params
-    output reg [15:0] scroll_y_offset,
-    output reg        tile_priority_type
+    output reg [15:0] scroll_y_offset
+    
 );
 
 localparam pcb_zero_wing     = 0;
@@ -71,15 +72,12 @@ end
 endfunction
 
 always @(*) begin
-    if (pcb == pcb_out_zone_conv || pcb == pcb_truxton || pcb == pcb_out_zone)
+    if (pcb == pcb_zero_wing || pcb == pcb_hellfire) begin
         scroll_y_offset = 16;
-    else
+    end else begin
         scroll_y_offset = 0;
+    end
 
-    if (pcb == pcb_truxton)
-        tile_priority_type = 1;
-    else
-        tile_priority_type = 0;
 
     // Setup lines depending on pcb
     case (pcb)
@@ -98,9 +96,12 @@ always @(*) begin
             tile_num_cs       = m68k_cs( 'h480006,  1 );
             scroll_cs         = m68k_cs( 'h480010,  4 );
             frame_done_cs     = m68k_cs( 'h4c0000,  1 );
+            bcu_flip_cs       = m68k_cs( 'h480000,  1 );
             sprite_ofs_cs     = m68k_cs( 'h4c0002,  1 );
             sprite_cs         = m68k_cs( 'h4c0004,  1 );
             sprite_size_cs    = m68k_cs( 'h4c0006,  1 );
+            fcu_flip_cs       = m68k_cs( 'h0c0006,  1 );
+            
 
             z80_p1_cs         = z80_cs( 8'h00 );
             z80_p2_cs         = z80_cs( 8'h08 );
@@ -125,11 +126,14 @@ always @(*) begin
             tile_ofs_cs       = m68k_cs( 'h200002,  1 );
             tile_attr_cs      = m68k_cs( 'h200004,  1 );
             tile_num_cs       = m68k_cs( 'h200006,  1 );
+            bcu_flip_cs       = m68k_cs( 'h200000,  1 );
             scroll_cs         = m68k_cs( 'h200010,  4 );
             frame_done_cs     = m68k_cs( 'h100000,  1 );
             sprite_ofs_cs     = m68k_cs( 'h100002,  1 );
             sprite_cs         = m68k_cs( 'h100004,  1 );
             sprite_size_cs    = m68k_cs( 'h100006,  1 );
+            fcu_flip_cs       = m68k_cs( 'h340006,  1 );
+            
 
             z80_p1_cs         = z80_cs( 8'h14 );
             z80_p2_cs         = z80_cs( 8'h18 );
@@ -154,11 +158,14 @@ always @(*) begin
             tile_ofs_cs       = m68k_cs( 'h100002,  1 );
             tile_attr_cs      = m68k_cs( 'h100004,  1 );
             tile_num_cs       = m68k_cs( 'h100006,  1 );
+            bcu_flip_cs       = m68k_cs( 'h100000,  1 );
             scroll_cs         = m68k_cs( 'h100010,  4 );
             frame_done_cs     = m68k_cs( 'h140000,  1 );
             sprite_ofs_cs     = m68k_cs( 'h140002,  1 );
             sprite_cs         = m68k_cs( 'h140004,  1 );
             sprite_size_cs    = m68k_cs( 'h140006,  1 );
+            fcu_flip_cs       = m68k_cs( 'h180006,  1 );
+            
 
             z80_p1_cs         = z80_cs( 8'h40 );
             z80_p2_cs         = z80_cs( 8'h50 );
@@ -183,11 +190,13 @@ always @(*) begin
             tile_ofs_cs       = m68k_cs( 'h100002,  1 );
             tile_attr_cs      = m68k_cs( 'h100004,  1 );
             tile_num_cs       = m68k_cs( 'h100006,  1 );
+            bcu_flip_cs       = m68k_cs( 'h100000,  1 );
             scroll_cs         = m68k_cs( 'h100010,  4 );
             frame_done_cs     = m68k_cs( 'h0c0000,  1 );
             sprite_ofs_cs     = m68k_cs( 'h0c0002,  1 );
             sprite_cs         = m68k_cs( 'h0c0004,  1 );
             sprite_size_cs    = m68k_cs( 'h0c0006,  1 );
+            fcu_flip_cs       = m68k_cs( 'h1c0006,  1 );
 
             z80_p1_cs         = z80_cs( 8'h00 );
             z80_p2_cs         = z80_cs( 8'h10 );

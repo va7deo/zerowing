@@ -458,7 +458,15 @@ wire [8:0] vc;
 
 wire no_rotate = orientation | direct_video;
 wire rotate_ccw = 1;
+wire bcu_flip_cs;
+wire fcu_flip_cs;
+
+// flip is done in the rendering so leave screen_rotate flip off
 wire flip = 0;
+
+reg tile_flip;
+reg sprite_flip;
+
 screen_rotate screen_rotate (.*);
 
 arcade_video #(320,24) arcade_video
@@ -873,6 +881,14 @@ always @ (posedge clk_sys) begin
                 int_en <= cpu_dout[0];
             end
 
+            if ( bcu_flip_cs & !cpu_rw ) begin
+                tile_flip <= cpu_dout[0] ;
+            end
+
+            if ( fcu_flip_cs & !cpu_rw ) begin
+                sprite_flip <= cpu_dout[15] ;
+            end
+
             if ( sprite_ofs_cs ) begin
                 // mask out valid range
                 curr_sprite_ofs <= { 6'b0, cpu_dout[9:0] };
@@ -1013,22 +1029,38 @@ reg [9:0] x;
 
 reg [9:0] y_ofs;
 
+
+
 // y needs to be one line ahaed of the visible line
 // render the first line at the end of the previous frame
 // this depends on the timing that the sprite list is valid
 // sprites values are copied at the start of vblank (line 240)
 
-reg [9:0] y ;
 
+// global offsets
+wire [9:0] x_ofs_dx         = 495 + { ~layer[1:0], 1'b0 } ; 
+wire [9:0] y_ofs_dx         = 257 ;
+wire [9:0] x_ofs_dx_flipped =  17 - { ~layer[1:0], 1'b0 } ; 
+wire [9:0] y_ofs_dx_flipped = 255 ;
+
+// calculate scrolling
+wire [9:0] tile_x_unflipped = scroll_x_latch[layer[1:0]] + x_ofs_dx ;
+wire [9:0] tile_y_unflipped = scroll_y_latch[layer[1:0]] + y_ofs_dx + scroll_y_offset;
+wire [9:0] tile_x_flipped   = 319 + scroll_x_latch[layer[1:0]] + x_ofs_dx_flipped; 
+wire [9:0] tile_y_flipped   = 239 + scroll_y_latch[layer[1:0]] + y_ofs_dx_flipped + scroll_y_offset; 
+            
+// reverse tiles when flipped            
+wire [9:0] curr_x = tile_flip ? tile_x_flipped - x :  tile_x_unflipped + x;
+wire [9:0] curr_y = tile_flip ? tile_y_flipped - y :  tile_y_unflipped + y;
+
+reg  [9:0] y ;
+wire [9:0] y_flipped    = ( sprite_flip ? (240 - y ) + scroll_y_offset : y + scroll_y_offset) ;
+wire [9:0] sprite_buf_x = sprite_flip ? 320 - (sprite_x + sprite_pos_x ) : sprite_x + sprite_pos_x ;     // offset from left of frame
 
 reg [3:0] draw_state ;
 reg [3:0] sprite_state ;
 reg [3:0] tile_copy_state ;
 reg [3:0] sprite_copy_state ;
-
-
-wire [9:0] curr_x = x + x_ofs;
-wire [9:0] curr_y = y + y_ofs;
 
 // pixel 4 bit colour 
 wire [3:0] tile_pix ;
@@ -1040,7 +1072,7 @@ assign sprite_pix = { sprite_data[7-sprite_bit], sprite_data[15-sprite_bit], spr
 
 // two lines of buffer alternate 
 reg  [9:0] tile_fb_addr_w;
-wire [9:0] fb_addr_r        = {vc[0], 9'b0 } + hc;
+wire [9:0] fb_addr_r        = {vc[0], 9'b0 } + hc ;
 
 reg [9:0] sprite_fb_addr_w ;
 
@@ -1056,25 +1088,18 @@ reg [31:0] tile_attr;
 reg [3:0] tile_priority_buf   [327:0];
 reg [3:0] sprite_priority_buf [327:0];
 
-
 reg  [9:0] sprite_x;         // offset from left side of sprite
 reg  [9:0] sprite_y; 
 
-reg  sprite_buf_active;
-wire [9:0] sprite_buf_x = sprite_x + sprite_pos_x ;     // offset from left of frame
-
-wire fetch_tile = layer == 3 || ( tile_priority_buf[x] <= tile_priority && tile_hidden == 0 );
-
 wire [14:0] sprite_index    = sprite_attr_0_buf_dout[14:0] /* synthesis keep */;
-wire       sprite_hidden    = sprite_attr_0_buf_dout[15] /* synthesis keep */;
-//reg [5:0] sprite_size_addr;
+wire        sprite_hidden    = sprite_attr_0_buf_dout[15] /* synthesis keep */;
 
 wire [5:0] sprite_pal_addr  = sprite_attr_1_buf_dout[5:0] /* synthesis keep */;
-wire [5:0]  sprite_size_addr = sprite_attr_1_buf_dout[11:6] /* synthesis keep */;
-wire [3:0]  sprite_priority  = sprite_attr_1_buf_dout[15:12] /* synthesis keep */;
+wire [5:0] sprite_size_addr = sprite_attr_1_buf_dout[11:6] /* synthesis keep */;
+wire [3:0] sprite_priority  = sprite_attr_1_buf_dout[15:12] /* synthesis keep */;
 
 wire [9:0] sprite_pos_x  = sprite_adj_x + (( sprite_attr_2_buf_dout[15:7] < 9'h180 ) ? sprite_attr_2_buf_dout[15:7]  : ( sprite_attr_2_buf_dout[15:7] - 10'h200));
-wire [9:0] sprite_pos_y  = sprite_adj_y + (( sprite_attr_3_buf_dout[15:7] < 9'h180 ) ? sprite_attr_3_buf_dout[15:7]  : ( sprite_attr_3_buf_dout[15:7] - 10'h200)) - 16 + scroll_y_offset /* synthesis keep */;
+wire [9:0] sprite_pos_y  = sprite_adj_y + (( sprite_attr_3_buf_dout[15:7] < 9'h180 ) ? sprite_attr_3_buf_dout[15:7]  : ( sprite_attr_3_buf_dout[15:7] - 10'h200));
 
 // valid 1 cycle after sprite attr ready
 wire [8:0] sprite_height    = { sprite_size_buf_dout[7:4], 3'b0 } /* synthesis keep */;  // in pixels
@@ -1097,7 +1122,6 @@ always @ (posedge clk_sys) begin
         // triggered when the tile rendering starts
         if ( sprite_state == 0 && draw_state > 0 ) begin
             sprite_num <= 8'hff;
-            sprite_buf_active <= 0;
             sprite_x <= 0;
             sprite_fb_w <= 1;
             sprite_state <= 1;
@@ -1112,7 +1136,6 @@ always @ (posedge clk_sys) begin
             end else begin
                 sprite_x <= 0;
                 sprite_fb_w <= 0;
-                sprite_buf_active <= 1;
                 sprite_state <= 2 ;
             end
         end else if ( sprite_state == 2 ) begin     
@@ -1127,11 +1150,12 @@ always @ (posedge clk_sys) begin
             sprite_rom_cs <= 0;
             sprite_fb_w <= 0;
 
-            sprite_y <= ( y - sprite_pos_y ) ;
+            sprite_y <=  y_flipped - sprite_pos_y ;
+            
             
             // is sprite visible and is current y in sprite y range
-			// sprite pos can be negative
-            if ( sprite_hidden == 0 && sprite_width > 0 && ( $signed(y) >= $signed(sprite_pos_y) ) && $signed(y) < ( $signed(sprite_pos_y) + $signed(sprite_height) ) ) begin
+			// sprite pos can be negative?
+        if ( sprite_hidden == 0 && sprite_width > 0 && ( $signed(y_flipped) >= $signed(sprite_pos_y) ) && $signed(y_flipped) < ( $signed(sprite_pos_y) + $signed(sprite_height) ) ) begin            
                 sprite_state <= 5 ;
             end else if ( sprite_num > 0 ) begin 
                 sprite_num <= sprite_num - 1;
@@ -1191,10 +1215,10 @@ always @ (posedge clk_sys) begin
             scroll_x_latch[2] <= scroll_x[2] - scroll_ofs_x;
             scroll_x_latch[3] <= scroll_x[3] - scroll_ofs_x;
 
-            scroll_y_latch[0] <= scroll_y[0] - scroll_ofs_y - scroll_y_offset;
-            scroll_y_latch[1] <= scroll_y[1] - scroll_ofs_y - scroll_y_offset;
-            scroll_y_latch[2] <= scroll_y[2] - scroll_ofs_y - scroll_y_offset;
-            scroll_y_latch[3] <= scroll_y[3] - scroll_ofs_y - scroll_y_offset;
+            scroll_y_latch[0] <= scroll_y[0] - scroll_ofs_y;
+            scroll_y_latch[1] <= scroll_y[1] - scroll_ofs_y;
+            scroll_y_latch[2] <= scroll_y[2] - scroll_ofs_y;
+            scroll_y_latch[3] <= scroll_y[3] - scroll_ofs_y;
 
         end 
         
@@ -1227,8 +1251,8 @@ always @ (posedge clk_sys) begin
         end else if ( draw_state == 2 ) begin
             x <= 0;
 
-            x_ofs <= 495 + 6 +  scroll_x_latch[layer[1:0]] - { layer[1:0], 1'b0 } ; 
-            y_ofs <= 257 + 16 + scroll_y_latch[layer[1:0]] ;
+            x_ofs <= scroll_x_latch[layer[1:0]] ;
+            y_ofs <= scroll_y_latch[layer[1:0]] ;
 
             // latch offset info
             draw_state <= 3;
@@ -1288,7 +1312,8 @@ always @ (posedge clk_sys) begin
                 
                 if ( x < 320 ) begin // 319
                     // do we need to read another tile?
-                    if ( curr_x[2:0] == 7 ) begin
+                    // last pixel of this tile changes based on flip direction
+                    if ( curr_x[2:0] == ( tile_flip ? 0 : 7)  ) begin
                         draw_state <= 3; 
                         tile_draw_state <= 0;
                     end 
