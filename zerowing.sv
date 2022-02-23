@@ -1356,12 +1356,12 @@ always @ (posedge clk_sys) begin
         sprite_palette_addr <= sprite_fb_out[9:0] ; 
     end else if ( clk7_count == 6 ) begin
         // if palette index is zero then it's from layer 3 and is transparent render as blank (black).
-        rgb_out <= { tile_palette_dout[4:0], 3'b0, tile_palette_dout[9:5], 3'b0, tile_palette_dout[14:10], 3'b0 };
+        rgb_out <= { dac[tile_palette_dout[4:0]], dac[tile_palette_dout[9:5]], dac[tile_palette_dout[14:10]] };
 
         // if not transparent and sprite is higher priority 
         if ( sprite_fb_out[3:0] > 0 && (sprite_fb_out[13:10] > tile_fb_out[13:10]) ) begin 
             // draw sprite
-            rgb_out <= { sprite_palette_dout[4:0], 3'b0, sprite_palette_dout[9:5], 3'b0, sprite_palette_dout[14:10], 3'b0 };
+            rgb_out <= { dac[sprite_palette_dout[4:0]], dac[sprite_palette_dout[9:5]], dac[sprite_palette_dout[14:10]] };
         end
     end
 end
