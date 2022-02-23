@@ -4,6 +4,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/video_timing.v
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/chip_select.v
 
 set_global_assignment -name VERILOG_FILE hdl/rom_controller.v
+set_global_assignment -name VERILOG_FILE hdl/cache.v
 set_global_assignment -name VHDL_FILE rtl/mem/sdram.vhd
 set_global_assignment -name VHDL_FILE rtl/mem/download_buffer.vhd
 set_global_assignment -name VHDL_FILE rtl/mem/segment.vhd

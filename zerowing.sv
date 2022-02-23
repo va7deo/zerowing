@@ -1386,102 +1386,6 @@ ram16kx32dp ram_tile_buf (
     .wren_b ( 0 ),
     .q_b ( tile_buf_dout )
     ); 
-    
-reg [15:0] sdram_dout ;
-reg [15:0] rgb_ram ;
-
-reg  [22:0] sdram_addr;
-reg  [31:0] sdram_data;
-reg         sdram_we;
-reg         sdram_req;
-
-wire        sdram_ack;
-wire        sdram_valid;
-wire [31:0] sdram_q;
-
-wire prog_rom_data_valid;
-wire tile_rom_data_valid;
-wire sprite_rom_data_valid;
-wire sound_rom_1_data_valid;
-
-wire prog_rom_oe;
-wire [23:1] prog_rom_addr;
-wire [15:0] prog_rom_data;
-wire prog_rom_ctrl_valid;
-
-reg tile_rom_cs;
-reg tile_rom_oe;
-reg [18:0] tile_rom_addr;
-reg [31:0] tile_rom_data;
-reg tile_rom_ctrl_valid;
-reg [31:0] tile_data;
-
-wire sprite_rom_cs;
-wire sprite_rom_oe;
-wire [18:0] sprite_rom_addr;
-wire [31:0] sprite_rom_data;
-wire sprite_rom_ctrl_valid;
-reg [31:0] sprite_data;
-
-wire sound_rom_1_oe;
-wire [15:0] sound_rom_1_addr;
-wire [7:0] sound_rom_1_data;
-wire sound_rom_1_ctrl_valid;
-
-// sdram priority based rom controller
-// is a oe needed?
-rom_controller rom_controller 
-(
-    .reset(reset),
-
-    // clock
-    .clk(clk_sys),
-
-    // program ROM interface
-    .prog_rom_cs(prog_rom_cs),
-    .prog_rom_oe(1),
-    .prog_rom_addr(cpu_a[23:1]),
-    .prog_rom_data(prog_rom_data),
-    .prog_rom_data_valid(prog_rom_data_valid),
-
-    // character ROM interface
-    .tile_rom_cs(tile_rom_cs),
-    .tile_rom_oe(1),
-    .tile_rom_addr(tile_rom_addr),
-    .tile_rom_data(tile_rom_data),
-    .tile_rom_data_valid(tile_rom_data_valid),
-
-    // sprite ROM interface
-    .sprite_rom_cs(sprite_rom_cs),
-    .sprite_rom_oe(1),
-    .sprite_rom_addr(sprite_rom_addr),
-    .sprite_rom_data(sprite_rom_data),
-    .sprite_rom_data_valid(sprite_rom_data_valid),
-
-    // sound ROM #1 interface
-    .sound_rom_1_cs(sound_rom_1_cs),
-    .sound_rom_1_oe(1),
-    .sound_rom_1_addr(z80_addr),
-    .sound_rom_1_data(sound_rom_1_data),
-    .sound_rom_1_data_valid(sound_rom_1_data_valid),
-
-    // IOCTL interface
-    .ioctl_addr(ioctl_addr),
-    .ioctl_data(ioctl_dout),
-    .ioctl_index(ioctl_index),
-    .ioctl_wr(ioctl_wr),
-    .ioctl_download(ioctl_download),
-
-    // SDRAM interface
-    .sdram_addr(sdram_addr),
-    .sdram_data(sdram_data),
-    .sdram_we(sdram_we),
-    .sdram_req(sdram_req),
-    .sdram_ack(sdram_ack),
-    .sdram_valid(sdram_valid),
-    .sdram_q(sdram_q)
-  );
-  
 
 // tile attribute ram.  each tile attribute is 2 16bit words
 // pppp ---- --cc cccc httt tttt tttt tttt = Tile number (0 - $7fff)
@@ -1746,6 +1650,16 @@ ram4kx8dp shared_ram (
     .q_b ( z80_shared_dout )
     );
     
+reg  [22:0] sdram_addr;
+reg  [31:0] sdram_data;
+reg         sdram_we;
+reg         sdram_req;
+
+wire        sdram_ack;
+wire        sdram_valid;
+wire [31:0] sdram_q;
+
+
 sdram #(.CLK_FREQ(70.0)) sdram
 (
   .reset(~pll_locked),
@@ -1756,6 +1670,7 @@ sdram #(.CLK_FREQ(70.0)) sdram
   .data(sdram_data),
   .we(sdram_we),
   .req(sdram_req),
+  
   .ack(sdram_ack),
   .valid(sdram_valid),
   .q(sdram_q),
@@ -1774,8 +1689,116 @@ sdram #(.CLK_FREQ(70.0)) sdram
 );
 
 
-endmodule
+reg prog_cache_rom_cs;
+reg [22:0] prog_cache_addr;
 
+reg [15:0] prog_cache_data;
+reg prog_cache_valid;
+
+wire prog_rom_data_valid;
+wire tile_rom_data_valid;
+wire sprite_rom_data_valid;
+wire sound_rom_1_data_valid;
+
+wire prog_rom_oe;
+wire [23:1] prog_rom_addr;
+wire [15:0] prog_rom_data;
+wire prog_rom_ctrl_valid;
+
+reg tile_rom_cs;
+reg tile_rom_oe;
+reg [18:0] tile_rom_addr;
+reg [31:0] tile_rom_data;
+reg tile_rom_ctrl_valid;
+reg [31:0] tile_data;
+
+wire sprite_rom_cs;
+wire sprite_rom_oe;
+wire [18:0] sprite_rom_addr;
+wire [31:0] sprite_rom_data;
+wire sprite_rom_ctrl_valid;
+reg [31:0] sprite_data;
+
+wire sound_rom_1_oe;
+wire [15:0] sound_rom_1_addr;
+wire [7:0] sound_rom_1_data;
+wire sound_rom_1_ctrl_valid;
+
+    // sdram priority based rom controller
+// is a oe needed?
+rom_controller rom_controller 
+(
+    .reset(reset),
+
+    // clock
+    .clk(clk_sys),
+
+    // program ROM interface
+    .prog_rom_cs(prog_cache_rom_cs),
+    .prog_rom_oe(1),
+    .prog_rom_addr(prog_cache_addr),
+    .prog_rom_data(prog_cache_data),
+    .prog_rom_data_valid(prog_cache_valid),
+
+    // character ROM interface
+    .tile_rom_cs(tile_rom_cs),
+    .tile_rom_oe(1),
+    .tile_rom_addr(tile_rom_addr),
+    .tile_rom_data(tile_rom_data),
+    .tile_rom_data_valid(tile_rom_data_valid),
+
+    // sprite ROM interface
+    .sprite_rom_cs(sprite_rom_cs),
+    .sprite_rom_oe(1),
+    .sprite_rom_addr(sprite_rom_addr),
+    .sprite_rom_data(sprite_rom_data),
+    .sprite_rom_data_valid(sprite_rom_data_valid),
+
+    // sound ROM #1 interface
+    .sound_rom_1_cs(sound_rom_1_cs),
+    .sound_rom_1_oe(1),
+    .sound_rom_1_addr(z80_addr),
+    .sound_rom_1_data(sound_rom_1_data),
+    .sound_rom_1_data_valid(sound_rom_1_data_valid),
+
+    // IOCTL interface
+    .ioctl_addr(ioctl_addr),
+    .ioctl_data(ioctl_dout),
+    .ioctl_index(ioctl_index),
+    .ioctl_wr(ioctl_wr),
+    .ioctl_download(ioctl_download),
+
+    // SDRAM interface
+    .sdram_addr(sdram_addr),
+    .sdram_data(sdram_data),
+    .sdram_we(sdram_we),
+    .sdram_req(sdram_req),
+    .sdram_ack(sdram_ack),
+    .sdram_valid(sdram_valid),
+    .sdram_q(sdram_q)
+  );
+
+
+cache prog_cache
+(
+    .reset(reset),
+    .clk(clk_sys),
+
+    // client
+    .cache_req(prog_rom_cs),
+    .cache_addr(cpu_a[23:1]),
+    .cache_valid(prog_rom_data_valid),
+    .cache_data(prog_rom_data),
+
+    // to rom
+    .rom_req(prog_cache_rom_cs),
+    .rom_addr(prog_cache_addr),
+    .rom_valid(prog_cache_valid),
+    .rom_data(prog_cache_data)
+
+); 
+
+endmodule
 
 
 module cc_shifter
@@ -1796,4 +1819,5 @@ always @(posedge clk_out) begin
 end
 
 endmodule
+
 
