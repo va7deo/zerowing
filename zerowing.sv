@@ -489,15 +489,17 @@ wire reset;
 assign reset = RESET | status[0] | (ioctl_download & !ioctl_index) | buttons[1] | key_reset;
 
 wire vid_clk = clk_7M;
-wire [4:0] vb_size_adj = ( pcb == 1 || pcb == 2 ) ? 12 : 0;   // 0 for 57Hz (270v), 12 for 55Hz (282v)  
 //
 //assign vc = vcx - vs_offset;
 
 video_timing video_timing (
     .clk( vid_clk ),       // pixel clock
     .reset(reset),      // reset
-    
-    .vb_size_adj(vb_size_adj),
+
+    .crtc0(crtc[0]),
+    .crtc1(crtc[1]),
+    .crtc2(crtc[2]),
+    .crtc3(crtc[3]),
 
     .hs_offset(hs_offset),
     .vs_offset(vs_offset),
@@ -762,6 +764,7 @@ wire scroll_ofs_y_cs;
 wire ram_cs;
 wire vblank_cs;
 wire int_en_cs;
+wire crtc_cs;
 wire tile_ofs_cs;
 wire tile_attr_cs;
 wire tile_num_cs;
@@ -838,6 +841,8 @@ reg [15:0] scroll_y_latch [3:0] ;
 
 reg inc_sprite_ofs;
 
+reg [15:0] crtc[4];
+
 always @ (posedge clk_sys) begin
     if ( reset == 1 ) begin
     
@@ -864,6 +869,10 @@ always @ (posedge clk_sys) begin
 
             if ( int_en_cs & !cpu_rw ) begin
                 int_en <= cpu_dout[0];
+            end
+
+            if ( crtc_cs & !cpu_rw ) begin
+                crtc[ cpu_a[2:1] ] <= cpu_dout;
             end
 
             if ( bcu_flip_cs & !cpu_rw ) begin
@@ -1227,8 +1236,8 @@ always @ (posedge clk_sys) begin
         end
 
         // tile state machine
-		
-		 if ( draw_state == 0 && vc == 269 ) begin
+
+        if ( draw_state == 0 && vc == { crtc[2][7:0], 1'b1 } ) begin
             layer <= 4; // layer 4 is layer 0 but draws hidden and transparent
             y <= 0;
             draw_state <= 2;

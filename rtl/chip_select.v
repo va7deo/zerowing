@@ -18,6 +18,7 @@ module chip_select
     output       scroll_ofs_y_cs,
     output       frame_done_cs,
     output       int_en_cs,
+    output       crtc_cs,
     output       tile_ofs_cs,
     output       tile_attr_cs,
     output       tile_num_cs,
@@ -87,6 +88,7 @@ always @(*) begin
             shared_ram_cs     = m68k_cs( 'h440000, 12 );
             vblank_cs         = m68k_cs( 'h400000,  1 );
             int_en_cs         = m68k_cs( 'h400002,  1 );
+            crtc_cs           = m68k_cs( 'h400008,  3 );
             tile_palette_cs   = m68k_cs( 'h404000, 11 );
             sprite_palette_cs = m68k_cs( 'h406000, 11 );
             scroll_ofs_x_cs   = m68k_cs( 'h0c0000,  1 );
@@ -119,6 +121,7 @@ always @(*) begin
             shared_ram_cs     = m68k_cs( 'h140000, 12 );
             vblank_cs         = m68k_cs( 'h300000,  1 );
             int_en_cs         = m68k_cs( 'h300002,  1 );
+            crtc_cs           = m68k_cs( 'h300008,  3 );
             scroll_ofs_x_cs   = m68k_cs( 'h340000,  1 );
             scroll_ofs_y_cs   = m68k_cs( 'h340002,  1 );
             tile_palette_cs   = m68k_cs( 'h304000, 11 );
@@ -151,6 +154,7 @@ always @(*) begin
             shared_ram_cs     = m68k_cs( 'h0c0000, 12 );
             vblank_cs         = m68k_cs( 'h080000,  1 );
             int_en_cs         = m68k_cs( 'h080002,  1 );
+            crtc_cs           = m68k_cs( 'h080008,  3 );
             tile_palette_cs   = m68k_cs( 'h084000, 11 );
             sprite_palette_cs = m68k_cs( 'h086000, 11 );
             scroll_ofs_x_cs   = m68k_cs( 'h180000,  1 );
@@ -183,6 +187,7 @@ always @(*) begin
             shared_ram_cs     = m68k_cs( 'h180000, 12 );
             vblank_cs         = m68k_cs( 'h140000,  1 );
             int_en_cs         = m68k_cs( 'h140002,  1 );
+            crtc_cs           = m68k_cs( 'h140008,  3 );
             tile_palette_cs   = m68k_cs( 'h144000, 11 );
             sprite_palette_cs = m68k_cs( 'h146000, 11 );
             scroll_ofs_x_cs   = m68k_cs( 'h1c0000,  1 );
