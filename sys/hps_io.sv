@@ -30,7 +30,7 @@
 module hps_io #(parameter CONF_STR, CONF_STR_BRAM=1, PS2DIV=0, WIDE=0, VDNUM=1, BLKSZ=2, PS2WE=0)
 (
 	input             clk_sys,
-	inout      [47:0] HPS_BUS,
+	inout      [48:0] HPS_BUS,
 
 	// buttons up to 32
 	output reg [31:0] joystick_0,
