@@ -42,7 +42,7 @@ module cache
     output reg [22:0] rom_addr
 );
 
-reg [15:0]  data  [255:0];
+//reg [15:0]  data  [255:0];
 reg [22:8]  tag   [255:0];
 reg [255:0] valid ;
 reg [1:0]   state = 0;
@@ -71,7 +71,8 @@ always @ (posedge clk) begin
             if ( hit == 1 ) begin
                 rom_req <= 0;
                 cache_valid <= 1;
-                cache_data  <= data[idx];
+                //cache_data  <= data[idx];
+                cache_data <= cache_dout ;
             end else if ( state == 1 ) begin
                 // read from memory
                 cache_valid <= 0;
@@ -95,13 +96,34 @@ always @ (posedge clk) begin
                 tag[idx_r] <= rom_addr[22:8];
                 // mark tag valid
                 valid[idx_r] <= 1'b1;
+
                 // update cache
-                data[rom_addr[7:0]] <= rom_data;
+                //data[rom_addr[7:0]] <= rom_data;
+                cache_din <= rom_data;
+                
+                state <= 3;
+            end else if ( state == 3 ) begin
                 state <= 0;
             end
         end
     end
 end
+
+reg [15:0] cache_din;
+wire [15:0] cache_dout;
+
+ram256bx16dp cache_ram (
+    .clock_a ( clk ),
+    .address_a ( idx_r ),
+    .wren_a ( state == 3 ),
+    .data_a ( cache_din ),
+    .q_a (  ),
+
+    .clock_b ( clk ),
+    .address_b ( idx ),
+    .wren_b ( 0 ),
+    .q_b ( cache_dout )
+    );
 
 
 endmodule

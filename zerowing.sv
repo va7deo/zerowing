@@ -557,8 +557,8 @@ wire vpa_n = ~ ( cpu_lds_n == 0 && cpu_fc == 3'b111 ); // from outzone schematic
 assign cpu_a[0] = 0;           // odd memory address should cause cpu exception
 
 cc_shifter cc_reset (
-    .clk_out(clk_7M),
-    .i(cpu_reset_n_o),
+    .clk_out(clk_10M),
+    .i(reset_z80_n),
     .o(reset_n)
 );
   
@@ -714,7 +714,7 @@ opl3_intf opl
 (
     .clk(clk_7M),
     .clk_opl(clk_14M),
-    .rst_n(~reset),
+    .rst_n( reset_n ),
 
     .irq_n(opl_irq_n),
 
@@ -730,7 +730,7 @@ opl3_intf opl
 
   
 T80pa u_cpu(
-    .RESET_n    ( ~reset ),
+    .RESET_n    ( reset_n ),
     .CLK        ( clk_7M ),
     .CEN_p      ( 1'b1 ),     
     .CEN_n      ( 1'b1 ),
@@ -805,6 +805,8 @@ wire sprite_1_cs      = ( curr_sprite_ofs[1:0] == 2'b01 ) & sprite_cs ;
 wire sprite_2_cs      = ( curr_sprite_ofs[1:0] == 2'b10 ) & sprite_cs ;
 wire sprite_3_cs      = ( curr_sprite_ofs[1:0] == 2'b11 ) & sprite_cs ;
 
+reg reset_z80_n;
+wire reset_z80_cs;
 wire sound_rom_1_cs   = ( MREQ_n == 0 && z80_addr <= 16'h7fff )  ;
 wire sound_ram_1_cs   = ( MREQ_n == 0 && z80_addr >= 16'h8000 && z80_addr <= 16'h87ff ) ;
 
@@ -859,7 +861,13 @@ always @ (posedge clk_sys) begin
 //        scroll_ofs_x <= 16'h01b7;
 //        scroll_ofs_y <= 16'h0102;
         int_en <= 0;
+        reset_z80_n <= 0;
     end else begin
+        if ( pcb != 3 && pcb != 4 ) begin
+            // if the pcb uses the 68k reset pin to drive the reset line
+            reset_z80_n <= cpu_reset_n_o ;
+        end
+        
         // write asserted and rising cpu clock
         if (  clk_10M == 1 && cpu_rw == 0 ) begin        
             
@@ -867,19 +875,19 @@ always @ (posedge clk_sys) begin
                 curr_tile_ofs <= cpu_dout;
             end
 
-            if ( int_en_cs & !cpu_rw ) begin
+            if ( int_en_cs ) begin
                 int_en <= cpu_dout[0];
             end
 
-            if ( crtc_cs & !cpu_rw ) begin
+            if ( crtc_cs ) begin
                 crtc[ cpu_a[2:1] ] <= cpu_dout;
             end
 
-            if ( bcu_flip_cs & !cpu_rw ) begin
+            if ( bcu_flip_cs ) begin
                 tile_flip <= cpu_dout[0] ;
             end
 
-            if ( fcu_flip_cs & !cpu_rw ) begin
+            if ( fcu_flip_cs ) begin
                 sprite_flip <= cpu_dout[15] ;
             end
 
@@ -906,9 +914,15 @@ always @ (posedge clk_sys) begin
             end
             
             // offset needs to be auto-incremented
-            if ( ( sprite_cs | sprite_size_cs ) & !cpu_rw ) begin
+            if ( sprite_cs | sprite_size_cs ) begin
                 inc_sprite_ofs <= 1;
 //                curr_sprite_ofs <= curr_sprite_ofs + 1;
+            end
+
+            
+            if ( reset_z80_cs ) begin 
+                // the pcb writes to a latch to control the reset 
+                reset_z80_n <= cpu_dout[0];
             end
             
         end
