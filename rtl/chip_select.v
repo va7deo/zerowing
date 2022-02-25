@@ -74,6 +74,7 @@ end
 endfunction
 
 always @(*) begin
+
     if (pcb == pcb_zero_wing || pcb == pcb_hellfire) begin
         scroll_y_offset = 16;
     end else begin
@@ -101,6 +102,7 @@ always @(*) begin
             
             shared_ram_cs     = m68k_cs( 'h440000, 12 );
 
+            bcu_flip_cs       = m68k_cs( 'h480000,  1 );
             tile_ofs_cs       = m68k_cs( 'h480002,  1 );
             tile_attr_cs      = m68k_cs( 'h480004,  1 );
             tile_num_cs       = m68k_cs( 'h480006,  1 );
@@ -110,7 +112,8 @@ always @(*) begin
             sprite_ofs_cs     = m68k_cs( 'h4c0002,  1 );
             sprite_cs         = m68k_cs( 'h4c0004,  1 );
             sprite_size_cs    = m68k_cs( 'h4c0006,  1 );
-            
+
+            reset_z80_cs      = 0;
 
             z80_p1_cs         = z80_cs( 8'h00 );
             z80_p2_cs         = z80_cs( 8'h08 );
