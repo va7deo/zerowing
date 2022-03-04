@@ -1,5 +1,6 @@
 
 
+
 # Toaplan Version 1 FPGA Implemenation for [MiSTerFPGA](https://github.com/MiSTer-devel/Main_MiSTer/wiki)
 
 FPGA compatible core for Toaplan Version 1 arcade hardware for MiSTerFPGA written by Darren Olafson. This core is based on Zero Wing/Out Zone hardware and will be verified against a Out Zone TP-015 PCB. 
@@ -10,13 +11,13 @@ This FPGA compatible core is in active development with assistance from [**ùïì
 
 ## Toaplan Version 1 Hardware
 
-Game                |  Status | Released
+Game                |  Status | Beta Release
 --------------------|---------|---------
-[**Zero Wing**](https://en.wikipedia.org/wiki/Zero_Wing) | Implemented | **Pending**
-[**Out Zone (Zero Wing TP-015 PCB conversion)**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | **Pending**
-[**Out Zone**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | **Pending**
-[**Hellfire**](https://en.wikipedia.org/wiki/Hellfire_%28video_game%29) | Implemented | **Pending**
-[**Truxton**](https://en.wikipedia.org/wiki/Truxton_%28video_game%29) | Implemented | **Pending**
+[**Zero Wing**](https://en.wikipedia.org/wiki/Zero_Wing) | Implemented | Yes
+[**Out Zone (Zero Wing TP-015 PCB conversion)**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | Yes
+[**Out Zone**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | Yes
+[**Hellfire**](https://en.wikipedia.org/wiki/Hellfire_%28video_game%29) | Implemented | Yes
+[**Truxton**](https://en.wikipedia.org/wiki/Truxton_%28video_game%29) | Implemented | No
 [**Vimana**](https://en.wikipedia.org/wiki/Vimana_%28video_game%29) | Ongoing | No
 [**Fire Shark**](https://en.wikipedia.org/wiki/Fire_Shark) | **W.I.P** | No
 [**Rally Bike**](https://en.wikipedia.org/wiki/Rally_Bike) | Ongoing | No
@@ -26,7 +27,7 @@ Game                |  Status | Released
 # Known Issues
 
 -Screen Flip/Cocktail Mode has yet to be implemented **[Implemented]**  
--Exiting the service menu hangs on a sound error  
+-Exiting the service menu hangs on a sound error **[Corrected]**
 -Clock domains need to be verified (W.I.P)  
 -Sprites disappearing when they touch the first scanline or first pixel of a scanline (Out Zone) **[Corrected]**  
 -OPL2 sound implementation (W.I.P)  
@@ -34,7 +35,7 @@ Game                |  Status | Released
 
 # PCB Check List
 
-FPGA core timings taken from Out Zone (Zero Wing TP-015 PCB conversion) on loan courtesy of [**@owlnonymous**](https://twitter.com/owlnonymous). More information to follow.
+FPGA core timings taken from Out Zone (Zero Wing TP-015 PCB conversion) on loan courtesy of [**@owlnonymous**](https://twitter.com/owlnonymous).
 
 ### Clock Information (Out Zone TP-015 PCB conversion)
 
