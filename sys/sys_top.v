@@ -295,7 +295,7 @@ reg [31:0] cfg_custom_p2;
 reg  [4:0] vol_att;
 initial vol_att = 5'b11111;
 
-reg  [8:0] coef_addr;
+reg  [9:0] coef_addr;
 reg  [8:0] coef_data;
 reg        coef_wr = 0;
 
@@ -424,7 +424,7 @@ always@(posedge clk_sys) begin
 			if(cmd == 'h27) VSET <= io_din[11:0];
 			if(cmd == 'h2A) begin
 				if(cnt[0]) {coef_wr,coef_data} <= {1'b1,io_din[8:0]};
-				else coef_addr <= io_din[8:0];
+				else coef_addr <= io_din[9:0];
 			end
 			if(cmd == 'h2B) scaler_flt <= io_din[2:0];
 			if(cmd == 'h37) {FREESCALE,HSET} <= {io_din[15],io_din[11:0]};
@@ -640,6 +640,12 @@ ascal
 	`ifndef MISTER_FB_PALETTE
 		.PALETTE2("false"),
 	`endif
+`endif
+`ifdef MISTER_DISABLE_ADAPTIVE
+	.ADAPTIVE("false"),
+`endif
+`ifdef MISTER_DOWNSCALE_NN
+	.DOWNSCALE_NN("true"),
 `endif
 	.FRAC(6),
 	.N_DW(128),
@@ -1522,11 +1528,15 @@ wire [13:0] fb_stride;
 	assign fb_stride = 0;
 `endif
 
+reg  [1:0] sl_r;
+wire [1:0] sl = sl_r;
+always @(posedge clk_sys) sl_r <= FB_EN ? 2'b00 : scanlines;
 emu emu
+
 (
 	.CLK_50M(FPGA_CLK2_50),
 	.RESET(reset),
-	.HPS_BUS({scanlines,f1, HDMI_TX_VS, 
+	.HPS_BUS({fb_en, sl, f1, HDMI_TX_VS,
 				 clk_100m, clk_ihdmi,
 				 ce_hpix, hde_emu, hhs_fix, hvs_fix, 
 				 io_wait, clk_sys, io_fpga, io_uio, io_strobe, io_wide, io_din, io_dout}),

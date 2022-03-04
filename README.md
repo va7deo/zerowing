@@ -2,9 +2,9 @@
 
 # Toaplan Version 1 FPGA Implemenation for [MiSTerFPGA](https://github.com/MiSTer-devel/Main_MiSTer/wiki)
 
-FPGA compatible core for Toaplan Version 1 arcade hardware for MiSTerFPGA written by Darren Olafson. This core is based on Zero Wing and will be verified against physical hardware (Out Zone/Zero Wing Conversion). 
+FPGA compatible core for Toaplan Version 1 arcade hardware for MiSTerFPGA written by Darren Olafson. This core is based on Zero Wing/Out Zone hardware and will be verified against a Out Zone TP-015 PCB. 
 
-This FPGA compatible core is in active development with assistance from [**𝕓𝕝𝕒𝕔𝕜𝕨𝕚𝕟𝕖**](https://github.com/blackwine) and [**atrac17**](https://github.com/atrac17). Physical hardware on loan from [**@owlnonymous**](https://twitter.com/owlnonymous).
+This FPGA compatible core is in active development with assistance from [**𝕓𝕝𝕒𝕔𝕜𝕨𝕚𝕟𝕖**](https://github.com/blackwine) and [**atrac17**](https://github.com/atrac17).
 
 ![Toaplan_logo_shadow_small](https://user-images.githubusercontent.com/32810066/151543842-5f7380a4-9b29-472d-bc03-8cc04a579cf2.png)
 
@@ -34,7 +34,31 @@ Game                |  Status | Released
 
 # PCB Check List
 
-FPGA core timings will be taken from Out Zone (Zero Wing TP-015 PCB conversion) on loan courtesy of [**@owlnonymous**](https://twitter.com/owlnonymous). More information to follow.
+FPGA core timings taken from Out Zone (Zero Wing TP-015 PCB conversion) on loan courtesy of [**@owlnonymous**](https://twitter.com/owlnonymous). More information to follow.
+
+### Clock Information (Out Zone TP-015 PCB conversion)
+
+H-Sync   | V-Sync   | Source    | Title 
+---------|----------|-----------|-------
+15.56kHz | 55.16Hz  | OSSC/RT5X | Out Zone, Rally Bike, Demon's World
+15.56kHz | 57.61Hz  | OSSC/RT5X | All Others
+
+### Crystal Oscillators
+
+Location | Freq (MHz) | Use
+---------|------------|-------
+X1       | 10.00      | M68k
+R1       | 28.000     | Video/Sound
+
+**Pixel clock:** 7.00 MHz
+
+**Estimated geometry:**
+
+    450 pixels/line  (Out Zone, Rally Bike, Demon's World)
+    282 lines/frame  (Out Zone, Rally Bike, Demon's World)
+  
+    450 pixels/line  (All Others)
+    270 lines/frame  (All Others)
 
 ### Clock Information (Out Zone TP-015 PCB conversion)
 

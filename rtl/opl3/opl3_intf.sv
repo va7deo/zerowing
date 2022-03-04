@@ -171,11 +171,9 @@ reg force_overflow;
 
 //------------------------------------------------------------------------------
 
-//wire signed [17:0] left  =  (16'd32767 + opl3_channel_a + opl3_channel_c)>>>3 ;
-//wire signed [17:0] right =  (16'd32767 + opl3_channel_b + opl3_channel_d)>>>3 ;
-
-assign sample_l = opl3_channel_a;
-assign sample_r = opl3_channel_b;
+wire [16:0] sample_mix = {opl3_channel_a[15],opl3_channel_a} + { opl3_channel_b[15],opl3_channel_b} ;
+assign sample_l = sample_mix[16:1];
+assign sample_r = sample_mix[16:1];
 
 wire signed [15:0] opl3_channel_a;
 wire signed [15:0] opl3_channel_b;
