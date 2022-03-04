@@ -193,6 +193,7 @@ assign BUTTONS = 0;
 wire [1:0] aspect_ratio = status[2:1];
 wire orientation = ~status[3];
 wire [2:0] scan_lines = status[6:4];
+wire turbo_68k = status[8];
 
 // Status Bit Map:
 //              Upper                          Lower
@@ -216,7 +217,7 @@ localparam CONF_STR = {
     "P1OOR,H-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
     "P1OSV,V-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
     "P1-;",
-
+    "P1O8,Turbo Boost,Off,On;",
     "DIP;",
     "-;",
 
@@ -255,15 +256,31 @@ reg [3:0] clk14_count;
 always @ (posedge clk_sys ) begin
 
     clk_10M <= 0;
-    case (clk10_count)
-        1: clk_10M <= 1;
-        3: clk_10M <= 1;
-    endcase
     
-    if ( clk10_count == 6 ) begin
-        clk10_count <= 0;
+    if ( turbo_68k == 0 ) begin
+        // standard speed 20MHz = 10MHz 68k
+        case (clk10_count)
+            1: clk_10M <= 1;
+            3: clk_10M <= 1;
+        endcase
+        
+        if ( clk10_count == 6 ) begin
+            clk10_count <= 0;
+        end else begin
+            clk10_count <= clk10_count + 1;
+        end
+
     end else begin
-        clk10_count <= clk10_count + 1;
+        // standard speed 35MHz = 17.5MHz 68k
+        case (clk10_count)
+            1: clk_10M <= 1;
+        endcase
+        
+        if ( clk10_count == 1 ) begin
+            clk10_count <= 0;
+        end else begin
+            clk10_count <= clk10_count + 1;
+        end
     end
     
     clk_7M <= ( clk7_count == 0);
@@ -1100,7 +1117,7 @@ reg  [9:0] sprite_x;         // offset from left side of sprite
 reg  [9:0] sprite_y; 
 
 wire [14:0] sprite_index    = sprite_attr_0_buf_dout[14:0] /* synthesis keep */;
-wire        sprite_hidden    = sprite_attr_0_buf_dout[15] /* synthesis keep */;
+wire        sprite_hidden   = sprite_attr_0_buf_dout[15] /* synthesis keep */;
 
 wire [5:0] sprite_pal_addr  = sprite_attr_1_buf_dout[5:0] /* synthesis keep */;
 wire [5:0] sprite_size_addr = sprite_attr_1_buf_dout[11:6] /* synthesis keep */;
@@ -1277,11 +1294,30 @@ always @ (posedge clk_sys) begin
                 tile_draw_state <= 2;
             end else if ( tile_draw_state == 2 ) begin            
 
-            // latch attribute
+                // latch attribute
                 tile_attr <= tile_attr_dout;
-
-                
-                tile_draw_state <= 3;
+                if ( layer == 4 || tile_attr_dout[15] == 0 ) begin
+                    tile_draw_state <= 3;
+                end else begin
+                    if ( x < 320 ) begin // 319
+                        tile_draw_state <= 3;
+                        // do we need to read another tile?
+                        // last pixel of this tile changes based on flip direction
+                        if ( curr_x[2:0] == ( tile_flip ? 0 : 7)  ) begin
+                            draw_state <= 3; 
+                            tile_draw_state <= 0;
+                        end 
+                        x <= x + 1 ;
+                    end else if ( layer > 0 ) begin
+                        layer <= layer - 1;
+                        tile_fb_w <= 0;
+                        draw_state <= 2;
+                    end else begin
+                        // done
+                        tile_draw_state <= 7 ;
+                        tile_fb_w <= 0;
+                    end                    
+                end
             end else if ( tile_draw_state == 3 ) begin
                 // read bitmap info
                 tile_rom_cs <= 1;
@@ -1703,40 +1739,38 @@ sdram #(.CLK_FREQ(70.0)) sdram
 );
 
 
-reg prog_cache_rom_cs;
-reg [22:0] prog_cache_addr;
+wire        prog_cache_rom_cs;
+wire [22:0] prog_cache_addr;
+wire [15:0] prog_cache_data;
+wire        prog_cache_valid;
 
-reg [15:0] prog_cache_data;
-reg prog_cache_valid;
-
-wire prog_rom_data_valid;
-wire tile_rom_data_valid;
-wire sprite_rom_data_valid;
-wire sound_rom_1_data_valid;
-
-wire prog_rom_oe;
-wire [23:1] prog_rom_addr;
 wire [15:0] prog_rom_data;
-wire prog_rom_ctrl_valid;
+wire        prog_rom_data_valid;
 
-reg tile_rom_cs;
-reg tile_rom_oe;
-reg [18:0] tile_rom_addr;
-reg [31:0] tile_rom_data;
-reg tile_rom_ctrl_valid;
-reg [31:0] tile_data;
+reg         tile_rom_cs;
+reg  [17:0] tile_rom_addr;
+wire [31:0] tile_rom_data;
+wire        tile_rom_data_valid;
 
-wire sprite_rom_cs;
-wire sprite_rom_oe;
-wire [18:0] sprite_rom_addr;
+wire        tile_cache_cs;
+wire [17:0] tile_cache_addr;
+wire [31:0] tile_cache_data;
+wire        tile_cache_valid;
+
+reg  [31:0] tile_data;
+
+wire        sprite_rom_cs;
+wire [17:0] sprite_rom_addr;
 wire [31:0] sprite_rom_data;
-wire sprite_rom_ctrl_valid;
-reg [31:0] sprite_data;
+wire        sprite_rom_data_valid;
 
-wire sound_rom_1_oe;
+reg  [31:0] sprite_data;
+
+
 wire [15:0] sound_rom_1_addr;
-wire [7:0] sound_rom_1_data;
-wire sound_rom_1_ctrl_valid;
+wire  [7:0] sound_rom_1_data;
+wire        sound_rom_1_data_valid;
+
 
     // sdram priority based rom controller
 // is a oe needed?
@@ -1755,11 +1789,12 @@ rom_controller rom_controller
     .prog_rom_data_valid(prog_cache_valid),
 
     // character ROM interface
-    .tile_rom_cs(tile_rom_cs),
+    .tile_rom_cs(tile_cache_cs),
     .tile_rom_oe(1),
-    .tile_rom_addr(tile_rom_addr),
-    .tile_rom_data(tile_rom_data),
-    .tile_rom_data_valid(tile_rom_data_valid),
+    .tile_rom_addr(tile_cache_addr),
+    .tile_rom_data(tile_cache_data),
+    .tile_rom_data_valid(tile_cache_valid),
+
 
     // sprite ROM interface
     .sprite_rom_cs(sprite_rom_cs),
@@ -1804,11 +1839,30 @@ cache prog_cache
     .cache_valid(prog_rom_data_valid),
     .cache_data(prog_rom_data),
 
-    // to rom
+    // to rom controller
     .rom_req(prog_cache_rom_cs),
     .rom_addr(prog_cache_addr),
     .rom_valid(prog_cache_valid),
     .rom_data(prog_cache_data)
+
+); 
+
+tile_cache tile_cache
+(
+    .reset(reset),
+    .clk(clk_sys),
+
+    // client
+    .cache_req(tile_rom_cs),
+    .cache_addr(tile_rom_addr),
+    .cache_data(tile_rom_data),
+    .cache_valid(tile_rom_data_valid),
+
+    // to rom controller
+    .rom_req(tile_cache_cs),
+    .rom_addr(tile_cache_addr),
+    .rom_data(tile_cache_data),
+    .rom_valid(tile_cache_valid)
 
 ); 
 

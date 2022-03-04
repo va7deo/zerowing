@@ -5,6 +5,7 @@ set_global_assignment -name SYSTEMVERILOG_FILE rtl/chip_select.v
 
 set_global_assignment -name VERILOG_FILE hdl/rom_controller.v
 set_global_assignment -name VERILOG_FILE hdl/cache.v
+set_global_assignment -name VERILOG_FILE hdl/tile_cache.v
 set_global_assignment -name VHDL_FILE rtl/mem/sdram.vhd
 set_global_assignment -name VHDL_FILE rtl/mem/download_buffer.vhd
 set_global_assignment -name VHDL_FILE rtl/mem/segment.vhd
@@ -20,6 +21,7 @@ set_global_assignment -name QIP_FILE hdl/ram1kx16dp.qip
 set_global_assignment -name QIP_FILE hdl/ram16kx16dp.qip
 set_global_assignment -name QIP_FILE hdl/ram16kx32dp.qip
 set_global_assignment -name QIP_FILE hdl/ram32kx8dp.qip
+set_global_assignment -name QIP_FILE hdl/ram1kx32dp.qip
 
 set_global_assignment -name VHDL_FILE rtl/t80/T80_Reg.vhd
 set_global_assignment -name VHDL_FILE rtl/t80/T80_MCode.vhd

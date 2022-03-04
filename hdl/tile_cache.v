@@ -21,40 +21,44 @@
 //----------------------------------------------------------------------------
 
 
-// simple read-only cache 
-// specificly for 68k program rom.  todo - parameterize 
-module cache
+//    input tile_rom_cs,
+//    input tile_rom_oe,
+//    input  [19:0] tile_rom_addr,
+//    output [31:0] tile_rom_data,
+//    output tile_rom_data_valid,   
+    
+module tile_cache
 (
     input reset,
     input clk,
 
     input cache_req,
-    input [22:0] cache_addr,
+    input [17:0] cache_addr,
 
     output reg cache_valid,
-    output [15:0] cache_data,
+    output [31:0] cache_data,
 
-    input  [15:0] rom_data,
+    input  [31:0] rom_data,
     input  rom_valid,
     
     output reg rom_req,
-    output reg [22:0] rom_addr
+    output reg [17:0] rom_addr
 );
 
 
-reg [22:10]  tag   [1023:0];
-reg [1023:0] valid ;
-reg [1:0]   state = 0;
+reg  [17:10]  tag   [1023:0];
+reg  [1023:0] valid ;
+reg  [1:0]    state = 0;
 
-reg [9:0]   idx_r;
+reg  [9:0]    idx_r;
 
-wire [9:0] idx = cache_addr[9:0];
-wire hit;
+wire [9:0]    idx = cache_addr[9:0];
+wire          hit;
 
 // if tag value matches the upper bits of the address 
 // and valid then no need to pass request to sdram 
-assign hit = ( tag[idx] == cache_addr[22:10] && valid[idx] == 1 && state == 1 );
-
+assign hit = ( tag[idx] == cache_addr[17:10] && valid[idx] == 1 && state == 1 );
+//assign cache_valid = ( cache_req != 0 ) && ( hit == 1 || rom_valid == 1 );
 
 assign cache_data = ( hit == 1 ) ? cache_dout : rom_data;
 
@@ -88,7 +92,7 @@ always @ (posedge clk) begin
             end else if ( state == 2 && rom_valid == 1 ) begin
 
                 // write updated tag
-                tag[idx_r] <= rom_addr[22:10];
+                tag[idx_r] <= rom_addr[17:10];
                 // mark tag valid
                 valid[idx_r] <= 1'b1;
 
@@ -102,10 +106,10 @@ always @ (posedge clk) begin
     end
 end
 
-reg  [15:0] cache_din;
-wire [15:0] cache_dout;
+reg  [31:0] cache_din;
+wire [31:0] cache_dout;
 
-ram1kx16dp cache_ram (
+ram1kx32dp cache_ram (
     .clock_a ( clk ),
     .address_a ( idx_r ),
     .wren_a ( state == 3 ),

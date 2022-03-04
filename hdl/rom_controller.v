@@ -19,14 +19,14 @@ module rom_controller
     // character ROM interface
     input tile_rom_cs,
     input tile_rom_oe,
-    input  [19:0] tile_rom_addr,
+    input  [18:0] tile_rom_addr,
     output [31:0] tile_rom_data,
     output tile_rom_data_valid,    
 
     // sprite ROM interface
     input sprite_rom_cs,
     input sprite_rom_oe,
-    input  [18:0]  sprite_rom_addr,
+    input  [17:0]  sprite_rom_addr,
     output [31:0] sprite_rom_data,
     output sprite_rom_data_valid,    
 
@@ -137,7 +137,7 @@ segment
 
 segment 
 #(
-    .ROM_ADDR_WIDTH(19),
+    .ROM_ADDR_WIDTH(18),
     .ROM_DATA_WIDTH(32),
     .ROM_OFFSET(24'h080000)
 ) tile_rom_segment
