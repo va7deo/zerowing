@@ -17,7 +17,7 @@ Game                |  Status | Beta Release
 [**Out Zone (Zero Wing TP-015 PCB conversion)**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | Yes
 [**Out Zone**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | Yes
 [**Hellfire**](https://en.wikipedia.org/wiki/Hellfire_%28video_game%29) | Implemented | Yes
-[**Truxton**](https://en.wikipedia.org/wiki/Truxton_%28video_game%29) | Implemented | No
+[**Truxton**](https://en.wikipedia.org/wiki/Truxton_%28video_game%29) | Implemented | Yes
 [**Vimana**](https://en.wikipedia.org/wiki/Vimana_%28video_game%29) | Ongoing | No
 [**Fire Shark**](https://en.wikipedia.org/wiki/Fire_Shark) | **W.I.P** | No
 [**Rally Bike**](https://en.wikipedia.org/wiki/Rally_Bike) | Ongoing | No
