@@ -2,7 +2,7 @@
   <name>Out Zone</name>
   <mameversion>0229</mameversion>
   <setname>outzone</setname>
-  <mratimestamp>20210129</mratimestamp>
+  <mratimestamp>20220308</mratimestamp>
   <year>1990</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Run 'n Gun</category>
@@ -25,7 +25,7 @@
     <!-- SYSTEM -->
     <dip name="Test Switch" bits="18" ids="Off,On"/>
     <!-- TJUMP -->
-    <dip name="Region" bits="24,27" ids="Japan,USA,Europe,Hong Kong,Korea,Taiwan,Taiwan,USA,Hong Kong & China"/>
+    <dip name="Region" bits="24,27" ids="Japan,USA,Europe,Hong Kong,Korea,Taiwan,Taiwan,USA,Hong Kong &amp; China"/>
   </switches>
 
   <!-- ROM data -->

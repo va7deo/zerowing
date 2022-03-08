@@ -2,7 +2,7 @@
   <name>Zero Wing</name>
   <mameversion>0229</mameversion>
   <setname>zerowing</setname>
-  <mratimestamp>20210129</mratimestamp>
+  <mratimestamp>20220308</mratimestamp>
   <year>1989</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Shoot 'em up</category>
@@ -65,6 +65,6 @@
   </rom>
 
   <rom index="1" md5="None">
-    <part>00/part>
+    <part>00</part>
   </rom>
 </misterromdescription>
