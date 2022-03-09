@@ -26,10 +26,7 @@ Game                |  Status | Beta Release
 
 # Known Issues
 
--Screen Flip/Cocktail Mode has yet to be implemented **[Implemented]**  
--Exiting the service menu hangs on a sound error **[Corrected]**
 -Clock domains need to be verified (W.I.P)  
--Sprites disappearing when they touch the first scanline or first pixel of a scanline (Out Zone) **[Corrected]**  
 -OPL2 sound implementation (W.I.P)  
 -HD647180X sound implementation (Fire Shark / Vimana)  
 
