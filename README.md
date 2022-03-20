@@ -1,11 +1,9 @@
 
 # Toaplan Version 1 FPGA Implemenation for [MiSTerFPGA](https://github.com/MiSTer-devel/Main_MiSTer/wiki)
 
-FPGA compatible core for Toaplan Version 1 arcade hardware for MiSTerFPGA written by [**Darren Olafson**](https://twitter.com/Darren__O).
+FPGA compatible core for Toaplan Version 1 arcade hardware for MiSTerFPGA written by [**Darren Olafson**](https://twitter.com/Darren__O). FPGA implementation is based on Zero Wing and verified against an Out Zone TP-015 Conversion PCB.
 
-FPGA implementation based on Zero Wing. Verified against Out Zone TP-015 Conversion PCB.
-
-This FPGA compatible core is in active development with assistance from [**𝕓𝕝𝕒𝕔𝕜𝕨𝕚𝕟𝕖**](https://github.com/blackwine) and [**atrac17**](https://github.com/atrac17).
+Currently in beta state, this core is in active development with assistance from [**𝕓𝕝𝕒𝕔𝕜𝕨𝕚𝕟𝕖**](https://github.com/blackwine) and [**atrac17**](https://github.com/atrac17).
 
 ![Toaplan_logo_shadow_small](https://user-images.githubusercontent.com/32810066/151543842-5f7380a4-9b29-472d-bc03-8cc04a579cf2.png)
 
@@ -77,6 +75,10 @@ M 1-2 | [**Yamaha YM3812**](https://en.wikipedia.org/wiki/Yamaha_OPL#OPL2) | OPL
 [**Texas Instruments TMS32010**](https://en.wikipedia.org/wiki/Texas_Instruments_TMS320) currently has no verilog implementation; used in **Demon's World**.
 
 [**Hitachi HD647180X MCU**](https://en.wikipedia.org/wiki/Zilog_Z180) used in **Fire Shark** and **Vimana**.
+
+# Support
+
+Please consider showing support for this and future projects via [**Ko-fi**](https://ko-fi.com/darreno). While it isn't necessary, it's greatly appreciated.
 
 # Licensing
 
