@@ -236,7 +236,7 @@ wire  clk_70M;
 
 reg  clk_7M;
 reg  clk_10M;   // 20MHz.  68k core needs twice freq
-reg  clk_14M;
+reg  clk_3_5M;
 
 assign    SDRAM_CLK = clk_70M;
 
@@ -249,9 +249,9 @@ pll pll
     .locked(pll_locked)
 );
 
-reg [3:0] clk10_count;
-reg [3:0] clk7_count;
-reg [3:0] clk14_count;
+reg [5:0] clk10_count;
+reg [5:0] clk7_count;
+reg [5:0] clk_3_5_count;
 
 always @ (posedge clk_sys ) begin
 
@@ -290,11 +290,11 @@ always @ (posedge clk_sys ) begin
         clk7_count <= clk7_count + 1;
     end
     
-    clk_14M <= ( clk14_count == 0);
-    if ( clk14_count == 4 ) begin
-        clk14_count <= 0;
+    clk_3_5M <= ( clk_3_5_count == 0);
+    if ( clk_3_5_count == 19 ) begin
+        clk_3_5_count <= 0;
     end else begin
-        clk14_count <= clk14_count + 1;
+        clk_3_5_count <= clk_3_5_count + 1;
     end
 
 end
@@ -725,27 +725,32 @@ reg sound_wr;
 wire [7:0] opl_dout;
 wire opl_irq_n;
 
+reg signed [15:0] sample;
+
 assign AUDIO_S = 1'b1 ;
 
-opl3_intf opl
+wire opl_sample_clk;
+
+jtopl #(.OPL_TYPE(1)) jtopl2
 (
-    .clk(clk_7M),
-    .clk_opl(clk_14M),
-    .rst_n( reset_n ),
-
-    .irq_n(opl_irq_n),
-
-    .addr(sound_addr),
+    .rst(~reset_n),
+    .clk(clk_3_5M),
+    .cen('1),
     .din(sound_data),
+    .addr(sound_addr),
+    .cs_n('0),
+    .wr_n(~sound_wr),
     .dout(opl_dout),
-    .we(sound_wr),
-    .rd(z80_sound0_cs & ~z80_rd_n ),
-
-    .sample_l(AUDIO_L),
-    .sample_r(AUDIO_R)
+    .irq_n(opl_irq_n),
+    .snd(sample),
+    .sample(opl_sample_clk)
 );
 
-  
+always @ (posedge opl_sample_clk) begin
+    AUDIO_L <= sample;
+    AUDIO_R <= sample;
+end
+
 T80pa u_cpu(
     .RESET_n    ( reset_n ),
     .CLK        ( clk_7M ),
@@ -793,6 +798,7 @@ wire sprite_palette_cs ;
 wire sprite_ofs_cs;
 wire sprite_cs; // *** offset needs to be auto-incremented
 wire sprite_size_cs; // *** offset needs to be auto-incremented
+wire sprite_ram_cs;
 
 wire z80_p1_cs;
 wire z80_p2_cs;
@@ -864,19 +870,6 @@ reg [15:0] crtc[4];
 
 always @ (posedge clk_sys) begin
     if ( reset == 1 ) begin
-    
-//        scroll_x[ 0 ] = 16'h01ed ;
-//        scroll_x[ 1 ] = 16'h01ef ;
-//        scroll_x[ 2 ] = 16'h01f1 ;
-//        scroll_x[ 3 ] = 16'h01f3 ;
-//
-//        scroll_y[ 0 ] = 16'h00ef ;
-//        scroll_y[ 1 ] = 16'h00ef ;
-//        scroll_y[ 2 ] = 16'h00ef ;
-//        scroll_y[ 3 ] = 16'h00ef ;
-//        
-//        scroll_ofs_x <= 16'h01b7;
-//        scroll_ofs_y <= 16'h0102;
         int_en <= 0;
         reset_z80_n <= 0;
     end else begin
@@ -907,6 +900,12 @@ always @ (posedge clk_sys) begin
             if ( fcu_flip_cs ) begin
                 sprite_flip <= cpu_dout[15] ;
             end
+            
+//             
+//            if ( sprite_ram_cs ) begin
+//                // rally bike
+//                curr_sprite_ofs <= { 6'b0, cpu_dout[9:0] };
+//            end
 
             if ( sprite_ofs_cs ) begin
                 // mask out valid range
@@ -933,7 +932,6 @@ always @ (posedge clk_sys) begin
             // offset needs to be auto-incremented
             if ( sprite_cs | sprite_size_cs ) begin
                 inc_sprite_ofs <= 1;
-//                curr_sprite_ofs <= curr_sprite_ofs + 1;
             end
 
             
@@ -1398,6 +1396,8 @@ reg draw_sprite;
 // there are 10 70MHz cycles per pixel. clk7_count from 0-9
 // 
 
+// dac values based on 120 ohm driver for the resistor dac and 75 ohm output.  4.7k, 2.2k, 1k, 470, 220
+// modeled in spice
 wire [7:0] dac [0:31] = '{0,12,25,36,50,61,73,83,91,100,111,120,131,139,149,157,145,154,162,170,180,187,195,202,208,214,222,228,236,242,249,255};
 
 always @ (posedge clk_sys) begin
@@ -1700,6 +1700,36 @@ ram4kx8dp shared_ram (
     .q_b ( z80_shared_dout )
     );
     
+reg [11:0] sprite_rb_addr;
+wire [15:0] sprite_rb_dout;
+    
+ram4kx8dp sprite_ram_rb_l (
+    .clock_a ( clk_10M ),
+    .address_a ( cpu_a[12:1] ),
+    .wren_a ( sprite_ram_cs & !cpu_rw & !cpu_lds_n),
+    .data_a ( cpu_dout[7:0]  ),
+    .q_a ( sprite_rb_dout[7:0] ),
+
+    .clock_b ( clk_sys ),
+    .address_b ( sprite_rb_addr ),
+    .wren_b ( 0 ),
+    .q_b ( sprite_rb_dout[7:0] )
+    );
+    
+
+ram4kx8dp sprite_ram_rb_h (
+    .clock_a ( clk_10M ),
+    .address_a ( cpu_a[12:1] ),
+    .wren_a ( sprite_ram_cs & !cpu_rw & !cpu_uds_n),
+    .data_a ( cpu_dout[15:8]  ),
+    .q_a ( cpu_shared_dout[15:8] ),
+
+    .clock_b ( clk_sys ),
+    .address_b ( sprite_rb_addr ),
+    .wren_b ( 0 ),
+    .q_b ( sprite_rb_dout[15:8] )
+    );
+
 reg  [22:0] sdram_addr;
 reg  [31:0] sdram_data;
 reg         sdram_we;

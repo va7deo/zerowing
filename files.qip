@@ -29,18 +29,7 @@ set_global_assignment -name VHDL_FILE rtl/t80/T80_ALU.vhd
 set_global_assignment -name VHDL_FILE rtl/t80/T80.vhd
 set_global_assignment -name VHDL_FILE rtl/t80/T80pa.vhd
 
-set_global_assignment -name SYSTEMVERILOG_FILE rtl/opl3/opl3_intf.sv
-set_global_assignment -name VERILOG_FILE rtl/opl3/operator/vibrato.v
-set_global_assignment -name VERILOG_FILE rtl/opl3/operator/tremolo.v
-set_global_assignment -name VERILOG_FILE rtl/opl3/operator/phase_generator.v
-set_global_assignment -name VERILOG_FILE rtl/opl3/operator/opl3_log_sine_lut.v
-set_global_assignment -name VERILOG_FILE rtl/opl3/operator/opl3_exp_lut.v
-set_global_assignment -name VERILOG_FILE rtl/opl3/operator/operator.v
-set_global_assignment -name VERILOG_FILE rtl/opl3/operator/ksl_add_rom.v
-set_global_assignment -name VERILOG_FILE rtl/opl3/operator/envelope_generator.v
-set_global_assignment -name VERILOG_FILE rtl/opl3/operator/env_rate_counter.v
-set_global_assignment -name VERILOG_FILE rtl/opl3/operator/edge_detector.v
-set_global_assignment -name VERILOG_FILE rtl/opl3/operator/calc_rhythm_phase.v
-set_global_assignment -name VERILOG_FILE rtl/opl3/operator/calc_phase_inc.v
-set_global_assignment -name VERILOG_FILE rtl/opl3/opl3.v
+set_global_assignment -name QIP_FILE rtl/jtopl/hdl/jt26.qip
+set_global_assignment -name VERILOG_FILE rtl/jtopl/hdl/jtopl.v 
+
 

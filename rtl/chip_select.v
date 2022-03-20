@@ -31,6 +31,7 @@ module chip_select
     output       sprite_ofs_cs,
     output       sprite_cs,
     output       sprite_size_cs,
+    output       sprite_ram_cs,
     output       fcu_flip_cs,
     output       reset_z80_cs,
 
@@ -56,7 +57,7 @@ localparam pcb_hellfire      = 3;
 localparam pcb_truxton       = 4;
 localparam pcb_fireshark     = 5;
 localparam pcb_vimana        = 6;
-//localparam pcb_rallybike     = 7;
+localparam pcb_rallybike     = 7;
 
 function m68k_cs;
         input [23:0] base_address;
@@ -279,6 +280,47 @@ always @(*) begin
             z80_sound0_cs     = z80_cs( 8'h87 );
             z80_sound1_cs     = z80_cs( 8'h8f );
         end
+
+        pcb_rallybike: begin
+            prog_rom_cs       = m68k_cs( 'h000000, 18 );
+            ram_cs            = m68k_cs( 'h080000, 15 );
+            sprite_ram_cs     = m68k_cs( 'h0c0000,  12 );
+            shared_ram_cs     = m68k_cs( 'h180000, 12 );
+            vblank_cs         = m68k_cs( 'h140000,  1 );
+            frame_done_cs     = m68k_cs( 'h140000,  1 );
+            int_en_cs         = m68k_cs( 'h140002,  1 );
+            crtc_cs           = m68k_cs( 'h140008,  3 );
+            
+            tile_palette_cs   = m68k_cs( 'h144000, 11 );
+            sprite_palette_cs = m68k_cs( 'h146000, 11 );
+
+            bcu_flip_cs       = m68k_cs( 'h100000,  1 );
+
+            tile_ofs_cs       = m68k_cs( 'h100002,  1 );
+            tile_attr_cs      = m68k_cs( 'h100004,  1 );
+            tile_num_cs       = m68k_cs( 'h100006,  1 );
+            scroll_cs         = m68k_cs( 'h100010,  4 );
+            
+            scroll_ofs_x_cs   = m68k_cs( 'h1c0000,  1 );
+            scroll_ofs_y_cs   = m68k_cs( 'h1c0002,  1 );
+            
+            reset_z80_cs      = m68k_cs( 'h1c8000,  1 );
+            
+            fcu_flip_cs       = 1'b0;  // no fcu
+            sprite_ofs_cs     = 1'b0;
+            sprite_cs         = 1'b0;
+            sprite_size_cs    = 1'b0;
+
+            z80_p1_cs         = z80_cs( 8'h00 );
+            z80_p2_cs         = z80_cs( 8'h10 );
+            z80_dswa_cs       = z80_cs( 8'h40 );
+            z80_dswb_cs       = z80_cs( 8'h50 );
+            z80_system_cs     = z80_cs( 8'h60 );
+            z80_tjump_cs      = 1'b0;
+            z80_sound0_cs     = z80_cs( 8'h60 );
+            z80_sound1_cs     = z80_cs( 8'h61 );
+        end
+
         default:;
     endcase
 end
