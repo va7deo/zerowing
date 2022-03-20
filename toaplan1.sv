@@ -206,7 +206,7 @@ assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
 
 `include "build_id.v" 
 localparam CONF_STR = {
-    "Zero Wing;;",
+    "Toaplan V1;;",
     "-;",
     "P1,Video Settings;",
     "P1-;",

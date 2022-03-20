@@ -2,11 +2,10 @@
   <name>Hellfire (1P set)</name>
   <mameversion>0229</mameversion>
   <setname>hellfire1</setname>
-  <mratimestamp>20210129</mratimestamp>
   <year>1989</year>
   <manufacturer>Toaplan (Taito license)</manufacturer>
   <category>Shoot 'em up</category>
-  <rbf>zerowing</rbf>
+  <rbf>toaplanv1</rbf>
 
   <buttons names="Shot,Shot Direction,-,Start,Coin" default="A,B,R,L"/>
 
