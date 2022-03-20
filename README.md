@@ -1,5 +1,5 @@
 
-# Toaplan Version 1 FPGA Implemenation for [MiSTerFPGA](https://github.com/MiSTer-devel/Main_MiSTer/wiki)
+# Toaplan Version 1 FPGA Implementation for [MiSTerFPGA](https://github.com/MiSTer-devel/Main_MiSTer/wiki)
 
 FPGA compatible core for Toaplan Version 1 arcade hardware for MiSTerFPGA written by [**Darren Olafson**](https://twitter.com/Darren__O). FPGA implementation is based on Zero Wing and verified against an Out Zone TP-015 Conversion PCB.
 
