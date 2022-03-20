@@ -5,7 +5,7 @@
   <year>1990</year>
   <manufacturer>Toaplan (Hong Kong Honest Trading license)</manufacturer>
   <category>Shoot 'em up</category>
-  <rbf>toaplanv1</rbf>
+  <rbf>toaplan1</rbf>
 
   <buttons names="Shot,Bomb,-,Start,Coin" default="A,B,R,L"/>
 

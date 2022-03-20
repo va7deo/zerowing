@@ -5,7 +5,7 @@
   <year>1990</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Run 'n Gun</category>
-  <rbf>toaplanv1</rbf>
+  <rbf>toaplan1</rbf>
 
   <buttons names="Shot,Bomb,-,Start,Coin" default="A,B,R,L"/>
 
