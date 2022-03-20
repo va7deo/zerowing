@@ -2,11 +2,10 @@
   <name>Out Zone (Zero Wing TP-015 PCB conversion)</name>
   <mameversion>0229</mameversion>
   <setname>outzonecv</setname>
-  <mratimestamp>20210129</mratimestamp>
   <year>1990</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Run 'n Gun</category>
-  <rbf>zerowing</rbf>
+  <rbf>toaplanv1</rbf>
 
   <buttons names="Shot,Bomb,-,Start,Coin" default="A,B,R,L"/>
 
