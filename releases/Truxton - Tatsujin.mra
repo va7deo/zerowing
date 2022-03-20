@@ -2,11 +2,10 @@
   <name>Truxton / Tatsujin</name>
   <mameversion>0229</mameversion>
   <setname>truxton</setname>
-  <mratimestamp>20210129</mratimestamp>
   <year>1989</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Shoot 'em up</category>
-  <rbf>zerowing</rbf>
+  <rbf>toaplanv1</rbf>
 
   <buttons names="Shot,Bomb,-,Start,Coin" default="A,B,R,L"/>
 

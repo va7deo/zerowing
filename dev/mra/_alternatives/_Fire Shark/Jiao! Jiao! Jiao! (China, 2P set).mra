@@ -2,11 +2,10 @@
   <name>Jiao! Jiao! Jiao! (China, 2P set)</name>
   <mameversion>0229</mameversion>
   <setname>samesamecn</setname>
-  <mratimestamp>20210129</mratimestamp>
   <year>1990</year>
   <manufacturer>Toaplan (Hong Kong Honest Trading license)</manufacturer>
   <category>Shoot 'em up</category>
-  <rbf>zerowing</rbf>
+  <rbf>toaplanv1</rbf>
 
   <buttons names="Shot,Bomb,-,Start,Coin" default="A,B,R,L"/>
 

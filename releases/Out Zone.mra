@@ -2,11 +2,10 @@
   <name>Out Zone</name>
   <mameversion>0229</mameversion>
   <setname>outzone</setname>
-  <mratimestamp>20220308</mratimestamp>
   <year>1990</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Run 'n Gun</category>
-  <rbf>zerowing</rbf>
+  <rbf>toaplanv1</rbf>
 
   <buttons names="Shot,Bomb,-,Start,Coin" default="A,B,R,L"/>
 
