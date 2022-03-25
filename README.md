@@ -11,14 +11,14 @@ Currently in beta state, this core is in active development with assistance from
 
 | Title | Status | Released |
 |------|---------|----------|
-[**Rally Bike**](https://en.wikipedia.org/wiki/Rally_Bike) | **W.I.P** | N |
-[**Truxton**](https://en.wikipedia.org/wiki/Truxton_%28video_game%29) | Implemented | **Y** |
-[**Hellfire**](https://en.wikipedia.org/wiki/Hellfire_%28video_game%29) | Implemented | **Y** |
-[**Zero Wing**](https://en.wikipedia.org/wiki/Zero_Wing) | Implemented | **Y** |
+[**Truxton**](https://en.wikipedia.org/wiki/Truxton_%28video_game%29) | Implemented | **Yes** |
+[**Hellfire**](https://en.wikipedia.org/wiki/Hellfire_%28video_game%29) | Implemented | **Yes** |
+[**Zero Wing**](https://en.wikipedia.org/wiki/Zero_Wing) | Implemented | **Yes** |
+[**Out Zone**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | **Yes** |
+[**Rally Bike**](https://en.wikipedia.org/wiki/Rally_Bike) | **W.I.P** | No |
+[**Fire Shark**](https://en.wikipedia.org/wiki/Fire_Shark) | **W.I.P** | No |
+[**Vimana**](https://en.wikipedia.org/wiki/Vimana_%28video_game%29) | **W.I.P** | No |
 [**Demon's World**](https://en.wikipedia.org/wiki/Demon%27s_World) | Implementation slated by [**Jotego**](https://github.com/jotego) | N/A |
-[**Fire Shark**](https://en.wikipedia.org/wiki/Fire_Shark) | **W.I.P** | N |
-[**Out Zone**](https://en.wikipedia.org/wiki/Out_Zone) | Implemented | **Y** |
-[**Vimana**](https://en.wikipedia.org/wiki/Vimana_%28video_game%29) | **W.I.P** | N |
 
 ## External Modules
 
