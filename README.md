@@ -42,7 +42,7 @@ FPGA core timings taken from **Out Zone (Zero Wing TP-015 PCB conversion)** on l
 
 H-Sync   | V-Sync   | Source    | Title 
 ---------|----------|-----------|-------
-15.56kHz | 55.16Hz  | OSSC/RT5X | Out Zone, Rally Bike, Demon's World
+15.556938395kHz | 55.161153309393Hz  | DSLogic + | Out Zone, Rally Bike, Demon's World
 15.56kHz | 57.61Hz  | OSSC/RT5X | All Others
 
 ### Crystal Oscillators
