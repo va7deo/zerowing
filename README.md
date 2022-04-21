@@ -29,10 +29,18 @@ Currently in beta state, this core is in active development with assistance from
 | [**y80e**](https://opencores.org/projects/y80e) | [**Zilog Z180 CPU**](https://en.wikipedia.org/wiki/Zilog_Z180) | Sergey Belyashov |
 | [**jtopl2**](https://github.com/jotego/jtopl) | [**Yamaha OPL 2**](https://en.wikipedia.org/wiki/Yamaha_OPL#OPL2) | Jose Tejada |
 
-# Known Issues
+# Known Issues / Tasks
 
--Clock domains need to be verified  
--HD647180X (Z180) sound implementation  
+- ~~Screen Flip/Cocktail Mode has yet to be implemented~~  
+- ~~Exiting the service menu hangs on a sound error~~  
+- ~~Clock domains need to be verified (Out Zone)~~  
+- ~~Sprites disappearing when they touch the first scanline or first pixel of a scanline (Out Zone)~~  
+- ~~OPL2 sound implementation~~  
+- Clock domains need to be verified (Tatsujin)  
+- Clock domains need to be verified (Rally Bike)  
+- Sprite handler for Rally Bike  
+- HD647180X (Z180) sound implementation  
+- jtopl2 percussion mix  
 
 # PCB Check List
 
