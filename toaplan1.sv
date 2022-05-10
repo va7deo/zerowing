@@ -731,7 +731,7 @@ assign AUDIO_S = 1'b1 ;
 
 wire opl_sample_clk;
 
-jtopl #(.OPL_TYPE(1)) jtopl2
+jtopl #(.OPL_TYPE(2)) jtopl2
 (
     .rst(~reset_n),
     .clk(clk_3_5M),
