@@ -52,7 +52,7 @@ The intent is for this core to be a 1:1 implementation of Toaplan V1 hardware. C
 H-Sync | V-Sync | Source | Title |
 -------|--------|--------|-------|
 15.556938kHz | 55.161153Hz  | DSLogic + | Out Zone, Rally Bike, Demon's World
-15.56kHz     | 57.61Hz      | DSLogic + | Tatsujin, Vimana, Fire Shark, Zero Wing, Hellfire
+15.873015kHz | 57.788947Hz  | DSLogic + | Tatsujin, Vimana, Fire Shark, Zero Wing, Hellfire
 
 ### Crystal Oscillators
 
@@ -85,7 +85,7 @@ Location | Chip | Use |
 ---------|------|-----|
 A 3-6   | **FCU-2**              | Custom Graphics IC  |
 H 9     | **NEC D65081R077**     | Custom Graphics IC  |
-E 1     | **TOAPLAN-02 M70H005** | Custom Toaplan Chip |
+E 1     | **TOAPLAN-02 M70H005** | Custom Toaplan IC   |
 
 ### Additional Components
 
@@ -121,7 +121,7 @@ Out Zone  | 8-Way | <p align="center"><img width="120" height="160" src="https:/
 
 <br>
 
-- Upright cabinets share a **1L3B** control panel layout. Players are required to switch controller. If set the cabinet type is set to table, the screen inverts for cocktail mode per player and has multiple controls. <br><br>Push button 3 may have no function in game, but corresponds to the original hardware and service menu.
+- Upright cabinets may share a **1L3B** control panel layout. If so, players are required to switch controller. If the cabinet type is set to table, the screen inverts for cocktail mode per player and has multiple controls. <br><br>Push button 3 may have no function in game, but corresponds to the original hardware and service menu.
 
 ### Keyboard Handler
 
