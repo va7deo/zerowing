@@ -1,4 +1,5 @@
 
+
 # Toaplan Version 1  FPGA Implementation
 
 FPGA compatible core of Toaplan Version 1 arcade hardware for [**MiSTerFPGA**](https://github.com/MiSTer-devel/Main_MiSTer/wiki) written by [**Darren Olafson**](https://twitter.com/Darren__O). FPGA implementation is based on schematics and verified against an Out Zone (TP-015 Conversion / TP-018), Vimana (TP-019), Tatsujin (TP-013B), and Rally Bike (TP-012).
@@ -98,19 +99,20 @@ N/A | [**HD647180X**](https://en.wikipedia.org/wiki/Zilog_Z180)              | S
 
 The [**Texas Instruments TMS32010**](https://en.wikipedia.org/wiki/Texas_Instruments_TMS320) DSP currently has no verilog implementation; used on the **Horror Story** PCB. The core author has no desire to write this DSP. Implementation of this game will be handled by [**Jotego**](https://github.com/jotego).
 
-# PCB / Debugging Features
+# Debugging Features / Regional Differences
 
-**W.I.P**
+|<p align="center">Toaplan V1 Game Debugging|
+:---: |
+|<table> <tr><th>Tatsujin</th><th>Debugging Features</th></tr><tr><td><p align="center"><img align="center" width="120" height="160" src="https://user-images.githubusercontent.com/32810066/168002706-4ce9d953-3354-4a3d-ae21-8ca35d9d8b79.png"></img></p></td><td><p align="left"> To access test mode, press P1 Start when the grid is displayed in "Service Mode".<br><br> To access sound test, press P2 Start when the grid is displayed in "Service Mode".<br><br> Turn the "Service Mode" dipswitch on in game for invulnerability.<br><br> Set the "Dip Switch Display" dipswitch to on in game to pause.<br><br> When the cabinet dipswitch is "Upright", you can use controls from both players.</p></td><tr><th>Hellfire</th><th>Debugging Features [hellfire/hellfire1]</th></tr><tr><td><img align="center" width="160" height="120" src="https://user-images.githubusercontent.com/32810066/168088336-98975efb-bc6a-4c87-a5af-1d7b9f174f2d.png"></img></td><td><p align="left"> In game, enable the "Invulnerability" dip and press P2 Start to pause; P1 Start to resume.<br><br> When holding P1 Start and P2 Start, this will enable a slower framerate in game.<br><br> When the cabinet dipswitch is "Upright", you can use controls from both players.</p></td><tr><th>Zero Wing</th><th>Debugging Features [zerowing]</th></tr><tr><td><img align="center" width="160" height="120" src="https://user-images.githubusercontent.com/32810066/168094988-8e159945-6152-43f9-8f73-3dd738a4bcdd.png"></img></td><td><p align="left"> In game, enable the "Invulnerability" dip and press P2 Start to pause; P1 Start to resume.<br><br> When holding P1 Start and P2 Start, this will enable a slower framerate in game.<br><br> When the cabinet dipswitch is "Upright", you can use controls from both players.</p></td><tr><th>Out Zone</th><th>Debugging Features [outzoneb/outzonec]</th></tr><tr><td><br><p align="center"><img align="center" width="120" height="160" src="https://user-images.githubusercontent.com/32810066/168094995-0b7b919c-65b4-409b-95dd-be2b47ea2923.png"></img></p></td><td><p align="left"> Set both "Debug" dipswitches to on and reset the game. Hold P2 Down during the boot sequence. <br><br>This enables the CRTC registers to be programmed for a smaller VTOTAL enabling a higher frame<br>rate by reducing the edges of the screen. (**This is not correctly emulated in mame**)</p></td> </table>
+
+
+|<p align="center">Toaplan V1 Regional Differences|
+ :---: |
+|<b>Tatsujin</b>|
+|<table> <tr><th>Title Screen</th><th>Notice Screen</th><th>Copyright Screen</th><th>Notes</th></tr><tr><td><p align="center"><img width="120" height="160" src="https://user-images.githubusercontent.com/32810066/168115413-58da3fba-c8a5-4c71-b7f9-2092ce021c9e.png"></img> <br><b>Japan<br><br> <p align="center"><img width="120" height="160" src="https://user-images.githubusercontent.com/32810066/168115428-947cc08b-9316-465d-881e-01c69609b0b2.png"></img> <br><b>USA / Europe </p></td><td><p align="center"><img width="120" height="160" src="https://user-images.githubusercontent.com/32810066/168115440-3e7c8f8a-f1ac-49dc-85bf-24e032e18d46.png"></img> <br><b>Japan<br><br> </p><p align="center"><img width="120" height="160" src="https://user-images.githubusercontent.com/32810066/168115447-d86d5672-d4d1-458a-a2a2-7f0e6b97c2c9.png"></img><br><b>USA (ROMSTAR) </p></td><td><img width="120" height="160" src="https://user-images.githubusercontent.com/32810066/168115455-989c3081-85c2-4eb2-8a09-e20096199402.png"/> <img width="120" height="160" src="https://user-images.githubusercontent.com/32810066/168115461-f32febb4-0267-4d15-ba99-2dd635820a64.png"/><br><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Japan / USA (ROMSTAR) <br><br><img width="120" height="160" src="https://user-images.githubusercontent.com/32810066/168120995-9b3f9419-fe7e-4761-adcf-f957573002d0.png"/> <img width="120" height="160" src="https://user-images.githubusercontent.com/32810066/168118147-4b412655-0d44-4264-ab01-b29e049e0375.png"/><br><b>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;USA / Europe<br></td><td><p align="left"> <u>**Title / Notice Screen:**</u><br>"FOR USE IN JAPAN ONLY"<br>"FOR USE IN U.S.A. ONLY"<br><br><u>**Copyright Screen:**</u><br>"TAITO CORPORATION"<br>"TAITO AMERICA CORP."<br>"ALL RIGHTS RESERVED"<br>"LICENCED TO ROMSTAR FOR U.S.A."<br><br><u>**High Score Entry:**</u><br>Japan / 6 letters<br>All others / 3 letters </td>
+</table>
 
 # Control Layout
-
-<h3 align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;2L6B Control Panel Layout (Common Layout)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h3>
-
-<p align="left"><img width="630" height="138" src="https://user-images.githubusercontent.com/32810066/167370068-13dadae8-e7f5-478f-90b4-8d5f5f5c7316.png"></p> 
-
-<h3 align="left">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;1L3B Control Panel Layout (Table Layout)&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</h3>
-
-<p align="left"><img width="630" height="138" src="https://user-images.githubusercontent.com/32810066/167615931-feb562eb-8d16-4fdd-a7af-99cb51968784.png"></p>
 
 Game | Joystick | Service Menu | Shared Controls | Dip Default |
 :---: | :---: | :---: | :---: | :---: |
@@ -121,7 +123,9 @@ Out Zone  | 8-Way | <p align="center"><img width="120" height="160" src="https:/
 
 <br>
 
-- Upright cabinets may share a **1L3B** control panel layout. If so, players are required to switch controller. If the cabinet type is set to table, the screen inverts for cocktail mode per player and has multiple controls. <br><br>Push button 3 may have no function in game, but corresponds to the original hardware and service menu.
+- Upright cabinets by default should be a **2L3B** control panel layout. Alternatively, they may share a **1L3B** control panel layout. If so, players are required to switch their controller method. 
+- If the cabinet type is set to table, the screen inverts for cocktail mode per player and has multiple controls.
+- Push button 3 may have no function in game, but corresponds to the original hardware and service menu.
 
 ### Keyboard Handler
 
@@ -135,10 +139,6 @@ Out Zone  | 8-Way | <p align="center"><img width="120" height="160" src="https:/
 |--|--|
 |<table> <tr><th>Functions</th><th>Keymap</th></tr><tr><td>P1 Up</td><td>Up</td></tr><tr><td>P1 Down</td><td>Down</td></tr><tr><td>P1 Left</td><td>Left</td></tr><tr><td>P1 Right</td><td>Right</td></tr><tr><td>P1 Bttn 1</td><td>L-CTRL</td></tr><tr><td>P1 Bttn 2</td><td>L-ALT</td></tr><tr><td>P1 Bttn 3</td><td>Space</td></tr> </table> | <table> <tr><th>Functions</th><th>Keymap</th></tr><tr><td>P2 Up</td><td>R</td></tr><tr><td>P2 Down</td><td>F</td></tr><tr><td>P2 Left</td><td>D</td></tr><tr><td>P2 Right</td><td>G</td></tr><tr><td>P2 Bttn 1</td><td>A</td></tr><tr><td>P2 Bttn 2</td><td>S</td></tr><tr><td>P2 Bttn 3</td><td>Q</td></tr> </table>|
 
-# Support
-
-Please consider showing support for this and future projects via [**Ko-fi**](https://ko-fi.com/darreno). While it isn't necessary, it's greatly appreciated.
-
 # Acknowledgments
 
 The following individuals loaned hardware used during development. Team Toaplan can't thank you enough!
@@ -146,6 +146,10 @@ The following individuals loaned hardware used during development. Team Toaplan 
 [**@owlnonymous**](https://twitter.com/owlnonymous) for loaning Out Zone (TP-015 Conversion)<br>
 [**@cathoderaze**](https://twitter.com/cathoderaze)  for loaning Tatsujin (TP-013B)<br>
 [**@90s_cyber_thriller**](https://www.instagram.com/90s_cyber_thriller/) for loaning Vimana (TP-019) and Outzone (TP-018)<br>
+
+# Support
+
+Please consider showing support for this and future projects via [**Ko-fi**](https://ko-fi.com/darreno). While it isn't necessary, it's greatly appreciated.
 
 # Licensing
 
