@@ -216,11 +216,16 @@ localparam CONF_STR = {
     "P1O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
     "P1OOR,H-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
     "P1OSV,V-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
-    "P1-;",
-    "P1O8,Turbo Boost,Off,On;",
+//    "-;",
+//    "P2,Pause options;",
+//    "P2OP,Pause when OSD is open,On,Off;",
+//    "P2OQ,Dim video after 10s,On,Off;",
     "DIP;",
-    "-;",
-
+    "P3,Debug;",
+    "P3-;",
+    "P3O8,Turbo (68k),Off,On;",
+    "P3OA,Service Menu,Off,On;",
+    "P3-;",
     "R0,Reset;",
     "J1,Button 1,Button 2,Button 3,Start,Coin,Pause;",
     "jn,A,B,X,R,L,Start;",	       // name mapping
@@ -339,11 +344,13 @@ wire       p2_left    = joy1[1] | key_p2_left;
 wire       p2_right   = joy1[0] | key_p2_right;
 wire [2:0] p2_buttons = joy1[6:4] | {key_p2_c, key_p2_b, key_p2_a};
 
-wire p1_start = joy0[7] | key_p1_start;
-wire p2_start = joy1[7] | key_p2_start;
-wire p1_coin  = joy0[8] | key_p1_coin;
-wire p2_coin  = joy1[8] | key_p2_coin;
-wire b_pause  = joy0[9] | joy1[9];
+wire       p1_start = joy0[7] | key_p1_start;
+wire       p2_start = joy1[7] | key_p2_start;
+wire       p1_coin  = joy0[8] | key_p1_coin;
+wire       p2_coin  = joy1[8] | key_p2_coin;
+wire       b_pause  = joy0[9] | joy1[9];
+wire       tilt     = key_tilt;
+wire       service  = joy0[11] | key_test | status[10];
 
 // Keyboard handler
 
@@ -355,45 +362,43 @@ wire key_p2_up, key_p2_left, key_p2_down, key_p2_right, key_p2_a, key_p2_b, key_
 
 wire pressed = ps2_key[9];
 
-always @(posedge clk_sys) begin
-	reg old_state;
+    reg old_state;
 
-	old_state <= ps2_key[10];
-	if(old_state ^ ps2_key[10]) begin
-		casex(ps2_key[8:0])
-			'h016: key_p1_start <= pressed; // 1
-			'h01e: key_p2_start <= pressed; // 2
-			'h02E: key_p1_coin  <= pressed; // 5
-			'h036: key_p2_coin  <= pressed; // 6
-			'h006: key_test     <= pressed; // F2
-			'h004: key_reset    <= pressed; // F3
-			'h046: key_service  <= pressed; // 9
+    old_state <= ps2_key[10];
+    if(old_state ^ ps2_key[10]) begin
+        casex(ps2_key[8:0])
+            'h016: key_p1_start  <= pressed; // 1
+            'h01e: key_p2_start  <= pressed; // 2
+            'h02E: key_p1_coin   <= pressed; // 5
+            'h036: key_p2_coin   <= pressed; // 6
+            'h006: key_test      <= key_test ^ pressed; // f2
+            'h004: key_reset     <= pressed; // F3
+            'h046: key_service   <= pressed; // 9
+            'h046: key_tilt      <= pressed; // t
 
-			'hX75: key_p1_up    <= pressed; // up
-			'hX72: key_p1_down  <= pressed; // down
-			'hX6b: key_p1_left  <= pressed; // left
-			'hX74: key_p1_right <= pressed; // right
-			'h014: key_p1_a     <= pressed; // lctrl
-			'h011: key_p1_b     <= pressed; // lalt
-			'h029: key_p1_c     <= pressed; // space
+            'hX75: key_p1_up     <= pressed; // up
+            'hX72: key_p1_down   <= pressed; // down
+            'hX6b: key_p1_left   <= pressed; // left
+            'hX74: key_p1_right  <= pressed; // right
+            'h014: key_p1_a      <= pressed; // lctrl
+            'h011: key_p1_b      <= pressed; // lalt
+            'h029: key_p1_c      <= pressed; // space
 
-			'h02d: key_p2_up    <= pressed; // r
-			'h02b: key_p2_down  <= pressed; // f
-			'h023: key_p2_left  <= pressed; // d
-			'h034: key_p2_right <= pressed; // g
-			'h01c: key_p2_a     <= pressed; // a
-			'h01b: key_p2_b     <= pressed; // s
-			'h015: key_p2_c     <= pressed; // q
-		endcase
-	end
-end
+            'h02d: key_p2_up     <= pressed; // r
+            'h02b: key_p2_down   <= pressed; // f
+            'h023: key_p2_left   <= pressed; // d
+            'h034: key_p2_right  <= pressed; // g
+            'h01c: key_p2_a      <= pressed; // a
+            'h01b: key_p2_b      <= pressed; // s
+            'h015: key_p2_c      <= pressed; // q
+        endcase
+    end
 
 // PAUSE SYSTEM
-reg        pause;                                    // Pause signal (active-high)
-reg        pause_toggle = 1'b0;                    // User paused (active-high)
-reg [31:0] pause_timer;                            // Time since pause
-reg [31:0] pause_timer_dim = 31'h11E1A300;    // Time until screen dim (10 seconds @ 48Mhz)
-reg        dim_video = 1'b0;                        // Dim video output (active-high)
+reg        pause_toggle = 1'b0;                      // User paused (active-high)
+reg [31:0] pause_timer;                              // Time since pause
+reg [31:0] pause_timer_dim = 31'h11E1A300;           // Time until screen dim (10 seconds @ 48Mhz)
+reg        dim_video = 1'b0;                         // Dim video output (active-high)
 
 // Pause when highscore module requires access, user has pressed pause, or OSD is open and option is set
 assign pause =  pause_toggle | (OSD_STATUS && ~status[7]);
@@ -698,7 +703,7 @@ always @ (posedge clk_sys) begin
             end else if ( z80_tjump_cs ) begin
                 z80_din <= sw[3];
             end else if ( z80_system_cs ) begin
-                z80_din <= { 1'b0, p2_start, p1_start, p2_coin, p1_coin, 1'b0, 1'b0, key_service };
+                z80_din <= { 1'b0, p2_start, p1_start, p2_coin, p1_coin, key_test, key_tilt, key_service };
             end else if ( z80_sound0_cs ) begin
                 z80_din <= opl_dout;
             end else begin
@@ -1177,7 +1182,7 @@ always @ (posedge clk_sys) begin
             
             
             // is sprite visible and is current y in sprite y range
-			// sprite pos can be negative?
+            // sprite pos can be negative?
         if ( sprite_hidden == 0 && sprite_width > 0 && ( $signed(y_flipped) >= $signed(sprite_pos_y) ) && $signed(y_flipped) < ( $signed(sprite_pos_y) + $signed(sprite_height) ) ) begin            
                 sprite_state <= 5 ;
             end else if ( sprite_num > 0 ) begin 
