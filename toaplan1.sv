@@ -355,7 +355,7 @@ wire       service  = joy0[10] | key_test | status [9];
 // Keyboard handler
 
 wire key_p1_start, key_p2_start, key_p1_coin, key_p2_coin;
-wire key_test, key_reset, key_tilt, key_service;
+wire key_pause, key_test, key_reset, key_tilt, key_service;
 
 wire key_p1_up, key_p1_left, key_p1_down, key_p1_right, key_p1_a, key_p1_b, key_p1_c;
 wire key_p2_up, key_p2_left, key_p2_down, key_p2_right, key_p2_a, key_p2_b, key_p2_c;
@@ -397,53 +397,55 @@ always @(posedge clk_sys) begin
 end
 
 // PAUSE SYSTEM
-wire    pause_cpu;
-wire    hs_pause;
+// wire    pause_cpu;
+// wire    hs_pause;
 
-pause #(4,4,4,48) pause (
-    .clk_sys(clk_sys),
-    .reset(reset),
-    .user_button(b_pause),
-    .pause_request(hs_pause),
-    .options(~status[26:25]),
-    .pause_cpu(pause_cpu),
-    .OSD_STATUS(0),
-    .r(rgb[11:8]),
-    .g(rgb[7:4]),
-    .b(rgb[3:0]),
-);
+//pause #(4,4,4,48) pause (
+//    .clk_sys(clk_sys),
+//    .reset(reset),
+//    .user_button(b_pause),
+//    .pause_request(hs_pause),
+//    .options(~status[26:25]),
+//    .pause_cpu(pause_cpu),
+//    .OSD_STATUS(0),
+//    .r(rgb_out[11:8]),
+//    .g(rgb_out[7:4]),
+//    .b(rgb_out[3:0]),
+//);
+
+
 // PAUSE SYSTEM
-// reg        pause;                                    // Pause signal (active-high)
-// reg        pause_toggle = 1'b0;                      // User paused (active-high)
-// reg [31:0] pause_timer;                              // Time since pause
-// reg [31:0] pause_timer_dim = 31'h11E1A300;           // Time until screen dim (10 seconds @ 48Mhz)
-// reg        dim_video = 1'b0;                         // Dim video output (active-high)
+reg        pause;                                    // Pause signal (active-high)
+reg        pause_toggle = 1'b0;                      // User paused (active-high)
+reg [31:0] pause_timer;                              // Time since pause
+reg [31:0] pause_timer_dim = 31'h11E1A300;           // Time until screen dim (10 seconds @ 48Mhz)
+reg        dim_video = 1'b0;                         // Dim video output (active-high)
 
 // Pause when highscore module requires access, user has pressed pause, or OSD is open and option is set
-// assign pause =  pause_toggle | (OSD_STATUS && ~status[7]);
-// assign dim_video = (pause_timer >= pause_timer_dim);
+assign pause =  pause_toggle | (OSD_STATUS && ~status[7]);
+assign dim_video = (pause_timer >= pause_timer_dim);
 
 reg [1:0] adj_layer ;
 reg [15:0] scroll_adj_x [3:0];
 reg [15:0] scroll_adj_y [3:0];
 reg layer_en [3:0];
 
-// reg old_pause;
+reg old_pause;
 
-// always @(posedge clk_sys) begin
-//    old_pause <= b_pause;
-//    if (~old_pause & b_pause) begin
-//        pause_toggle <= ~pause_toggle;
-//    end
-//    if (pause_toggle) begin
-//        if (pause_timer < pause_timer_dim)
-//        begin
-//            pause_timer <= pause_timer + 1'b1;
-//        end
-//    end    else begin
-//        pause_timer <= 1'b0;
-//    end
-//end
+always @(posedge clk_sys) begin
+    old_pause <= b_pause;
+    if (~old_pause & b_pause) begin
+        pause_toggle <= ~pause_toggle;
+    end
+    if (pause_toggle) begin
+        if (pause_timer < pause_timer_dim)
+        begin
+            pause_timer <= pause_timer + 1'b1;
+        end
+    end    else begin
+        pause_timer <= 1'b0;
+    end
+end
 
 wire        ioctl_download;
 wire        ioctl_upload;
@@ -627,8 +629,9 @@ fx68k fx68k (
     .oHALTEDn(cpu_halted_n),
 
     // input
-    .VPAn( vpa_n ),  
-    .DTACKn(dtack_n),     
+    .VPAn( vpa_n ),
+    .DTACKn(dtack_n),
+//    .DTACKn(dtack_n | pause_cpu ),
     .BERRn(1'b1), 
     .BRn(1'b1),  
     .BGACKn(1'b1),
