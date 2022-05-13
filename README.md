@@ -52,7 +52,7 @@ The intent is for this core to be a 1:1 implementation of Toaplan V1 hardware. C
 H-Sync | V-Sync | Source | Title |
 -------|--------|--------|-------|
 15.556938kHz | 55.161153Hz  | DSLogic + | Out Zone, Rally Bike, Demon's World
-15.873015kHz | 57.788947Hz  | DSLogic + | Tatsujin, Vimana, Fire Shark, Zero Wing, Hellfire
+15.556938kHz | 57.612182Hz  | DSLogic + | Tatsujin, Vimana, Fire Shark, Zero Wing, Hellfire
 
 ### Crystal Oscillators
 
