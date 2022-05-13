@@ -30,4 +30,4 @@ set_global_assignment -name VHDL_FILE rtl/t80/T80.vhd
 set_global_assignment -name VHDL_FILE rtl/t80/T80pa.vhd
 
 set_global_assignment -name QIP_FILE rtl/jtopl/hdl/jt26.qip
-set_global_assignment -name VERILOG_FILE rtl/jtopl/hdl/jtopl.v 
+set_global_assignment -name QIP_FILE rtl/jtopl/hdl/jtopl2.qip
