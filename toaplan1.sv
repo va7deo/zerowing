@@ -224,8 +224,9 @@ localparam CONF_STR = {
     "P3,Debug;",
     "P3-;",
     "P3O8,Turbo (68k),Off,On;",
-    "P3OA,Service Menu,Off,On;",
+    "P3O9,Service Menu,Off,On;",
     "P3-;",
+    "-;",
     "R0,Reset;",
     "J1,Button 1,Button 2,Button 3,Start,Coin,Pause;",
     "jn,A,B,X,R,L,Start;",	       // name mapping
@@ -348,9 +349,8 @@ wire       p1_start = joy0[7] | key_p1_start;
 wire       p2_start = joy1[7] | key_p2_start;
 wire       p1_coin  = joy0[8] | key_p1_coin;
 wire       p2_coin  = joy1[8] | key_p2_coin;
-wire       b_pause  = joy0[9] | joy1[9];
-wire       tilt     = key_tilt;
-wire       service  = joy0[11] | key_test | status[10];
+wire       b_pause  = joy0[9] | joy1[9] | key_pause;
+wire       service  = joy0[10] | key_test | status [9];
 
 // Keyboard handler
 
@@ -372,7 +372,7 @@ always @(posedge clk_sys) begin
             'h01e: key_p2_start  <= pressed; // 2
             'h02E: key_p1_coin   <= pressed; // 5
             'h036: key_p2_coin   <= pressed; // 6
-            'h006: key_test      <= key_test ^ pressed; // f2
+            'h006: key_test      <= key_test ^ pressed; // F2
             'h004: key_reset     <= pressed; // F3
             'h046: key_service   <= pressed; // 9
             'h046: key_tilt      <= pressed; // t
@@ -397,37 +397,53 @@ always @(posedge clk_sys) begin
 end
 
 // PAUSE SYSTEM
-reg        pause;                                    // Pause signal (active-high)
-reg        pause_toggle = 1'b0;                      // User paused (active-high)
-reg [31:0] pause_timer;                              // Time since pause
-reg [31:0] pause_timer_dim = 31'h11E1A300;           // Time until screen dim (10 seconds @ 48Mhz)
-reg        dim_video = 1'b0;                         // Dim video output (active-high)
+wire    pause_cpu;
+wire    hs_pause;
+
+pause #(4,4,4,48) pause (
+    .clk_sys(clk_sys),
+    .reset(reset),
+    .user_button(b_pause),
+    .pause_request(hs_pause),
+    .options(~status[26:25]),
+    .pause_cpu(pause_cpu),
+    .OSD_STATUS(0),
+    .r(rgb[11:8]),
+    .g(rgb[7:4]),
+    .b(rgb[3:0]),
+);
+// PAUSE SYSTEM
+// reg        pause;                                    // Pause signal (active-high)
+// reg        pause_toggle = 1'b0;                      // User paused (active-high)
+// reg [31:0] pause_timer;                              // Time since pause
+// reg [31:0] pause_timer_dim = 31'h11E1A300;           // Time until screen dim (10 seconds @ 48Mhz)
+// reg        dim_video = 1'b0;                         // Dim video output (active-high)
 
 // Pause when highscore module requires access, user has pressed pause, or OSD is open and option is set
-assign pause =  pause_toggle | (OSD_STATUS && ~status[7]);
-assign dim_video = (pause_timer >= pause_timer_dim);
+// assign pause =  pause_toggle | (OSD_STATUS && ~status[7]);
+// assign dim_video = (pause_timer >= pause_timer_dim);
 
 reg [1:0] adj_layer ;
 reg [15:0] scroll_adj_x [3:0];
 reg [15:0] scroll_adj_y [3:0];
 reg layer_en [3:0];
 
-reg old_pause;
+// reg old_pause;
 
-always @(posedge clk_sys) begin
-    old_pause <= b_pause;
-    if (~old_pause & b_pause) begin
-        pause_toggle <= ~pause_toggle;
-    end
-    if (pause_toggle) begin
-        if (pause_timer < pause_timer_dim)
-        begin
-            pause_timer <= pause_timer + 1'b1;
-        end
-    end    else begin
-        pause_timer <= 1'b0;
-    end
-end
+// always @(posedge clk_sys) begin
+//    old_pause <= b_pause;
+//    if (~old_pause & b_pause) begin
+//        pause_toggle <= ~pause_toggle;
+//    end
+//    if (pause_toggle) begin
+//        if (pause_timer < pause_timer_dim)
+//        begin
+//            pause_timer <= pause_timer + 1'b1;
+//        end
+//    end    else begin
+//        pause_timer <= 1'b0;
+//    end
+//end
 
 wire        ioctl_download;
 wire        ioctl_upload;
