@@ -355,7 +355,7 @@ wire       service  = joy0[11] | key_test | status[10];
 // Keyboard handler
 
 wire key_p1_start, key_p2_start, key_p1_coin, key_p2_coin;
-wire key_test, key_reset, key_service;
+wire key_test, key_reset, key_tilt, key_service;
 
 wire key_p1_up, key_p1_left, key_p1_down, key_p1_right, key_p1_a, key_p1_b, key_p1_c;
 wire key_p2_up, key_p2_left, key_p2_down, key_p2_right, key_p2_a, key_p2_b, key_p2_c;
