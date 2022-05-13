@@ -669,7 +669,7 @@ always @ (posedge clk_sys) begin
     if ( reset == 1 ) begin
         z80_wait_n <= 0;
         sound_wr <= 0 ;
-    end else if ( clk_7M == 1 ) begin
+    end else if ( clk_3_5M == 1 ) begin
 
         z80_wait_n <= 1;
         
@@ -734,8 +734,11 @@ wire opl_sample_clk;
 jtopl #(.OPL_TYPE(2)) jtopl2
 (
     .rst(~reset_n),
-    .clk(clk_3_5M),
-    .cen('1),
+    .clk(clk_sys),
+    .cen(clk_3_5M),
+    
+//    .clk(clk_3_5M),
+//    .cen('1),
     .din(sound_data),
     .addr(sound_addr),
     .cs_n('0),
@@ -753,9 +756,10 @@ end
 
 T80pa u_cpu(
     .RESET_n    ( reset_n ),
-    .CLK        ( clk_7M ),
-    .CEN_p      ( 1'b1 ),     
-    .CEN_n      ( 1'b1 ),
+    .CLK        ( clk_sys ),
+    .CEN_p      ( clk_3_5M ),     
+    .CEN_n      ( ~clk_3_5M ),
+
     .WAIT_n     ( z80_wait_n ), // don't wait if data is valid or rom access isn't selected
     .INT_n      ( opl_irq_n ),  // opl timer
     .NMI_n      ( 1'b1 ),
@@ -1693,7 +1697,7 @@ ram4kx8dp shared_ram (
     .data_a ( cpu_dout[7:0]  ),
     .q_a ( cpu_shared_dout[7:0] ),
 
-    .clock_b ( clk_7M ),  // z80 clock is 3.5M
+    .clock_b ( clk_3_5M ),  // z80 clock is 3.5M
     .address_b ( z80_addr[11:0] ),
     .data_b ( z80_dout ),
     .wren_b ( sound_ram_1_cs & ~z80_wr_n ),
