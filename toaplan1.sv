@@ -362,6 +362,7 @@ wire key_p2_up, key_p2_left, key_p2_down, key_p2_right, key_p2_a, key_p2_b, key_
 
 wire pressed = ps2_key[9];
 
+always @(posedge clk_sys) begin
     reg old_state;
 
     old_state <= ps2_key[10];
@@ -393,8 +394,10 @@ wire pressed = ps2_key[9];
             'h015: key_p2_c      <= pressed; // q
         endcase
     end
+end
 
 // PAUSE SYSTEM
+reg        pause;                                    // Pause signal (active-high)
 reg        pause_toggle = 1'b0;                      // User paused (active-high)
 reg [31:0] pause_timer;                              // Time since pause
 reg [31:0] pause_timer_dim = 31'h11E1A300;           // Time until screen dim (10 seconds @ 48Mhz)
