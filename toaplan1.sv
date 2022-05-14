@@ -102,6 +102,7 @@ module emu
     // b[0]: osd button
     output  [1:0] BUTTONS,
 
+    //Audio
     input         CLK_AUDIO, // 24.576 MHz
     output [15:0] AUDIO_L,
     output [15:0] AUDIO_R,
@@ -184,7 +185,8 @@ assign VGA_SCALER= 0;
 assign HDMI_FREEZE = 0;
 
 assign USER_OUT  = '1;
-assign AUDIO_MIX = 0;
+assign AUDIO_MIX = 0; // 0 - no mix, 1 - 25%, 2 - 50%, 3 - 100% (mono)
+
 //assign LED_USER  = ioctl_download ;
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
@@ -229,7 +231,7 @@ localparam CONF_STR = {
     "-;",
     "R0,Reset;",
     "J1,Button 1,Button 2,Button 3,Start,Coin,Pause;",
-    "jn,A,B,X,R,L,Start;",	       // name mapping
+    "jn,A,B,X,R,L,Start;",       // name mapping
     "V,v",`BUILD_DATE
 };
 
@@ -314,7 +316,7 @@ always @(posedge clk_sys) begin
 end
 
 // Status bits
-wire [31:0] status;
+wire [63:0] status;
 
 // Video settings
 wire        forced_scandoubler;
@@ -375,7 +377,7 @@ always @(posedge clk_sys) begin
             'h006: key_test      <= key_test ^ pressed; // F2
             'h004: key_reset     <= pressed; // F3
             'h046: key_service   <= pressed; // 9
-            'h046: key_tilt      <= pressed; // t
+            'h02c: key_tilt      <= pressed; // t
 
             'hX75: key_p1_up     <= pressed; // up
             'hX72: key_p1_down   <= pressed; // down
@@ -422,7 +424,7 @@ reg [31:0] pause_timer_dim = 31'h11E1A300;           // Time until screen dim (1
 reg        dim_video = 1'b0;                         // Dim video output (active-high)
 
 // Pause when highscore module requires access, user has pressed pause, or OSD is open and option is set
-assign pause =  pause_toggle | (OSD_STATUS && ~status[7]);
+assign pause =  pause_toggle | (OSD_STATUS && ~status[26:25]);
 assign dim_video = (pause_timer >= pause_timer_dim);
 
 reg [1:0] adj_layer ;
@@ -499,6 +501,7 @@ wire [8:0] hc;
 wire [8:0] vc;
 
 wire no_rotate = orientation | direct_video;
+wire video_rotated;
 wire rotate_ccw = 1;
 wire bcu_flip_cs;
 wire fcu_flip_cs;
@@ -725,7 +728,7 @@ always @ (posedge clk_sys) begin
             end else if ( z80_tjump_cs ) begin
                 z80_din <= sw[3];
             end else if ( z80_system_cs ) begin
-                z80_din <= { 1'b0, p2_start, p1_start, p2_coin, p1_coin, key_test, key_tilt, key_service };
+                z80_din <= { 1'b0, p2_start, p1_start, p2_coin, p1_coin, service, key_tilt, key_service };
             end else if ( z80_sound0_cs ) begin
                 z80_din <= opl_dout;
             end else begin
