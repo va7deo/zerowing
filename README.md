@@ -43,7 +43,7 @@ The intent is for this core to be a 1:1 implementation of Toaplan V1 hardware. C
 - Clock domains need to be verified (Vimana)  
 - Sprite handler for Dash Yarou  
 - HD647180X (Z180) sound implementation  
-- jtopl2 percussion mix  
+- Audio issues known, may be an issue with the jtopl2 core or the current usage (No need to report further audio issues)  
 
 # PCB Check List
 

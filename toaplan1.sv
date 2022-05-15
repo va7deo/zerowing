@@ -209,7 +209,7 @@ wire turbo_68k = status[7];
 // 0         1         2         3          4         5         6   
 // 01234567890123456789012345678901 23456789012345678901234567890123
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
-// XXXXXXXXXXXXXX          XXXXXXXX                                 
+// XXXXXXXXXXXXXX X        XXXXXXXX                                 
 
 assign VIDEO_ARX = (!aspect_ratio) ? (orientation  ? 8'd4 : 8'd3) : (aspect_ratio - 1'd1);
 assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
@@ -237,6 +237,7 @@ localparam CONF_STR = {
     "P3O7,Turbo (68k),Off,On;",
     "P3O8,Service Menu,Off,On;",
     "P3-;",
+    "P3OF,Framerate,Off,On;",
     "-;",
     "R0,Reset;",
     "J1,Button 1,Button 2,Button 3,Start,Coin,Pause;",
@@ -351,7 +352,7 @@ wire       p1_right   = joy0[0] | key_p1_right;
 wire [2:0] p1_buttons = joy0[6:4] | {key_p1_c, key_p1_b, key_p1_a};
 
 wire       p2_up      = joy1[3] | key_p2_up;
-wire       p2_down    = joy1[2] | key_p2_down;
+wire       p2_down    = joy1[2] | key_p2_down | status[15];
 wire       p2_left    = joy1[1] | key_p2_left;
 wire       p2_right   = joy1[0] | key_p2_right;
 wire [2:0] p2_buttons = joy1[6:4] | {key_p2_c, key_p2_b, key_p2_a};
@@ -744,9 +745,9 @@ always @ (posedge clk_sys) begin
             end else if ( z80_p2_cs ) begin
                 z80_din <= { 1'b0, p2_buttons, p2_right, p2_left, p2_down, p2_up };
             end else if ( z80_dswa_cs ) begin
-                z80_din <= sw0;
+                z80_din <= sw[0];
             end else if ( z80_dswb_cs ) begin
-                z80_din <= sw1;
+                z80_din <= sw[1];
             end else if ( z80_tjump_cs ) begin
                 z80_din <= sw[3];
             end else if ( z80_system_cs ) begin
@@ -770,9 +771,8 @@ always @ (posedge clk_sys) begin
     end
 end
 
-// (status[] | sw[0][7] ),
-reg sw0 <= ~ { ~sw[0][7],~sw[0][6],~sw[0][5],~sw[0][4],~sw[0][3],~sw[0][2],~sw[0][1],~sw[0][0] };
-reg sw1 <= ~ { ~sw[1][7],~sw[1][6],~sw[1][5],~sw[1][4],~sw[1][3],~sw[1][2],~sw[1][1],~sw[1][0] };
+wire framerate = sw[0][0] && sw[1][7];
+assign framerate = status[15];
 
 reg  [1:0] sound_addr ;
 reg  [7:0] sound_data ;
