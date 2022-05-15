@@ -37,6 +37,13 @@ module emu
     //Base video clock. Usually equals to CLK_SYS.
     output        CLK_VIDEO,
 
+    //Enable Y/C output
+`ifdef MISTER_ENABLE_YC
+    output [39:0] CHROMA_PHASE_INC,
+    output        YC_EN,
+    output        PALFLAG,
+`endif
+
     //Multiple resolutions are supported using different CE_PIXEL rates.
     //Must be based on CLK_VIDEO
     output        CE_PIXEL,
@@ -195,13 +202,14 @@ assign BUTTONS = 0;
 wire [1:0] aspect_ratio = status[2:1];
 wire orientation = ~status[3];
 wire [2:0] scan_lines = status[6:4];
-wire turbo_68k = status[8];
+wire turbo_68k = status[7];
 
 // Status Bit Map:
-//              Upper                          Lower
-// 0         1         2         3          4         5         6
+//              Upper                          Lower                
+// 0         1         2         3          4         5         6   
 // 01234567890123456789012345678901 23456789012345678901234567890123
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
+// XXXXXXXXXXXXXX          XXXXXXXX                                 
 
 assign VIDEO_ARX = (!aspect_ratio) ? (orientation  ? 8'd4 : 8'd3) : (aspect_ratio - 1'd1);
 assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
@@ -216,17 +224,18 @@ localparam CONF_STR = {
     "P1O3,Orientation,Horz,Vert;",
     "P1-;",
     "P1O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
+    "P1OB,Video Signal,RGBS/YPbPr,Y/C;",
     "P1OOR,H-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
     "P1OSV,V-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
 //    "-;",
 //    "P2,Pause options;",
-//    "P2OP,Pause when OSD is open,On,Off;",
-//    "P2OQ,Dim video after 10s,On,Off;",
+//    "P2OC,Pause when OSD is open,On,Off;",
+//    "P2OD,Dim video after 10s,On,Off;",
     "DIP;",
     "P3,Debug;",
     "P3-;",
-    "P3O8,Turbo (68k),Off,On;",
-    "P3O9,Service Menu,Off,On;",
+    "P3O7,Turbo (68k),Off,On;",
+    "P3O8,Service Menu,Off,On;",
     "P3-;",
     "-;",
     "R0,Reset;",
@@ -352,7 +361,7 @@ wire       p2_start = joy1[7] | key_p2_start;
 wire       p1_coin  = joy0[8] | key_p1_coin;
 wire       p2_coin  = joy1[8] | key_p2_coin;
 wire       b_pause  = joy0[9] | joy1[9] | key_pause;
-wire       service  = joy0[10] | key_test | status [9];
+wire       service  = joy0[10] | key_test | status[8];
 
 // Keyboard handler
 
@@ -378,7 +387,7 @@ always @(posedge clk_sys) begin
             'h004: key_reset     <= pressed; // F3
             'h046: key_service   <= pressed; // 9
             'h02c: key_tilt      <= pressed; // t
-            'h04D: key_pause      <= pressed; // p
+            'h04D: key_pause     <= pressed; // p
 
             'hX75: key_p1_up     <= pressed; // up
             'hX72: key_p1_down   <= pressed; // down
@@ -408,7 +417,7 @@ pause #(4,4,4,48) pause (
     .reset(reset),
     .user_button(b_pause),
     .pause_request(hs_pause),
-    .options(~status[26:25]),
+    .options(~status[13:12]),
     .pause_cpu(pause_cpu),
     .OSD_STATUS(0),
     .r(rgb_out[11:8]),
@@ -429,7 +438,7 @@ reg layer_en [3:0];
 // reg        dim_video = 1'b0;                         // Dim video output (active-high)
 
 // Pause when highscore module requires access, user has pressed pause, or OSD is open and option is set
-// assign pause =  pause_toggle | (OSD_STATUS && ~status[26:25]);
+// assign pause =  pause_toggle | (OSD_STATUS && ~status[13:12]);
 // assign dim_video = (pause_timer >= pause_timer_dim);
 
 // reg old_pause;
@@ -527,6 +536,23 @@ arcade_video #(320,24) arcade_video
 
         .fx(scan_lines)
 );
+
+/* 	Phase Accumulator Increments (Fractional Size 32, look up size 8 bit, total 40 bits)
+    Increment Calculation - (Output Clock * 2 ^ Word Size) / Reference Clock
+    Example
+    NTSC = 3.579545
+    W = 40 ( 32 bit fraction, 8 bit look up reference)
+    Ref CLK = 42.954544 (This could us any clock)
+    NTSC_Inc = 3.579545333 * 2 ^ 40 / 96 = 40997413706
+*/
+
+// SET PAL and NTSC TIMING
+`ifdef MISTER_ENABLE_YC
+    assign CHROMA_PHASE_INC = PALFLAG ? 40'd40997413706 : 40'd40997413706;
+    assign YC_EN =  status[11];
+    assign PALFLAG = status[10];
+`endif
+
 
 wire reset;
 assign reset = RESET | status[0] | (ioctl_download & !ioctl_index) | buttons[1] | key_reset;
@@ -718,9 +744,9 @@ always @ (posedge clk_sys) begin
             end else if ( z80_p2_cs ) begin
                 z80_din <= { 1'b0, p2_buttons, p2_right, p2_left, p2_down, p2_up };
             end else if ( z80_dswa_cs ) begin
-                z80_din <= sw[0];
+                z80_din <= sw0;
             end else if ( z80_dswb_cs ) begin
-                z80_din <= sw[1];
+                z80_din <= sw1;
             end else if ( z80_tjump_cs ) begin
                 z80_din <= sw[3];
             end else if ( z80_system_cs ) begin
@@ -743,6 +769,10 @@ always @ (posedge clk_sys) begin
 
     end
 end
+
+// (status[] | sw[0][7] ),
+reg sw0 <= ~ { ~sw[0][7],~sw[0][6],~sw[0][5],~sw[0][4],~sw[0][3],~sw[0][2],~sw[0][1],~sw[0][0] };
+reg sw1 <= ~ { ~sw[1][7],~sw[1][6],~sw[1][5],~sw[1][4],~sw[1][3],~sw[1][2],~sw[1][1],~sw[1][0] };
 
 reg  [1:0] sound_addr ;
 reg  [7:0] sound_data ;
