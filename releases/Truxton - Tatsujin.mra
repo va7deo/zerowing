@@ -7,9 +7,9 @@
   <category>Shoot 'em up</category>
   <rbf>toaplan1</rbf>
 
-  <buttons names="Shot,Bomb,-,Start,Coin" default="A,B,R,L"/>
+  <buttons names="Shot,Bomb,-,Start,Coin,Pause" default="A,B,R,L,Start"/>
 
-  <switches default="00,00,00,00">
+  <switches default="01,00,00,00,00,00,00,00">
     <!-- DSWA -->
     <dip name="Cabinet" bits="0" ids="Cocktail,Upright"/>
     <dip name="Flip Screen" bits="1" ids="Off,On"/>
@@ -19,18 +19,19 @@
     <dip name="Coin B" bits="6,7" ids="1/1,1/2,1/2,1/3,2/1,1/4,2/3,1/6"/>
     <!-- DSWB -->
     <dip name="Difficulty" bits="8,9" ids="Normal,Easy,Hard,Very Hard"/>
-    <dip name="Bonus Life" bits="10,11" ids="70k 270k 200k+,50k 200k 150k+,100k Only,None"/>
+    <dip name="Bonus Life" bits="10,11" ids="70/270/200k(E),50/200/150k(E),100k,None"/>
     <dip name="Lives" bits="12,13" ids="3,5,4,2"/>
     <dip name="Dip Switch Display" bits="14" ids="Off,On"/>
     <dip name="Allow Continue" bits="15" ids="Yes,No"/>
     <!-- SYSTEM -->
     <dip name="Test Switch" bits="18" ids="Off,On"/>
     <!-- TJUMP -->
-    <dip name="Region" bits="24,26" ids="Japan,USA,Europe"/>
+    <dip name="Region" bits="24,26" ids="Japan,USA,Europe,Europe (0),USA (1),USA (2),Europe (1),Europe (2)"/>
   </switches>
 
   <!-- ROM data -->
   <rom index="0" zip="truxton.zip" md5="None">
+
     <!-- maincpu - starts at 0x0 -->
     <interleave output="16">
         <part name="b65_11.bin" crc="1a62379a" map="01"/>
@@ -57,6 +58,8 @@
 
     <!-- audiocpu - starts at 0x200000 -->
     <part name="b65_09.bin" crc="1bdd4ddc"/>
+
+    <!-- Total 0x204000 bytes - 2064 kBytes -->
   </rom>
 
   <rom index="1">

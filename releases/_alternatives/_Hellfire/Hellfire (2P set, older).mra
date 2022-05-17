@@ -7,9 +7,9 @@
   <category>Shoot 'em up</category>
   <rbf>toaplan1</rbf>
 
-  <buttons names="Shot,Shot Direction,-,Start,Coin" default="A,B,R,L"/>
+  <buttons names="Shot,Shot Direction,-,Start,Coin,Pause" default="A,B,R,L,Start"/>
 
-  <switches default="00,00,00,00">
+  <switches default="00,00,00,00,00,00,00,00">
     <!-- DSWA -->
     <dip name="Flip Screen" bits="1" ids="Off,On"/>
     <dip name="Service Mode" bits="2" ids="Off,On"/>
@@ -18,17 +18,18 @@
     <dip name="Coin B" bits="6,7" ids="1/1,1/2,1/2,1/3,2/1,1/4,2/3,1/6"/>
     <!-- DSWB -->
     <dip name="Difficulty" bits="8,9" ids="Normal,Easy,Hard,Very Hard"/>
-    <dip name="Bonus Life" bits="10,11" ids="70k 270k 200k+,100k 350k 250k+,100k Only,200k Only"/>
+    <dip name="Bonus Life" bits="10,11" ids="70/270/200k(E),100/350/250k(E),100k,200k"/>
     <dip name="Lives" bits="12,13" ids="3,5,4,2"/>
     <dip name="Dip Switch Display" bits="14" ids="Off,On"/>
     <!-- SYSTEM -->
     <dip name="Test Switch" bits="18" ids="Off,On"/>
     <!-- TJUMP -->
-    <dip name="Region" bits="24,25" ids="Japan,USA,Europe"/>
+    <dip name="Region" bits="24,25" ids="Japan,USA,Europe,Europe (0)"/>
   </switches>
 
   <!-- ROM data -->
-  <rom index="0" zip="hellfire.zip" md5="None">
+  <rom index="0" zip="hellfire2a.zip|hellfire.zip" md5="None">
+
     <!-- maincpu - starts at 0x0 -->
     <interleave output="16">
         <part name="b90_01.0" crc="c94acf53" map="01"/>
@@ -55,6 +56,8 @@
 
     <!-- audiocpu - starts at 0x200000 -->
     <part name="b90_03.2" crc="4058fa67"/>
+
+    <!-- Total 0x208000 bytes - 2080 kBytes -->
   </rom>
 
   <rom index="1">

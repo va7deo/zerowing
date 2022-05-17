@@ -209,7 +209,7 @@ wire turbo_68k = status[7];
 // 0         1         2         3          4         5         6   
 // 01234567890123456789012345678901 23456789012345678901234567890123
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
-// XXXXXXXXXXXXXX X        XXXXXXXX                                 
+// XXXXXXXXXXXX            XXXXXXXX                                 
 
 assign VIDEO_ARX = (!aspect_ratio) ? (orientation  ? 8'd4 : 8'd3) : (aspect_ratio - 1'd1);
 assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
@@ -220,30 +220,29 @@ localparam CONF_STR = {
     "-;",
     "P1,Video Settings;",
     "P1-;",
-    "P1O12,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
+    "P1O12,Aspect Ratio,Original,Full Screen,[ARC1],[ARC2];",
     "P1O3,Orientation,Horz,Vert;",
     "P1-;",
     "P1O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
-    "P1OB,Video Signal,RGBS/YPbPr,Y/C;",
+    "P1OL,Video Signal,RGBS/YPbPr,Y/C;",
     "P1OOR,H-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
     "P1OSV,V-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
 //    "-;",
 //    "P2,Pause options;",
-//    "P2OC,Pause when OSD is open,On,Off;",
-//    "P2OD,Dim video after 10s,On,Off;",
+//    "P2OA,Pause when OSD is open,On,Off;",
+//    "P2OB,Dim video after 10s,On,Off;",
     "DIP;",
     "P3,Debug;",
     "P3-;",
     "P3O7,Turbo (68k),Off,On;",
     "P3O8,Service Menu,Off,On;",
-    "P3-;",
-    "P3OF,Framerate,Off,On;",
     "-;",
     "R0,Reset;",
     "J1,Button 1,Button 2,Button 3,Start,Coin,Pause;",
-    "jn,A,B,X,R,L,Start;",       // name mapping
+    "jn,A,B,X,R,L,Start;", // name mapping
     "V,v",`BUILD_DATE
 };
+
 
 // CLOCKS
 
@@ -352,7 +351,7 @@ wire       p1_right   = joy0[0] | key_p1_right;
 wire [2:0] p1_buttons = joy0[6:4] | {key_p1_c, key_p1_b, key_p1_a};
 
 wire       p2_up      = joy1[3] | key_p2_up;
-wire       p2_down    = joy1[2] | key_p2_down | status[15];
+wire       p2_down    = joy1[2] | key_p2_down;
 wire       p2_left    = joy1[1] | key_p2_left;
 wire       p2_right   = joy1[0] | key_p2_right;
 wire [2:0] p2_buttons = joy1[6:4] | {key_p2_c, key_p2_b, key_p2_a};
@@ -413,17 +412,17 @@ end
 wire    pause_cpu;
 wire    hs_pause;
 
-pause #(4,4,4,48) pause (
+pause #(8,8,8,70) pause (
     .clk_sys(clk_sys),
     .reset(reset),
     .user_button(b_pause),
     .pause_request(hs_pause),
-    .options(~status[13:12]),
+    .options(~status[11:10]),
     .pause_cpu(pause_cpu),
     .OSD_STATUS(0),
-    .r(rgb_out[11:8]),
-    .g(rgb_out[7:4]),
-    .b(rgb_out[3:0]),
+    .r(rgb_out[23:16]),
+    .g(rgb_out[15:8]),
+    .b(rgb_out[7:0]),
 );
 
 reg [1:0] adj_layer ;
@@ -549,9 +548,9 @@ arcade_video #(320,24) arcade_video
 
 // SET PAL and NTSC TIMING
 `ifdef MISTER_ENABLE_YC
-    assign CHROMA_PHASE_INC = PALFLAG ? 40'd40997413706 : 40'd40997413706;
-    assign YC_EN =  status[11];
-    assign PALFLAG = status[10];
+    assign CHROMA_PHASE_INC = PALFLAG ? 40'd56225019281 : 40'd56225019281;
+    assign YC_EN =  status[21];
+    assign PALFLAG = status[2];
 `endif
 
 
@@ -770,9 +769,6 @@ always @ (posedge clk_sys) begin
 
     end
 end
-
-wire framerate = sw[0][0] && sw[1][7];
-assign framerate = status[15];
 
 reg  [1:0] sound_addr ;
 reg  [7:0] sound_data ;
