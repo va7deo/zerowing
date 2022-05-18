@@ -481,6 +481,7 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
     .forced_scandoubler(forced_scandoubler),
     .gamma_bus(gamma_bus),
     .direct_video(direct_video),
+    .video_rotated(video_rotated),
 
     .ioctl_download(ioctl_download),
     .ioctl_upload(ioctl_upload),
