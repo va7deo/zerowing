@@ -65,10 +65,16 @@ R1       | 28.000     | Video/Sound
 
 **Estimated geometry:**
 
-    450 pixels/line  (Out Zone, Dash Yarou, Horror Story)
-    282 lines/frame  
+_(Out Zone, Dash Yarou, Horror Story)_
+
+    450 pixels/line  
   
-    450 pixels/line  (Tatsujin, Vimana, Same!(3x), Zero Wing, Hellfire)
+    282 lines/frame  
+
+_(Tatsujin, Vimana, Same!(3x), Zero Wing, Hellfire)_
+
+    450 pixels/line  
+  
     270 lines/frame  
 
 ### Main Components
@@ -101,17 +107,17 @@ The [**Texas Instruments TMS32010**](https://en.wikipedia.org/wiki/Texas_Instrum
 # PCB Information
 
 |<p align="center">Game Debugging|
-:---: |
-|<table> <tr><th>Tatsujin</th><th>Debugging Features</th></tr><tr><td><p align="center"><img align="center" width="120" height="160" src="https://user-images.githubusercontent.com/32810066/168002706-4ce9d953-3354-4a3d-ae21-8ca35d9d8b79.png"></img></p></td><td><p align="left"> To access test mode, press P1 Start when the grid is displayed in "Service Mode".<br><br> To access sound test, press P2 Start when the grid is displayed in "Service Mode".<br><br> Turn the "Service Mode" dipswitch on in game for invulnerability.<br><br> Set the "Dip Switch Display" dipswitch to on in game to pause.<br><br> When the cabinet dipswitch is "Upright", you can use controls from both players.</p></td><tr><th>Hellfire</th><th>Debugging Features [hellfire/hellfire1]</th></tr><tr><td><img align="center" width="160" height="120" src="https://user-images.githubusercontent.com/32810066/168088336-98975efb-bc6a-4c87-a5af-1d7b9f174f2d.png"></img></td><td><p align="left"> In game, enable the "Invulnerability" dip and press P2 Start to pause; P1 Start <br>to resume.<br><br> When holding P1 Start and P2 Start, this will enable a slower framerate<br> in game.<br><br> When the cabinet dipswitch is "Upright", you can use controls from both players.</p></td><tr><th>Zero Wing</th><th>Debugging Features [zerowing]</th></tr><tr><td><img align="center" width="160" height="120" src="https://user-images.githubusercontent.com/32810066/168094988-8e159945-6152-43f9-8f73-3dd738a4bcdd.png"></img></td><td><p align="left"> In game, enable the "Invulnerability" dip and press P2 Start to pause; P1 Start <br>to resume.<br><br> When holding P1 Start and P2 Start, this will enable a slower framerate<br> in game.<br><br> When the cabinet dipswitch is "Upright", you can use controls from both players.</p></td><tr><th>Out Zone</th><th>Debugging Features [outzoneb]</th></tr><tr><td><br><p align="center"><img align="center" width="120" height="160" src="https://user-images.githubusercontent.com/32810066/168094995-0b7b919c-65b4-409b-95dd-be2b47ea2923.png"></img></p></td><td><p align="left"> Set both "Debug" dipswitches to on and reset the game. Hold P2 Down during the <br>boot sequence. <br><br>This enables the CRTC registers to be programmed for a smaller VTOTAL enabling a <br>higher framerate by reducing the edges of the screen.<br><br> This changes the native refresh rate of Out Zone from 55.2Hz to 58.5Hz and the <br>resolution from 240p to 224p. It's fully functional in the core.<br><br> <p align="center">(**This is not correctly emulated in mame**)</p></td> </table>
+|:---:|
+|<table> <tr><th>Tatsujin</th><th>Debugging Features</th></tr><tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img width="" height="" src="https://user-images.githubusercontent.com/32810066/171675808-91b88f14-3545-4c82-b239-0c93e06460df.png"></img></td><td><p align="left"> To access test mode, press P1 Start when the grid is displayed in "Service Mode".<br><br> To access sound test, press P2 Start when the grid is displayed in "Service Mode".<br><br> Turn the "Service Mode" dipswitch on in game for invulnerability.<br><br> Set the "Dip Switch Display" dipswitch to on in game to pause.<br><br> When the cabinet dipswitch is "Upright", you can use controls from both players.</p></td><tr><th>Hellfire</th><th>Debugging Features [hellfire/hellfire1]</th></tr><tr><td><img width="" height="" src="https://user-images.githubusercontent.com/32810066/171676182-50532067-4bb2-48b9-a671-a8b5aee69342.png"></img></td><td><p align="left"> In game, enable the "Invulnerability" dip and press P2 Start to pause; P1 Start <br>to resume.<br><br> When holding P1 Start and P2 Start, this will enable a slower framerate<br> in game.<br><br> When the cabinet dipswitch is "Upright", you can use controls from both players.</p></td><tr><th>Zero Wing</th><th>Debugging Features [zerowing]</th></tr><tr><td><img width="" height="" src="https://user-images.githubusercontent.com/32810066/171677271-c92a3171-2db7-461d-8279-158140cc14a9.png"></img></td><td><p align="left"> In game, enable the "Invulnerability" dip and press P2 Start to pause; P1 Start <br>to resume.<br><br> When holding P1 Start and P2 Start, this will enable a slower framerate<br> in game.<br><br> When the cabinet dipswitch is "Upright", you can use controls from both players.</p></td><tr><th>Out Zone</th><th>Debugging Features [outzoneb]</th></tr><tr><td>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img width="" height="" src="https://user-images.githubusercontent.com/32810066/171676644-d4a0ef18-8854-4c22-be1c-16112fdc6eb9.png"></img></td><td><p align="left"> Set both "Debug" dipswitches to on and reset the game. Hold P2 Down during the <br>boot sequence. <br><br>This enables the CRTC registers to be programmed for a smaller VTOTAL enabling a <br>higher framerate by reducing the edges of the screen.<br><br> This changes the native refresh rate of Out Zone from 55.2Hz to 58.5Hz and the <br>resolution from 240p to 224p. It's fully functional in the core.<br><br> <p align="center">(**This is not correctly emulated in mame**)</p></td> </table>
 
 # Control Layout
 
 Game | Joystick | Service Menu | Shared Controls | Dip Default |
 :---: | :---: | :---: | :---: | :---: |
-**Tatsujin**  | 8-Way | <img width="120" height="160" src="https://user-images.githubusercontent.com/32810066/167747857-36df66e5-723d-4f71-a78d-43ee8c0cca4d.png"> | No | **Upright**
-**Hellfire**  | 8-Way | <img width="160" height="120" src="https://user-images.githubusercontent.com/32810066/167690883-79115100-7587-44e8-9600-e62ae3b95fc5.png"> | Co-Operative | **Upright**
-**Zero Wing** | 8-Way | <img width="160" height="120" src="https://user-images.githubusercontent.com/32810066/167689998-8d41e9cb-1782-4400-9ba5-18be07ac2d6b.png"> | Co-Operative | **Upright**
-**Out Zone**  | 8-Way | <img width="120" height="160" src="https://user-images.githubusercontent.com/32810066/167690988-bf045fc4-9e78-4cdd-b167-6e55fbd3470b.png"> | Co-Operative | **Upright**
+**Tatsujin**  | 8-Way | <img width="" height="" src="https://user-images.githubusercontent.com/32810066/171675129-b1c64ea8-b345-4bc1-92f9-738a102eda67.png"> | No | **Upright**
+**Hellfire**  | 8-Way | <img width="" height="" src="https://user-images.githubusercontent.com/32810066/171675135-4f852925-c3a8-4264-af9c-ac16417c0def.png"> | Co-Operative | **Upright**
+**Zero Wing** | 8-Way | <img width="" height="" src="https://user-images.githubusercontent.com/32810066/171675142-75a94815-3bbb-4f60-a835-9a5bbb59a219.png"> | Co-Operative | **Upright**
+**Out Zone**  | 8-Way | <img width="" height="" src="https://user-images.githubusercontent.com/32810066/171675149-e2f1a6fb-fe32-49aa-9880-6218eea2e34e.png"> | Co-Operative | **Upright**
 
 <br>
 
