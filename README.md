@@ -43,6 +43,7 @@ The intent is for this core to be a 1:1 implementation of Toaplan V1 hardware. C
 - Clock domains need to be verified (Vimana)  
 - Sprite handler for Dash Yarou  
 - HD647180X (Z180) sound implementation  
+- Sprite Flicker on stage 5 (Out Zone)  
 - Audio issues known, may be an issue with the jtopl2 core or the current usage <br>(No need to report further audio issues)  
 
 # PCB Check List
@@ -59,7 +60,7 @@ H-Sync | V-Sync | Source | Title |
 Location | Freq (MHz) | Use
 ---------|------------|-------
 X1       | 10.00      | M68000
-R1       | 28.000     | Video/Sound
+R1       | 28.000     | Video / Sound
 
 **Pixel clock:** 7.00 MHz
 
