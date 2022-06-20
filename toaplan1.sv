@@ -185,7 +185,7 @@ assign HDMI_FREEZE = 0;
 
 assign USER_OUT  = '1;
 assign AUDIO_MIX = 0;
-//assign LED_USER  = ioctl_download ;
+assign LED_USER  = ioctl_download & cpu_a[0] ;
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
 assign BUTTONS = 0;
@@ -561,7 +561,7 @@ wire cpu_halted_n   ;    // Halt output
 
 // CPU busses
 wire [15:0] cpu_dout       ;
-wire [23:0] cpu_a          ;
+wire [23:0] cpu_a        /* synthesis keep */  ;
 reg  [15:0] cpu_din        ;    
 
 // CPU inputs
@@ -571,7 +571,7 @@ reg  ipl2_n ;
 wire reset_n;
 wire vpa_n = ~ ( cpu_lds_n == 0 && cpu_fc == 3'b111 ); // from outzone schematic
 
-assign cpu_a[0] = 0;           // odd memory address should cause cpu exception
+assign cpu_a[0] = reset;           // debug hack odd memory address should cause cpu exception
 
 cc_shifter cc_reset (
     .clk_out(clk_10M),
@@ -1019,7 +1019,7 @@ reg sprite_fb_w;
 reg sprite_buf_w;
 reg sprite_size_buf_w;
 
-ram1kx16dp tile_line_buffer (
+dual_port_ram #(.LEN(1024), .DATA_WIDTH(16)) tile_line_buffer (
     .clock_a ( clk_sys ),
     .address_a ( tile_fb_addr_w ),
     .wren_a ( tile_fb_w ),
@@ -1033,7 +1033,7 @@ ram1kx16dp tile_line_buffer (
     .q_b ( tile_fb_out )
     );
     
-ram1kx16dp sprite_line_buffer (
+dual_port_ram #(.LEN(1024), .DATA_WIDTH(16)) sprite_line_buffer (
     .clock_a ( clk_sys ),
     .address_a ( sprite_fb_addr_w ),
     .wren_a ( sprite_fb_w ),
@@ -1425,7 +1425,7 @@ reg [31:0] tile_buf_dout;
 reg [13:0] tile_buf_addr;
 
 
-ram16kx32dp ram_tile_buf (
+dual_port_ram #(.LEN(16384), .DATA_WIDTH(32)) ram_tile_buf (
     .clock_a ( clk_sys ),
     .address_a ( tile[13:0] ),
     .wren_a ( tile_buf_w ),
@@ -1440,7 +1440,7 @@ ram16kx32dp ram_tile_buf (
 // tile attribute ram.  each tile attribute is 2 16bit words
 // pppp ---- --cc cccc httt tttt tttt tttt = Tile number (0 - $7fff)
 // indirect access through offset register
-ram16kx16dp ram_tile_h (
+dual_port_ram #(.LEN(16384), .DATA_WIDTH(16)) ram_tile_h (
     .clock_a ( clk_10M ),
     .address_a ( curr_tile_ofs ),
     .wren_a ( tile_attr_cs & !cpu_rw ),
@@ -1453,7 +1453,7 @@ ram16kx16dp ram_tile_h (
     .q_b ( tile_attr_dout[31:16] )   
     );
     
-ram16kx16dp ram_tile_l (
+dual_port_ram #(.LEN(16384), .DATA_WIDTH(16)) ram_tile_l (
     .clock_a ( clk_10M ),
     .address_a ( curr_tile_ofs ),
     .wren_a ( tile_num_cs & !cpu_rw ),
@@ -1470,7 +1470,7 @@ ram16kx16dp ram_tile_l (
 // sprite attribute ram.  each tile attribute is 4 16bit words
 // indirect access through offset register
 // split up so 64 bits can be read in a single clock
-ram256bx16dp sprite_ram_0 (
+dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_0 (
     .clock_a ( clk_10M ),
     .address_a ( curr_sprite_ofs[9:2] ),
     .wren_a ( sprite_0_cs  & !cpu_rw),
@@ -1483,7 +1483,7 @@ ram256bx16dp sprite_ram_0 (
     .q_b ( sprite_attr_0_dout[15:0] )
     );
 
-ram256bx16dp sprite_ram_0_buf (
+dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_0_buf (
     .clock_a ( clk_sys ),
     .address_a ( sprite_buf_num ),
     .wren_a ( sprite_buf_w ),
@@ -1496,7 +1496,7 @@ ram256bx16dp sprite_ram_0_buf (
     .q_b ( sprite_attr_0_buf_dout[15:0] )
     );
     
-ram256bx16dp sprite_ram_1 (
+dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_1 (
     .clock_a ( clk_10M ),
     .address_a ( curr_sprite_ofs[9:2] ),
     .wren_a ( sprite_1_cs  & !cpu_rw ),
@@ -1509,7 +1509,7 @@ ram256bx16dp sprite_ram_1 (
     .q_b ( sprite_attr_1_dout[15:0] )
     );
     
-ram256bx16dp sprite_ram_1_buf (
+dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_1_buf (
     .clock_a ( clk_sys ),
     .address_a ( sprite_buf_num ),
     .wren_a ( sprite_buf_w ),
@@ -1522,7 +1522,7 @@ ram256bx16dp sprite_ram_1_buf (
     .q_b ( sprite_attr_1_buf_dout[15:0] )
     );
 
-ram256bx16dp sprite_ram_2 (
+dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_2 (
     .clock_a ( clk_10M ),
     .address_a ( curr_sprite_ofs[9:2] ),
     .wren_a ( sprite_2_cs  & !cpu_rw ),
@@ -1535,7 +1535,7 @@ ram256bx16dp sprite_ram_2 (
     .q_b ( sprite_attr_2_dout[15:0] )
     );
 
-ram256bx16dp sprite_ram_2_buf (
+dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_2_buf (
     .clock_a ( clk_sys ),
     .address_a ( sprite_buf_num ),
     .wren_a ( sprite_buf_w ),
@@ -1548,7 +1548,7 @@ ram256bx16dp sprite_ram_2_buf (
     .q_b ( sprite_attr_2_buf_dout[15:0] )
     );
     
-ram256bx16dp sprite_ram_3 (
+dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_3 (
     .clock_a ( clk_10M ),
     .address_a ( curr_sprite_ofs[9:2] ),
     .wren_a ( sprite_3_cs  & !cpu_rw ),
@@ -1561,7 +1561,7 @@ ram256bx16dp sprite_ram_3 (
     .q_b ( sprite_attr_3_dout[15:0] )
     );    
 
-ram256bx16dp sprite_ram_3_buf (
+dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_3_buf (
     .clock_a ( clk_sys ),
     .address_a ( sprite_buf_num ),
     .wren_a ( sprite_buf_w ),
@@ -1574,7 +1574,7 @@ ram256bx16dp sprite_ram_3_buf (
     .q_b ( sprite_attr_3_buf_dout[15:0] )
     );       
 
-ram256bx16dp sprite_ram_size (
+dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_size (
     .clock_a ( clk_10M ),
     .address_a ( curr_sprite_ofs ),
     .wren_a ( sprite_size_cs  & !cpu_rw),
@@ -1587,7 +1587,7 @@ ram256bx16dp sprite_ram_size (
     .q_b ( sprite_size_dout )
     );    
     
-ram256bx16dp sprite_ram_size_buf (
+dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_size_buf (
     .clock_a ( clk_sys ),
     .address_a ( sprite_buf_num ),
     .wren_a ( sprite_buf_w ),
@@ -1605,7 +1605,7 @@ ram256bx16dp sprite_ram_size_buf (
 // tiles  1024 15 bit values.  index is ( 6 bits from tile attribute, 4 bits from bitmap )
 // background palette ram low    
 // does this need to be byte addressable?
-ram1kx8dp tile_palram_l (
+dual_port_ram #(.LEN(1024), .DATA_WIDTH(8)) tile_palram_l (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[10:1] ),
     .wren_a ( tile_palette_cs & !cpu_rw & !cpu_lds_n),
@@ -1619,7 +1619,7 @@ ram1kx8dp tile_palram_l (
     );
 
 // background palette ram high
-ram1kx8dp tile_palram_h (
+dual_port_ram #(.LEN(1024), .DATA_WIDTH(8)) tile_palram_h (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[10:1] ),
     .wren_a ( tile_palette_cs & !cpu_rw & !cpu_uds_n),
@@ -1634,7 +1634,7 @@ ram1kx8dp tile_palram_h (
 
 // sprite palette ram low    
 // does this need to be byte addressable?
-ram1kx8dp sprite_palram_l (
+dual_port_ram #(.LEN(1024), .DATA_WIDTH(8)) sprite_palram_l (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[10:1] ),
     .wren_a ( sprite_palette_cs & !cpu_rw & !cpu_lds_n),
@@ -1648,7 +1648,7 @@ ram1kx8dp sprite_palram_l (
     );
 
 // background palette ram high
-ram1kx8dp sprite_palram_h (
+dual_port_ram #(.LEN(1024), .DATA_WIDTH(8)) sprite_palram_h (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[10:1] ),
     .wren_a ( sprite_palette_cs & !cpu_rw & !cpu_uds_n),
@@ -1663,7 +1663,7 @@ ram1kx8dp sprite_palram_h (
 
     
 // main 68k ram low                 
-ram16kx8dp    ram16kx8_L (
+dual_port_ram #(.LEN(16384), .DATA_WIDTH(8))    ram16kx8_L (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[14:1] ),
     .wren_a ( !cpu_rw & ram_cs & !cpu_lds_n ),
@@ -1672,7 +1672,7 @@ ram16kx8dp    ram16kx8_L (
     );
 
 // main 68k ram high    
-ram16kx8dp    ram16kx8_H (
+dual_port_ram #(.LEN(16384), .DATA_WIDTH(8))     ram16kx8_H (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[14:1] ),
     .wren_a ( !cpu_rw & ram_cs & !cpu_uds_n ),
@@ -1686,7 +1686,7 @@ ram16kx8dp    ram16kx8_H (
 
 // z80 and 68k shared ram   
 // 4k 
-ram4kx8dp shared_ram (
+dual_port_ram #(.LEN(4096), .DATA_WIDTH(8))  shared_ram (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[12:1] ),
     .wren_a ( shared_ram_cs & !cpu_rw & !cpu_lds_n),
@@ -1703,7 +1703,7 @@ ram4kx8dp shared_ram (
 reg [11:0] sprite_rb_addr;
 wire [15:0] sprite_rb_dout;
     
-ram4kx8dp sprite_ram_rb_l (
+dual_port_ram #(.LEN(4096), .DATA_WIDTH(8)) sprite_ram_rb_l (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[12:1] ),
     .wren_a ( sprite_ram_cs & !cpu_rw & !cpu_lds_n),
@@ -1717,7 +1717,7 @@ ram4kx8dp sprite_ram_rb_l (
     );
     
 
-ram4kx8dp sprite_ram_rb_h (
+dual_port_ram #(.LEN(4096), .DATA_WIDTH(8)) sprite_ram_rb_h (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[12:1] ),
     .wren_a ( sprite_ram_cs & !cpu_rw & !cpu_uds_n),

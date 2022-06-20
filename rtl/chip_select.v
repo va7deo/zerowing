@@ -282,24 +282,26 @@ always @(*) begin
         end
 
         pcb_rallybike: begin
-            prog_rom_cs       = m68k_cs( 'h000000, 18 );
-            ram_cs            = m68k_cs( 'h080000, 15 );
-            sprite_ram_cs     = m68k_cs( 'h0c0000,  12 );
-            shared_ram_cs     = m68k_cs( 'h180000, 12 );
+            prog_rom_cs       = m68k_cs( 'h000000, 19 );
+            ram_cs            = m68k_cs( 'h080000, 14 );
+            sprite_ram_cs     = m68k_cs( 'h0c0000, 12 );
+
+            bcu_flip_cs       = m68k_cs( 'h100000,  1 );
+            tile_ofs_cs       = m68k_cs( 'h100002,  1 );
+            tile_attr_cs      = m68k_cs( 'h100004,  1 );
+            tile_num_cs       = m68k_cs( 'h100006,  1 );
+            scroll_cs         = m68k_cs( 'h100010,  4 );
+
             vblank_cs         = m68k_cs( 'h140000,  1 );
-            frame_done_cs     = m68k_cs( 'h140000,  1 );
+            frame_done_cs     = 1'b0;
             int_en_cs         = m68k_cs( 'h140002,  1 );
             crtc_cs           = m68k_cs( 'h140008,  3 );
             
             tile_palette_cs   = m68k_cs( 'h144000, 11 );
             sprite_palette_cs = m68k_cs( 'h146000, 11 );
 
-            bcu_flip_cs       = m68k_cs( 'h100000,  1 );
-
-            tile_ofs_cs       = m68k_cs( 'h100002,  1 );
-            tile_attr_cs      = m68k_cs( 'h100004,  1 );
-            tile_num_cs       = m68k_cs( 'h100006,  1 );
-            scroll_cs         = m68k_cs( 'h100010,  4 );
+            
+            shared_ram_cs     = m68k_cs( 'h180000, 12 );
             
             scroll_ofs_x_cs   = m68k_cs( 'h1c0000,  1 );
             scroll_ofs_y_cs   = m68k_cs( 'h1c0002,  1 );
@@ -313,12 +315,21 @@ always @(*) begin
 
             z80_p1_cs         = z80_cs( 8'h00 );
             z80_p2_cs         = z80_cs( 8'h10 );
+            z80_system_cs     = z80_cs( 8'h20 );
             z80_dswa_cs       = z80_cs( 8'h40 );
             z80_dswb_cs       = z80_cs( 8'h50 );
-            z80_system_cs     = z80_cs( 8'h60 );
             z80_tjump_cs      = 1'b0;
             z80_sound0_cs     = z80_cs( 8'h60 );
             z80_sound1_cs     = z80_cs( 8'h61 );
+            
+//	map(0x00, 0x00).portr("P1");
+//	map(0x10, 0x10).portr("P2");
+//	map(0x20, 0x20).portr("SYSTEM");
+//	map(0x30, 0x30).w("coinlatch", FUNC(ls259_device::write_nibble_d0));  /* Coin counter/lockout */
+//	map(0x40, 0x40).portr("DSWA");
+//	map(0x50, 0x50).portr("DSWB");
+//	map(0x60, 0x61).rw("ymsnd", FUNC(ym3812_device::read), FUNC(ym3812_device::write));            
+    
         end
 
         default:;

@@ -105,7 +105,7 @@ end
 reg  [15:0] cache_din;
 wire [15:0] cache_dout;
 
-ram1kx16dp cache_ram (
+dual_port_ram #(.LEN(1024), .DATA_WIDTH(16)) cache_ram (
     .clock_a ( clk ),
     .address_a ( idx_r ),
     .wren_a ( state == 3 ),

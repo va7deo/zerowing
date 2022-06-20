@@ -33,77 +33,85 @@
 -- OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 -- SOFTWARE.
 
+-- 2022-05-24 Changed to use word count instead of address width
+-- and renamed ports to match quartus IP naming
+
 library ieee;
 use ieee.std_logic_1164.all;
 use ieee.numeric_std.all;
+use ieee.math_real.all;
+
+--use work.common.all;
+use work.math.all;
 
 library altera_mf;
 use altera_mf.altera_mf_components.all;
 
 entity dual_port_ram is
   generic (
-    ADDR_WIDTH : natural := 8;
-    DATA_WIDTH : natural := 8
+    LEN         : natural := 8192;
+    DATA_WIDTH  : natural := 8
   );
   port (
-    -- clock
-    clk : in std_logic;
+    -- port A
+    clock_a  : in std_logic;
+    address_a : in unsigned(ilog2(LEN)-1 downto 0);
+    data_a  : in std_logic_vector(DATA_WIDTH-1 downto 0) := (others => '0');
+    q_a : out std_logic_vector(DATA_WIDTH-1 downto 0);
+    wren_a   : in std_logic := '0';
 
-    -- chip select
-    cs : in std_logic := '1';
-
-    -- port A (write)
-    addr_a : in unsigned(ADDR_WIDTH-1 downto 0);
-    din_a  : in std_logic_vector(DATA_WIDTH-1 downto 0) := (others => '0');
-    we_a   : in std_logic := '1';
-
-    -- port B (read)
-    addr_b : in unsigned(ADDR_WIDTH-1 downto 0);
-    dout_b : out std_logic_vector(DATA_WIDTH-1 downto 0);
-    re_b   : in std_logic := '1'
+    -- port B
+    clock_b  : in std_logic;
+    address_b : in unsigned(ilog2(LEN)-1 downto 0);
+    data_b  : in std_logic_vector(DATA_WIDTH-1 downto 0) := (others => '0');
+    q_b : out std_logic_vector(DATA_WIDTH-1 downto 0);
+    wren_b   : in std_logic := '0'
   );
 end dual_port_ram;
 
 architecture arch of dual_port_ram is
-  signal q : std_logic_vector(DATA_WIDTH-1 downto 0);
+
 begin
   altsyncram_component : altsyncram
   generic map (
-    address_reg_b                      => "CLOCK0",
-    clock_enable_input_a               => "BYPASS",
-    clock_enable_input_b               => "BYPASS",
-    clock_enable_output_a              => "BYPASS",
-    clock_enable_output_b              => "BYPASS",
-    indata_reg_b                       => "CLOCK0",
-    intended_device_family             => "Cyclone V",
-    lpm_type                           => "altsyncram",
-    numwords_a                         => 2**ADDR_WIDTH,
-    numwords_b                         => 2**ADDR_WIDTH,
-    operation_mode                     => "DUAL_PORT",
-    outdata_aclr_a                     => "NONE",
-    outdata_aclr_b                     => "NONE",
-    outdata_reg_a                      => "UNREGISTERED",
-    outdata_reg_b                      => "UNREGISTERED",
-    power_up_uninitialized             => "FALSE",
-    rdcontrol_reg_b                    => "CLOCK0",
-    read_during_write_mode_mixed_ports => "OLD_DATA",
-    width_a                            => DATA_WIDTH,
-    width_b                            => DATA_WIDTH,
-    width_byteena_a                    => 1,
-    width_byteena_b                    => 1,
-    widthad_a                          => ADDR_WIDTH,
-    widthad_b                          => ADDR_WIDTH
+    address_reg_b                 => "CLOCK1",
+    clock_enable_input_a          => "BYPASS",
+    clock_enable_input_b          => "BYPASS",
+    clock_enable_output_a         => "BYPASS",
+    clock_enable_output_b         => "BYPASS",
+    indata_reg_b                  => "CLOCK1",
+    intended_device_family        => "Cyclone V",
+    lpm_type                      => "altsyncram",
+    numwords_a                    => LEN,
+    numwords_b                    => LEN,
+    operation_mode                => "BIDIR_DUAL_PORT",
+    outdata_aclr_a                => "NONE",
+    outdata_aclr_b                => "NONE",
+    outdata_reg_a                 => "UNREGISTERED",
+    outdata_reg_b                 => "UNREGISTERED",
+    power_up_uninitialized        => "FALSE",
+    read_during_write_mode_port_a => "NEW_DATA_NO_NBE_READ",
+    read_during_write_mode_port_b => "NEW_DATA_NO_NBE_READ",
+    width_a                       => DATA_WIDTH,
+    width_b                       => DATA_WIDTH,
+    width_byteena_a               => 1,
+    width_byteena_b               => 1,
+    widthad_a                     => ilog2(LEN),
+    widthad_b                     => ilog2(LEN),
+    wrcontrol_wraddress_reg_b     => "CLOCK1"
   )
   port map (
-    address_a => std_logic_vector(addr_a),
-    address_b => std_logic_vector(addr_b),
-    clock0    => clk,
-    wren_a    => cs and we_a,
-    rden_b    => cs and re_b,
-    data_a    => din_a,
-    q_b       => q
+    address_a => std_logic_vector(address_a),
+    address_b => std_logic_vector(address_b),
+    clock0    => clock_a,
+    clock1    => clock_b,
+    data_a    => data_a,
+    data_b    => data_b,
+    wren_a    => wren_a,
+    wren_b    => wren_b,
+    q_a       => q_a,
+    q_b       => q_b
   );
 
-  -- output
-  dout_b <= q when cs = '1' else (others => '0');
+
 end architecture arch;

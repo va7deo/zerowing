@@ -304,10 +304,10 @@ end
 
 
 wire [14:0] sound_rom_ofs = ioctl_addr[14:0];
-wire sound_rom_w = ( ioctl_index === 0 ) && ioctl_wr && ( ioctl_addr >= 24'h200000 );
+wire sound_rom_w = ( ioctl_index === 0 ) && ioctl_wr && ( ioctl_addr >= 24'h200000 ) && ( ioctl_addr < 24'h208000 );
 assign sound_rom_1_data_valid = sound_rom_1_oe;
 
-ram32kx8dp sound_rom (
+dual_port_ram #(.LEN(32768), .DATA_WIDTH(8)) sound_rom (
     .clock_a ( clk ),
     .address_a ( sound_rom_ofs ),
     .wren_a ( sound_rom_w ),

@@ -109,7 +109,7 @@ end
 reg  [31:0] cache_din;
 wire [31:0] cache_dout;
 
-ram1kx32dp cache_ram (
+dual_port_ram #(.LEN(1024), .DATA_WIDTH(32)) cache_ram (
     .clock_a ( clk ),
     .address_a ( idx_r ),
     .wren_a ( state == 3 ),
