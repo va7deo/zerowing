@@ -37,6 +37,13 @@ module emu
     //Base video clock. Usually equals to CLK_SYS.
     output        CLK_VIDEO,
 
+    //Enable Y/C output
+`ifdef MISTER_ENABLE_YC
+    output [39:0] CHROMA_PHASE_INC,
+    output        YC_EN,
+    output        PALFLAG,
+`endif
+
     //Multiple resolutions are supported using different CE_PIXEL rates.
     //Must be based on CLK_VIDEO
     output        CE_PIXEL,
@@ -102,6 +109,7 @@ module emu
     // b[0]: osd button
     output  [1:0] BUTTONS,
 
+    //Audio
     input         CLK_AUDIO, // 24.576 MHz
     output [15:0] AUDIO_L,
     output [15:0] AUDIO_R,
@@ -186,6 +194,9 @@ assign HDMI_FREEZE = 0;
 assign USER_OUT  = '1;
 assign AUDIO_MIX = 0;
 assign LED_USER  = ioctl_download & cpu_a[0] ;
+assign AUDIO_MIX = 0; // 0 - no mix, 1 - 25%, 2 - 50%, 3 - 100% (mono)
+
+//assign LED_USER  = ioctl_download ;
 assign LED_DISK  = 0;
 assign LED_POWER = 0;
 assign BUTTONS = 0;
@@ -193,13 +204,14 @@ assign BUTTONS = 0;
 wire [1:0] aspect_ratio = status[2:1];
 wire orientation = ~status[3];
 wire [2:0] scan_lines = status[6:4];
-wire turbo_68k = status[8];
+wire turbo_68k = status[7];
 
 // Status Bit Map:
-//              Upper                          Lower
-// 0         1         2         3          4         5         6
+//              Upper                          Lower                
+// 0         1         2         3          4         5         6   
 // 01234567890123456789012345678901 23456789012345678901234567890123
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
+// XXXXXXXXXXXX            XXXXXXXX                                 
 
 assign VIDEO_ARX = (!aspect_ratio) ? (orientation  ? 8'd4 : 8'd3) : (aspect_ratio - 1'd1);
 assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
@@ -210,22 +222,29 @@ localparam CONF_STR = {
     "-;",
     "P1,Video Settings;",
     "P1-;",
-    "P1O12,Aspect ratio,Original,Full Screen,[ARC1],[ARC2];",
+    "P1O12,Aspect Ratio,Original,Full Screen,[ARC1],[ARC2];",
     "P1O3,Orientation,Horz,Vert;",
     "P1-;",
     "P1O46,Scandoubler Fx,None,HQ2x,CRT 25%,CRT 50%,CRT 75%;",
+    "P1OL,Video Signal,RGBS/YPbPr,Y/C;",
     "P1OOR,H-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
     "P1OSV,V-sync Adjust,0,1,2,3,4,5,6,7,-8,-7,-6,-5,-4,-3,-2,-1;",
-    "P1-;",
-    "P1O8,Turbo Boost,Off,On;",
+//    "-;",
+//    "P2,Pause options;",
+//    "P2OA,Pause when OSD is open,On,Off;",
+//    "P2OB,Dim video after 10s,On,Off;",
     "DIP;",
+    "P3,Debug;",
+    "P3-;",
+    "P3O7,Turbo (68k),Off,On;",
+    "P3O8,Service Menu,Off,On;",
     "-;",
-
     "R0,Reset;",
     "J1,Button 1,Button 2,Button 3,Start,Coin,Pause;",
-    "jn,A,B,X,R,L,Start;",	       // name mapping
+    "jn,A,B,X,R,L,Start;", // name mapping
     "V,v",`BUILD_DATE
 };
+
 
 // CLOCKS
 
@@ -308,7 +327,7 @@ always @(posedge clk_sys) begin
 end
 
 // Status bits
-wire [31:0] status;
+wire [63:0] status;
 
 // Video settings
 wire        forced_scandoubler;
@@ -339,16 +358,17 @@ wire       p2_left    = joy1[1] | key_p2_left;
 wire       p2_right   = joy1[0] | key_p2_right;
 wire [2:0] p2_buttons = joy1[6:4] | {key_p2_c, key_p2_b, key_p2_a};
 
-wire p1_start = joy0[7] | key_p1_start;
-wire p2_start = joy1[7] | key_p2_start;
-wire p1_coin  = joy0[8] | key_p1_coin;
-wire p2_coin  = joy1[8] | key_p2_coin;
-wire b_pause  = joy0[9] | joy1[9];
+wire       p1_start = joy0[7] | key_p1_start;
+wire       p2_start = joy1[7] | key_p2_start;
+wire       p1_coin  = joy0[8] | key_p1_coin;
+wire       p2_coin  = joy1[8] | key_p2_coin;
+wire       b_pause  = joy0[9] | joy1[9] | key_pause;
+wire       service  = joy0[10] | key_test | status[8];
 
 // Keyboard handler
 
 wire key_p1_start, key_p2_start, key_p1_coin, key_p2_coin;
-wire key_test, key_reset, key_service;
+wire key_pause, key_test, key_reset, key_tilt, key_service;
 
 wire key_p1_up, key_p1_left, key_p1_down, key_p1_right, key_p1_a, key_p1_b, key_p1_c;
 wire key_p2_up, key_p2_left, key_p2_down, key_p2_right, key_p2_a, key_p2_b, key_p2_c;
@@ -356,70 +376,90 @@ wire key_p2_up, key_p2_left, key_p2_down, key_p2_right, key_p2_a, key_p2_b, key_
 wire pressed = ps2_key[9];
 
 always @(posedge clk_sys) begin
-	reg old_state;
+    reg old_state;
 
-	old_state <= ps2_key[10];
-	if(old_state ^ ps2_key[10]) begin
-		casex(ps2_key[8:0])
-			'h016: key_p1_start <= pressed; // 1
-			'h01e: key_p2_start <= pressed; // 2
-			'h02E: key_p1_coin  <= pressed; // 5
-			'h036: key_p2_coin  <= pressed; // 6
-			'h006: key_test     <= pressed; // F2
-			'h004: key_reset    <= pressed; // F3
-			'h046: key_service  <= pressed; // 9
+    old_state <= ps2_key[10];
+    if(old_state ^ ps2_key[10]) begin
+        casex(ps2_key[8:0])
+            'h016: key_p1_start  <= pressed; // 1
+            'h01e: key_p2_start  <= pressed; // 2
+            'h02E: key_p1_coin   <= pressed; // 5
+            'h036: key_p2_coin   <= pressed; // 6
+            'h006: key_test      <= key_test ^ pressed; // F2
+            'h004: key_reset     <= pressed; // F3
+            'h046: key_service   <= pressed; // 9
+            'h02c: key_tilt      <= pressed; // t
+            'h04D: key_pause     <= pressed; // p
 
-			'hX75: key_p1_up    <= pressed; // up
-			'hX72: key_p1_down  <= pressed; // down
-			'hX6b: key_p1_left  <= pressed; // left
-			'hX74: key_p1_right <= pressed; // right
-			'h014: key_p1_a     <= pressed; // lctrl
-			'h011: key_p1_b     <= pressed; // lalt
-			'h029: key_p1_c     <= pressed; // space
+            'hX75: key_p1_up     <= pressed; // up
+            'hX72: key_p1_down   <= pressed; // down
+            'hX6b: key_p1_left   <= pressed; // left
+            'hX74: key_p1_right  <= pressed; // right
+            'h014: key_p1_a      <= pressed; // lctrl
+            'h011: key_p1_b      <= pressed; // lalt
+            'h029: key_p1_c      <= pressed; // space
 
-			'h02d: key_p2_up    <= pressed; // r
-			'h02b: key_p2_down  <= pressed; // f
-			'h023: key_p2_left  <= pressed; // d
-			'h034: key_p2_right <= pressed; // g
-			'h01c: key_p2_a     <= pressed; // a
-			'h01b: key_p2_b     <= pressed; // s
-			'h015: key_p2_c     <= pressed; // q
-		endcase
-	end
+            'h02d: key_p2_up     <= pressed; // r
+            'h02b: key_p2_down   <= pressed; // f
+            'h023: key_p2_left   <= pressed; // d
+            'h034: key_p2_right  <= pressed; // g
+            'h01c: key_p2_a      <= pressed; // a
+            'h01b: key_p2_b      <= pressed; // s
+            'h015: key_p2_c      <= pressed; // q
+        endcase
+    end
 end
 
 // PAUSE SYSTEM
-reg        pause;                                    // Pause signal (active-high)
-reg        pause_toggle = 1'b0;                    // User paused (active-high)
-reg [31:0] pause_timer;                            // Time since pause
-reg [31:0] pause_timer_dim = 31'h11E1A300;    // Time until screen dim (10 seconds @ 48Mhz)
-reg        dim_video = 1'b0;                        // Dim video output (active-high)
-
-// Pause when highscore module requires access, user has pressed pause, or OSD is open and option is set
-assign pause =  pause_toggle | (OSD_STATUS && ~status[7]);
-assign dim_video = (pause_timer >= pause_timer_dim);
+//wire    pause_cpu;
+//wire    hs_pause;
+//
+//pause #(8,8,8,70) pause (
+//    .clk_sys(clk_sys),
+//    .reset(reset),
+//    .user_button(b_pause),
+//    .pause_request(hs_pause),
+//    .options(~status[11:10]),
+//    .pause_cpu(pause_cpu),
+//    .OSD_STATUS(0),
+//    .r(rgb_out[23:16]),
+//    .g(rgb_out[15:8]),
+//    .b(rgb_out[7:0]),
+//    .rgb_out()
+//);
 
 reg [1:0] adj_layer ;
 reg [15:0] scroll_adj_x [3:0];
 reg [15:0] scroll_adj_y [3:0];
 reg layer_en [3:0];
 
-reg old_pause;
+// PAUSE SYSTEM
+// reg        pause;                                    // Pause signal (active-high)
+// reg        pause_toggle = 1'b0;                      // User paused (active-high)
+// reg [31:0] pause_timer;                              // Time since pause
+// reg [31:0] pause_timer_dim = 31'h11E1A300;           // Time until screen dim (10 seconds @ 48Mhz)
+// reg        dim_video = 1'b0;                         // Dim video output (active-high)
 
-always @(posedge clk_sys) begin
-    old_pause <= b_pause;
-    if (~old_pause & b_pause) begin
-        pause_toggle <= ~pause_toggle;
-    end
-    if (pause_toggle) begin
-        if (pause_timer < pause_timer_dim)
-        begin
-            pause_timer <= pause_timer + 1'b1;
-        end
-    end    else begin
-        pause_timer <= 1'b0;
-    end
-end
+// Pause when highscore module requires access, user has pressed pause, or OSD is open and option is set
+// assign pause =  pause_toggle | (OSD_STATUS && ~status[13:12]);
+// assign dim_video = (pause_timer >= pause_timer_dim);
+
+// reg old_pause;
+
+// always @(posedge clk_sys) begin
+//     old_pause <= b_pause;
+//     if (~old_pause & b_pause) begin
+//         pause_toggle <= ~pause_toggle;
+//     end
+//     if (pause_toggle) begin
+//         if (pause_timer < pause_timer_dim)
+//         begin
+//             pause_timer <= pause_timer + 1'b1;
+//         end
+//     end    else begin
+//         pause_timer <= 1'b0;
+//     end
+// end
 
 wire        ioctl_download;
 wire        ioctl_upload;
@@ -444,6 +484,7 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
     .forced_scandoubler(forced_scandoubler),
     .gamma_bus(gamma_bus),
     .direct_video(direct_video),
+    .video_rotated(video_rotated),
 
     .ioctl_download(ioctl_download),
     .ioctl_upload(ioctl_upload),
@@ -458,9 +499,6 @@ hps_io #(.CONF_STR(CONF_STR)) hps_io
     .joystick_1(joy1)
 );
 
-
-
-
 reg ce_pix;
 
 wire hbl;
@@ -473,6 +511,7 @@ wire [8:0] hc;
 wire [8:0] vc;
 
 wire no_rotate = orientation | direct_video;
+wire video_rotated;
 wire rotate_ccw = 1;
 wire bcu_flip_cs;
 wire fcu_flip_cs;
@@ -502,11 +541,28 @@ arcade_video #(320,24) arcade_video
         .fx(scan_lines)
 );
 
+/* 	Phase Accumulator Increments (Fractional Size 32, look up size 8 bit, total 40 bits)
+    Increment Calculation - (Output Clock * 2 ^ Word Size) / Reference Clock
+    Example
+    NTSC = 3.579545
+    W = 40 ( 32 bit fraction, 8 bit look up reference)
+    Ref CLK = 42.954544 (This could us any clock)
+    NTSC_Inc = 3.579545333 * 2 ^ 40 / 96 = 40997413706
+*/
+
+// SET PAL and NTSC TIMING
+`ifdef MISTER_ENABLE_YC
+    assign CHROMA_PHASE_INC = PALFLAG ? 40'd56225019281 : 40'd56225019281;
+    assign YC_EN =  status[21];
+    assign PALFLAG = status[2];
+`endif
+
+
 wire reset;
 assign reset = RESET | status[0] | (ioctl_download & !ioctl_index) | buttons[1] | key_reset;
 
 wire vid_clk = clk_7M;
-//
+
 //assign vc = vcx - vs_offset;
 
 video_timing video_timing (
@@ -603,8 +659,8 @@ fx68k fx68k (
     .oHALTEDn(cpu_halted_n),
 
     // input
-    .VPAn( vpa_n ),  
-    .DTACKn(dtack_n),     
+    .VPAn( vpa_n ),
+    .DTACKn(dtack_n ),
     .BERRn(1'b1), 
     .BRn(1'b1),  
     .BGACKn(1'b1),
@@ -669,7 +725,7 @@ always @ (posedge clk_sys) begin
     if ( reset == 1 ) begin
         z80_wait_n <= 0;
         sound_wr <= 0 ;
-    end else if ( clk_7M == 1 ) begin
+    end else if ( clk_3_5M == 1 ) begin
 
         z80_wait_n <= 1;
         
@@ -698,7 +754,7 @@ always @ (posedge clk_sys) begin
             end else if ( z80_tjump_cs ) begin
                 z80_din <= sw[3];
             end else if ( z80_system_cs ) begin
-                z80_din <= { 1'b0, p2_start, p1_start, p2_coin, p1_coin, 1'b0, 1'b0, key_service };
+                z80_din <= { 1'b0, p2_start, p1_start, p2_coin, p1_coin, service, key_tilt, key_service };
             end else if ( z80_sound0_cs ) begin
                 z80_din <= opl_dout;
             end else begin
@@ -731,11 +787,14 @@ assign AUDIO_S = 1'b1 ;
 
 wire opl_sample_clk;
 
-jtopl #(.OPL_TYPE(1)) jtopl2
+jtopl #(.OPL_TYPE(2)) jtopl2
 (
     .rst(~reset_n),
-    .clk(clk_3_5M),
-    .cen('1),
+    .clk(clk_sys),
+    .cen(clk_3_5M),
+    
+//    .clk(clk_3_5M),
+//    .cen('1),
     .din(sound_data),
     .addr(sound_addr),
     .cs_n('0),
@@ -753,9 +812,10 @@ end
 
 T80pa u_cpu(
     .RESET_n    ( reset_n ),
-    .CLK        ( clk_7M ),
-    .CEN_p      ( 1'b1 ),     
-    .CEN_n      ( 1'b1 ),
+    .CLK        ( clk_sys ),
+    .CEN_p      ( clk_3_5M ),     
+    .CEN_n      ( ~clk_3_5M ),
+
     .WAIT_n     ( z80_wait_n ), // don't wait if data is valid or rom access isn't selected
     .INT_n      ( opl_irq_n ),  // opl timer
     .NMI_n      ( 1'b1 ),
@@ -1177,7 +1237,7 @@ always @ (posedge clk_sys) begin
             
             
             // is sprite visible and is current y in sprite y range
-			// sprite pos can be negative?
+            // sprite pos can be negative?
         if ( sprite_hidden == 0 && sprite_width > 0 && ( $signed(y_flipped) >= $signed(sprite_pos_y) ) && $signed(y_flipped) < ( $signed(sprite_pos_y) + $signed(sprite_height) ) ) begin            
                 sprite_state <= 5 ;
             end else if ( sprite_num > 0 ) begin 
@@ -1693,7 +1753,7 @@ dual_port_ram #(.LEN(4096), .DATA_WIDTH(8))  shared_ram (
     .data_a ( cpu_dout[7:0]  ),
     .q_a ( cpu_shared_dout[7:0] ),
 
-    .clock_b ( clk_7M ),  // z80 clock is 3.5M
+    .clock_b ( clk_3_5M ),  // z80 clock is 3.5M
     .address_b ( z80_addr[11:0] ),
     .data_b ( z80_dout ),
     .wren_b ( sound_ram_1_cs & ~z80_wr_n ),

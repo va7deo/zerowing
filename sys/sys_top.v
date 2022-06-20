@@ -295,8 +295,8 @@ reg [31:0] cfg_custom_p2;
 reg  [4:0] vol_att;
 initial vol_att = 5'b11111;
 
-reg  [9:0] coef_addr;
-reg  [8:0] coef_data;
+reg  [11:0] coef_addr;
+reg  [9:0] coef_data;
 reg        coef_wr = 0;
 
 wire[12:0] ARX, ARY;
@@ -377,14 +377,14 @@ always@(posedge clk_sys) begin
 				cfg_set <= 0;
 				if(cnt<8) begin
 					case(cnt[2:0])
-						0: if(WIDTH  != io_din[11:0]) WIDTH  <= io_din[11:0];
-						1: if(HFP    != io_din[11:0]) HFP    <= io_din[11:0];
-						2: if(HS     != io_din[11:0]) HS     <= io_din[11:0];
-						3: if(HBP    != io_din[11:0]) HBP    <= io_din[11:0];
-						4: if(HEIGHT != io_din[11:0]) HEIGHT <= io_din[11:0];
-						5: if(VFP    != io_din[11:0]) VFP    <= io_din[11:0];
-						6: if(VS     != io_din[11:0]) VS     <= io_din[11:0];
-						7: if(VBP    != io_din[11:0]) VBP    <= io_din[11:0];
+						0: WIDTH      <= io_din[11:0];
+						1: HFP        <= io_din[11:0];
+						2: HS         <= {io_din[15], io_din[11:0]};
+						3: HBP        <= io_din[11:0];
+						4: HEIGHT     <= io_din[11:0];
+						5: VFP        <= io_din[11:0];
+						6: VS         <= {io_din[15],io_din[11:0]};
+						7: VBP        <= io_din[11:0];
 					endcase
 `ifndef MISTER_DEBUG_NOHDMI
 					if(cnt == 1) begin
@@ -423,8 +423,8 @@ always@(posedge clk_sys) begin
 			if(cmd == 'h26) vol_att <= io_din[4:0];
 			if(cmd == 'h27) VSET <= io_din[11:0];
 			if(cmd == 'h2A) begin
-				if(cnt[0]) {coef_wr,coef_data} <= {1'b1,io_din[8:0]};
-				else coef_addr <= io_din[9:0];
+				if(cnt[0]) {coef_wr,coef_data} <= {1'b1,io_din[9:0]};
+				else coef_addr <= io_din[11:0];
 			end
 			if(cmd == 'h2B) scaler_flt <= io_din[2:0];
 			if(cmd == 'h37) {FREESCALE,HSET} <= {io_din[15],io_din[11:0]};
@@ -647,7 +647,7 @@ ascal
 `ifdef MISTER_DOWNSCALE_NN
 	.DOWNSCALE_NN("true"),
 `endif
-	.FRAC(6),
+	.FRAC(8),
 	.N_DW(128),
 	.N_AW(28)
 )
@@ -683,15 +683,15 @@ ascal
 	.o_vbl    (hdmi_vbl),
 	.o_brd    (hdmi_brd),
 	.o_lltune (lltune),
-	.htotal   (WIDTH + HFP + HBP + HS),
+	.htotal   (WIDTH + HFP + HBP + HS[11:0]),
 	.hsstart  (WIDTH + HFP),
-	.hsend    (WIDTH + HFP + HS),
+	.hsend    (WIDTH + HFP + HS[11:0]),
 	.hdisp    (WIDTH),
 	.hmin     (hmin),
 	.hmax     (hmax),
-	.vtotal   (HEIGHT + VFP + VBP + VS),
+	.vtotal   (HEIGHT + VFP + VBP + VS[11:0]),
 	.vsstart  (HEIGHT + VFP),
-	.vsend    (HEIGHT + VFP + VS),
+	.vsend    (HEIGHT + VFP + VS[11:0]),
 	.vdisp    (HEIGHT),
 	.vmin     (vmin),
 	.vmax     (vmax),
@@ -957,11 +957,11 @@ pll_hdmi pll_hdmi
 //1920x1080@60 PCLK=148.5MHz CEA
 reg  [11:0] WIDTH  = 1920;
 reg  [11:0] HFP    = 88;
-reg  [11:0] HS     = 48;
+reg  [12:0] HS     = 48;
 reg  [11:0] HBP    = 148;
 reg  [11:0] HEIGHT = 1080;
 reg  [11:0] VFP    = 4;
-reg  [11:0] VS     = 5;
+reg  [12:0] VS     = 5;
 reg  [11:0] VBP    = 36;
 
 wire [63:0] reconfig_to_pll;
@@ -1132,6 +1132,9 @@ csync csync_hdmi(clk_hdmi, hdmi_hs_osd, hdmi_vs_osd, hdmi_cs_osd);
 
 reg [23:0] dv_data;
 reg        dv_hs, dv_vs, dv_de;
+wire [23:0] dv_data_osd;
+wire dv_hs_osd, dv_vs_osd, dv_cs_osd;
+
 always @(posedge clk_vid) begin
 	reg [23:0] dv_d1, dv_d2;
 	reg        dv_de1, dv_de2, dv_hs1, dv_hs2, dv_vs1, dv_vs2;
@@ -1141,25 +1144,25 @@ always @(posedge clk_vid) begin
 	reg  [3:0] hss;
 
 	if(ce_pix) begin
-		hss <= (hss << 1) | vga_hs_osd;
+		hss <= (hss << 1) | dv_hs_osd;
 
-		old_hs <= vga_hs_osd;
-		if(~old_hs && vga_hs_osd) begin
-			old_vs <= vga_vs_osd;
+		old_hs <= dv_hs_osd;
+		if(~old_hs && dv_hs_osd) begin
+			old_vs <= dv_vs_osd;
 			if(~&vcnt) vcnt <= vcnt + 1'd1;
-			if(~old_vs & vga_vs_osd & ~f1) vsz <= vcnt;
-			if(old_vs & ~vga_vs_osd) vcnt <= 0;
+			if(~old_vs & dv_vs_osd & ~f1) vsz <= vcnt;
+			if(old_vs & ~dv_vs_osd) vcnt <= 0;
 			
 			if(vcnt == 1) vde <= 1;
 			if(vcnt == vsz - 3) vde <= 0;
 		end
 
-		dv_de1 <= !{hss,vga_hs_osd} && vde;
-		dv_hs1 <= csync_en ? vga_cs_osd : vga_hs_osd;
-		dv_vs1 <= vga_vs_osd;
+		dv_de1 <= !{hss,dv_hs_osd} && vde;
+		dv_hs1 <= csync_en ? dv_cs_osd : dv_hs_osd;
+		dv_vs1 <= dv_vs_osd;
 	end
 
-	dv_d1  <= vga_data_osd;
+	dv_d1  <= dv_data_osd;
 	dv_d2  <= dv_d1;
 	dv_de2 <= dv_de1;
 	dv_hs2 <= dv_hs1;
@@ -1170,6 +1173,11 @@ always @(posedge clk_vid) begin
 	dv_hs  <= dv_hs2;
 	dv_vs  <= dv_vs2;
 end
+`ifdef MISTER_ENABLE_YC
+	assign {dv_data_osd, dv_hs_osd, dv_vs_osd, dv_cs_osd } = ~yc_en ? {vga_data_osd, vga_hs_osd, vga_vs_osd, vga_cs_osd } : {yc_o, yc_hs, yc_vs, yc_cs };
+`else
+	assign {dv_data_osd, dv_hs_osd, dv_vs_osd, dv_cs_osd } = {vga_data_osd, vga_hs_osd, vga_vs_osd, vga_cs_osd };
+`endif
 
 wire hdmi_tx_clk;
 `ifndef MISTER_DEBUG_NOHDMI
@@ -1214,13 +1222,21 @@ reg hdmi_out_de;
 reg [23:0] hdmi_out_d;
 
 always @(posedge hdmi_tx_clk) begin
+	reg [23:0] hdmi_dv_data;
+	reg        hdmi_dv_hs, hdmi_dv_vs, hdmi_dv_de;
+
 	reg hs,vs,de;
 	reg [23:0] d;
 	
-	hs <= (~vga_fb & direct_video) ? dv_hs   : (direct_video & csync_en) ? hdmi_cs_osd : hdmi_hs_osd;
-	vs <= (~vga_fb & direct_video) ? dv_vs   : hdmi_vs_osd;
-	de <= (~vga_fb & direct_video) ? dv_de   : hdmi_de_osd;
-	d  <= (~vga_fb & direct_video) ? dv_data : hdmi_data_osd;
+	hdmi_dv_data <= dv_data;
+	hdmi_dv_hs   <= dv_hs;
+	hdmi_dv_vs   <= dv_vs;
+	hdmi_dv_de   <= dv_de;
+	
+	hs <= (~vga_fb & direct_video) ? hdmi_dv_hs   : (direct_video & csync_en) ? hdmi_cs_osd : hdmi_hs_osd;
+	vs <= (~vga_fb & direct_video) ? hdmi_dv_vs   : hdmi_vs_osd;
+	de <= (~vga_fb & direct_video) ? hdmi_dv_de   : hdmi_de_osd;
+	d  <= (~vga_fb & direct_video) ? hdmi_dv_data : hdmi_data_osd;
 
 	hdmi_out_hs <= hs;
 	hdmi_out_vs <= vs;
@@ -1236,7 +1252,7 @@ assign HDMI_TX_D  = hdmi_out_d;
 /////////////////////////  VGA output  //////////////////////////////////
 
 wire [23:0] vga_data_sl;
-wire        vga_de_sl, vga_vs_sl, vga_hs_sl;
+wire        vga_de_sl, vga_ce_sl, vga_vs_sl, vga_hs_sl;
 scanlines #(0) VGA_scanlines
 (
 	.clk(clk_vid),
@@ -1246,11 +1262,13 @@ scanlines #(0) VGA_scanlines
 	.hs_in(hs_fix),
 	.vs_in(vs_fix),
 	.de_in(de_emu),
+	.ce_in(ce_pix),
 
 	.dout(vga_data_sl),
 	.hs_out(vga_hs_sl),
 	.vs_out(vga_vs_sl),
-	.de_out(vga_de_sl)
+	.de_out(vga_de_sl),
+	.ce_out(vga_ce_sl)
 );
 
 wire [23:0] vga_data_osd;
@@ -1295,8 +1313,8 @@ csync csync_vga(clk_vid, vga_hs_osd, vga_vs_osd, vga_cs_osd);
 		.csync_o(vgas_cs)
 	);
 
-	wire [23:0] vga_o;
-	wire vga_hs, vga_vs, vga_cs;
+	wire [23:0] vga_o, vga_o_t;
+	wire vga_hs, vga_vs, vga_cs, vga_hs_t, vga_vs_t, vga_cs_t;
 	vga_out vga_out
 	(
 		.clk(clk_vid),
@@ -1304,20 +1322,47 @@ csync csync_vga(clk_vid, vga_hs_osd, vga_vs_osd, vga_cs_osd);
 		.hsync(vga_hs_osd),
 		.vsync(vga_vs_osd),
 		.csync(vga_cs_osd),
-		.dout(vga_o),
+		.dout(vga_o_t),
 		.din(vga_data_osd),
-		.hsync_o(vga_hs),
-		.vsync_o(vga_vs),
-		.csync_o(vga_cs)
+		.hsync_o(vga_hs_t),
+		.vsync_o(vga_vs_t),
+		.csync_o(vga_cs_t)
 	);
+
+	`ifdef MISTER_ENABLE_YC
+		assign {vga_o, vga_hs, vga_vs, vga_cs } = ~yc_en ? {vga_o_t, vga_hs_t, vga_vs_t, vga_cs_t } : {yc_o, yc_hs, yc_vs, yc_cs };
+	`else
+		assign {vga_o, vga_hs, vga_vs, vga_cs } =  {vga_o_t, vga_hs_t, vga_vs_t, vga_cs_t } ;
+	`endif
 
 	wire cs1 = (vga_fb | vga_scaler) ? vgas_cs : vga_cs;
 
-	assign VGA_VS = (VGA_EN | SW[3]) ? 1'bZ      : ((vga_fb | vga_scaler) ? ~vgas_vs : ~vga_vs) | csync_en;
-	assign VGA_HS = (VGA_EN | SW[3]) ? 1'bZ      :  (vga_fb | vga_scaler) ? (csync_en ? ~vgas_cs : ~vgas_hs) : (csync_en ? ~vga_cs : ~vga_hs);
-	assign VGA_R  = (VGA_EN | SW[3]) ? 6'bZZZZZZ :  (vga_fb | vga_scaler) ? vgas_o[23:18] : vga_o[23:18];
-	assign VGA_G  = (VGA_EN | SW[3]) ? 6'bZZZZZZ :  (vga_fb | vga_scaler) ? vgas_o[15:10] : vga_o[15:10];
-	assign VGA_B  = (VGA_EN | SW[3]) ? 6'bZZZZZZ :  (vga_fb | vga_scaler) ? vgas_o[7:2]   : vga_o[7:2]  ;
+	assign VGA_VS = (VGA_EN | SW[3]) ? 1'bZ      :((((vga_fb | vga_scaler) ? ~vgas_vs : ~vga_vs) | csync_en) ^ VS[12]);
+	assign VGA_HS = (VGA_EN | SW[3]) ? 1'bZ      : (((vga_fb | vga_scaler) ? (csync_en ? ~vgas_cs : ~vgas_hs) : (csync_en ? ~vga_cs : ~vga_hs)) ^ HS[12]);
+	assign VGA_R  = (VGA_EN | SW[3]) ? 6'bZZZZZZ :   (vga_fb | vga_scaler) ? vgas_o[23:18] : vga_o[23:18];
+	assign VGA_G  = (VGA_EN | SW[3]) ? 6'bZZZZZZ :   (vga_fb | vga_scaler) ? vgas_o[15:10] : vga_o[15:10];
+	assign VGA_B  = (VGA_EN | SW[3]) ? 6'bZZZZZZ :   (vga_fb | vga_scaler) ? vgas_o[7:2]   : vga_o[7:2]  ;
+`endif
+
+
+`ifdef MISTER_ENABLE_YC
+	wire [23:0] yc_o;
+	wire yc_hs, yc_vs, yc_cs;
+	wire [39:0] PhaseInc;
+	yc_out yc_out
+	(
+		.clk(clk_vid),
+		.PAL_EN(pal_en),
+		.PHASE_INC(PhaseInc),
+		.hsync(vga_hs_osd),
+		.vsync(vga_vs_osd),
+		.csync(vga_cs_osd),
+		.dout(yc_o),
+		.din(vga_data_osd),
+		.hsync_o(yc_hs),
+		.vsync_o(yc_vs),
+		.csync_o(yc_cs)
+	);
 `endif
 
 reg video_sync = 0;
@@ -1485,7 +1530,7 @@ sync_fix sync_h(clk_vid, hs_emu, hs_fix);
 wire  [6:0] user_out, user_in;
 
 assign clk_ihdmi= clk_vid;
-assign ce_hpix  = ce_pix;
+assign ce_hpix  = vga_ce_sl;
 assign hr_out   = vga_data_sl[23:16];
 assign hg_out   = vga_data_sl[15:8];
 assign hb_out   = vga_data_sl[7:0];
@@ -1531,12 +1576,17 @@ wire [13:0] fb_stride;
 reg  [1:0] sl_r;
 wire [1:0] sl = sl_r;
 always @(posedge clk_sys) sl_r <= FB_EN ? 2'b00 : scanlines;
-emu emu
 
+`ifdef MISTER_ENABLE_YC
+	wire pal_en;
+	wire yc_en;
+`endif
+
+emu emu
 (
 	.CLK_50M(FPGA_CLK2_50),
 	.RESET(reset),
-	.HPS_BUS({fb_en, sl, f1, HDMI_TX_VS,
+	.HPS_BUS({fb_en, sl, f1, HDMI_TX_VS, 
 				 clk_100m, clk_ihdmi,
 				 ce_hpix, hde_emu, hhs_fix, hvs_fix, 
 				 io_wait, clk_sys, io_fpga, io_uio, io_strobe, io_wide, io_din, io_dout}),
@@ -1553,7 +1603,11 @@ emu emu
 	.HDMI_WIDTH(direct_video ? 12'd0 : hdmi_width),
 	.HDMI_HEIGHT(direct_video ? 12'd0 : hdmi_height),
 	.HDMI_FREEZE(freeze),
-
+`ifdef MISTER_ENABLE_YC	
+	.PALFLAG(pal_en),
+	.YC_EN(yc_en),
+	.CHROMA_PHASE_INC(PhaseInc),
+`endif
 	.CLK_VIDEO(clk_vid),
 	.CE_PIXEL(ce_pix),
 	.VGA_SL(scanlines),

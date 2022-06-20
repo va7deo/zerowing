@@ -5,7 +5,7 @@
   <year>1989</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Racing</category>
-  <rbf>toaplanv1</rbf>
+  <rbf>toaplan1</rbf>
 
   <buttons names="Accelerate,Brake,-,Start,Coin" default="A,B,R,L"/>
 

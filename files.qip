@@ -1,7 +1,9 @@
 set_global_assignment -name SYSTEMVERILOG_FILE toaplan1.sv
 set_global_assignment -name SDC_FILE toaplan1.sdc
+
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/video_timing.v
 set_global_assignment -name SYSTEMVERILOG_FILE rtl/chip_select.v
+set_global_assignment -name VERILOG_FILE rtl/pause.v
 
 set_global_assignment -name VERILOG_FILE rtl/mem/rom_controller.v
 set_global_assignment -name VERILOG_FILE rtl/mem/cache.v
@@ -21,6 +23,4 @@ set_global_assignment -name VHDL_FILE rtl/t80/T80.vhd
 set_global_assignment -name VHDL_FILE rtl/t80/T80pa.vhd
 
 set_global_assignment -name QIP_FILE rtl/jtopl/hdl/jt26.qip
-set_global_assignment -name VERILOG_FILE rtl/jtopl/hdl/jtopl.v 
-
-
+set_global_assignment -name QIP_FILE rtl/jtopl/hdl/jtopl2.qip
