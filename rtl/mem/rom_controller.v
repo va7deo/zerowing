@@ -108,6 +108,7 @@ reg ctrl_req;
 download_buffer #(.SIZE(4) ) download_buffer
 (
     .clk(clk),
+    .reset(~ioctl_download | ~sdram_we),
     .din(ioctl_data),
     .dout(download_data),
     .we(ioctl_download & ioctl_wr),
