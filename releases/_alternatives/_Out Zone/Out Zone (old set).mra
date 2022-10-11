@@ -5,6 +5,7 @@
   <year>1990</year>
   <manufacturer>Toaplan</manufacturer>
   <category>Run 'n Gun</category>
+  <rotation>vertical (ccw)</rotation>
   <rbf>toaplan1</rbf>
 
   <buttons names="Shot,Bomb,-,Start,Coin,Pause" default="A,B,R,L,Start"/>
