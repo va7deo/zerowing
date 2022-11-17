@@ -38,10 +38,11 @@ module emu
     output        CLK_VIDEO,
 
     //Enable Y/C output
-`ifdef MISTER_ENABLE_YC
-    output [39:0] CHROMA_PHASE_INC,
-    output        YC_EN,
-    output        PALFLAG,
+`ifdef MISTER_ENABLE_YC	
+	output 	[39:0]	CHROMA_PHASE_INC,
+    output  [26:0]  COLORBURST_RANGE,
+	output 			PALFLAG,
+	output 			YC_EN, // Enable YC to be build in the core.
 `endif
 
     //Multiple resolutions are supported using different CE_PIXEL rates.
@@ -549,14 +550,27 @@ arcade_video #(320,24) arcade_video
     Ref CLK = 42.954544 (This could us any clock)
     NTSC_Inc = 3.579545333 * 2 ^ 40 / 96 = 40997413706
 */
-
-// SET PAL and NTSC TIMING
+// SET PAL and NTSC TIMING and pass through status bits. ** YC must be enabled in the qsf file **
 `ifdef MISTER_ENABLE_YC
-    assign CHROMA_PHASE_INC = PALFLAG ? 40'd56225019281 : 40'd56225019281;
-    assign YC_EN =  status[21];
-    assign PALFLAG = status[2];
-`endif
+	parameter NTSC_REF = 3.579545;   
+	parameter PAL_REF = 4.43361875;
+	// Colorburst Lenth Calculation to send to Y/C Module, based on the CLK_VIDEO of the core
+	localparam [6:0] COLORBURST_START = (3.7 * (CLK_VIDEO_NTSC/NTSC_REF));
+	localparam [9:0] COLORBURST_NTSC_END = (9 * (CLK_VIDEO_NTSC/NTSC_REF)) + COLORBURST_START;
+	localparam [9:0] COLORBURST_PAL_END = (10 * (CLK_VIDEO_PAL/PAL_REF)) + COLORBURST_START;
+ 
+	// Parameters to be modifed
+    parameter CLK_VIDEO_NTSC = 80; // Must be filled E.g XX.X Hz - CLK_VIDEO
+	parameter CLK_VIDEO_PAL = 80; // Must be filled E.g XX.X Hz - CLK_VIDEO
+	localparam [39:0] NTSC_PHASE_INC = 40'd56225315217; // ((NTSC_REF**2^40) / CLK_VIDEO_NTSC) - SNES Example;
+	localparam [39:0] PAL_PHASE_INC = 40'd0; // ((PAL_REF*2^40) / CLK_VIDEO_PAL)- SNES Example;
 
+	// Send Parameters to Y/C Module
+	assign CHROMA_PHASE_INC = PALFLAG ? PAL_PHASE_INC : NTSC_PHASE_INC; 
+	assign YC_EN = status[21];  // Change the status to match your configuration
+	assign PALFLAG = 0;  // if applicable, Change the status to match your configuration. 
+ 	assign COLORBURST_RANGE = {COLORBURST_START, COLORBURST_NTSC_END, COLORBURST_PAL_END}; // Pass colorburst length
+`endif
 
 wire reset;
 assign reset = RESET | status[0] | (ioctl_download & !ioctl_index) | buttons[1] | key_reset;
