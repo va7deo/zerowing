@@ -64,6 +64,7 @@ localparam 		dim_video_timer= 1'b1;
 reg				pause_toggle	= 1'b0;					// User paused (active-high)
 reg [31:0]		pause_timer		= 1'b0;					// Time since pause
 reg [31:0]		dim_timeout		= (CLKSPD*10000000);	// Time until video output dim (10 seconds @ CLKSPD Mhz)
+
 `ifndef PAUSE_OUTPUT_DIM
 wire 			dim_video;				 				// Dim video requested (active-high)
 `endif
@@ -76,25 +77,27 @@ always @(posedge clk_sys) begin
 	// Track user pause button down
 	reg user_button_last;
 	user_button_last <= user_button;
-	if(!user_button_last & user_button) pause_toggle <= ~pause_toggle;
+    
+	if (!user_button_last & user_button) begin
+        pause_toggle <= ~pause_toggle;
+    end
 
 	// Clear user pause on reset
-	if(pause_toggle & reset) pause_toggle <= 0;
+	if (pause_toggle & reset) begin
+        pause_toggle <= 0;
+    end
 
-	if(pause_cpu & options[dim_video_timer])
-	begin
+	if (pause_cpu & options[dim_video_timer]) begin
 		// Track pause duration for video dim
-		if((pause_timer<dim_timeout))
-		begin
+		if (pause_timer<dim_timeout) begin
 			pause_timer <= pause_timer + 1'b1;
 		end
-	end
-	else
-	begin
+	end else begin
 		pause_timer <= 1'b0;
 	end
+    
 end
 
-assign rgb_out = dim_video ? {r >> 1,g >> 1, b >> 1} : {r,g,b};
+assign rgb_out = dim_video ? {r >> 2,g >> 2, b >> 2} : {r,g,b};
 
 endmodule

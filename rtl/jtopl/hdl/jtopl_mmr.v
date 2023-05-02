@@ -153,8 +153,8 @@ always @(posedge clk) begin
                     REG_CLKA: value_A <= din;
                     REG_CLKB: value_B <= din;
                     REG_TIMER: begin
-                        clr_flag_A <= din[7];
-                        clr_flag_B <= din[7];
+                        clr_flag_A <= din[7] | din[6];
+                        clr_flag_B <= din[7] | din[5];
                         if (~din[7]) begin
                             flagen_A   <= ~din[6];
                             flagen_B   <= ~din[5];

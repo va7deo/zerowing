@@ -2,7 +2,7 @@ module scanlines #(parameter v2=0)
 (
 	input             clk,
 
-	input       [1:0] scanlines,
+	input       [2:0] scanlines,
 	input      [23:0] din,
 	input             hs_in,vs_in,
 	input             de_in,ce_in,
@@ -12,21 +12,24 @@ module scanlines #(parameter v2=0)
 	output reg        de_out,ce_out
 );
 
-reg [1:0] scanline;
+reg [2:0] scanline;
 always @(posedge clk) begin
 	reg old_hs, old_vs;
 
 	old_hs <= hs_in;
 	old_vs <= vs_in;
 	
-	if(old_hs && ~hs_in) begin
-		if(v2) begin
-			scanline <= scanline + 1'd1;
-			if (scanline == scanlines) scanline <= 0;
-		end
-		else scanline <= scanline ^ scanlines;
+	if (old_hs && ~hs_in) begin
+//		if (v2) begin
+//			scanline <= scanline + 1'd1;
+//			if (scanline == scanlines) begin
+//                scanline <= 0;
+//            end
+//		end else begin
+            scanline <= scanline ^ scanlines;
+//        end
 	end
-	if(old_vs && ~vs_in) scanline <= 0;
+	if (old_vs && ~vs_in) scanline <= 0;
 end
 
 wire [7:0] r,g,b;
@@ -50,6 +53,8 @@ always @(*) begin
 			     {2'b00, g[7:2]},
 				  {2'b00, b[7:2]}};
 
+        4: // black
+            d = 0;
 		default: d = {r,g,b};
 	endcase
 end
