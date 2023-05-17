@@ -202,14 +202,13 @@ assign BUTTONS = 0;
 // 0         1         2         3          4         5         6   
 // 01234567890123456789012345678901 23456789012345678901234567890123
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
-// X  XXXXXXXX  XX    X X XXXXXXXX                          XXXXXXXX
+// X  XXXXXXXXXXX     X X XXXXXXXX             XX           XXXXXXXX
 
 wire [1:0] aspect_ratio = status[9:8];
 wire       orientation  = ~status[3];
 wire [2:0] scan_lines   = status[6:4];
 reg        refresh_mod;
 reg        new_vmode;
-wire       sound_on     = status[11];
 
 always @(posedge clk_sys) begin
     if (refresh_mod != status[19]) begin
@@ -250,12 +249,10 @@ localparam CONF_STR = {
     "P1-;",
     "P2,Audio Settings;",
     "P2-;",
-    "P2OB,OPL2 Audio,On,Off;",
+    "P2oBC,OPL2 Volume,Default,50%,25%,0%;",
     "P2-;",
     "-;",
     "P3,Core Options;",
-    "P3-;",
-    "P3OE,Service Menu,Off,On;",
     "P3-;",
     "P3o6,Swap P1/P2 Joystick,Off,On;",
     "P3-;",
@@ -423,7 +420,7 @@ always @ * begin
         coin_b    <= joy0[10] | joy1[10] | key_coin_b;
 
         b_pause   <= joy0[11] | key_pause;
-        service   <= key_test | status[14];
+        service   <= key_test;
 end
 
 // Keyboard handler
@@ -584,7 +581,7 @@ video_timing video_timing (
     .vbl(vbl),
     .hsync(hsync),
     .vsync(vsync)
-    );
+);
 
 // PAUSE SYSTEM
 wire    pause_cpu;
@@ -870,10 +867,52 @@ jtopl #(.OPL_TYPE(2)) jtopl2
     .sample(opl_sample_clk)
 );
 
-always @ (posedge opl_sample_clk) begin
-    if ( sound_on == 0 ) begin
-        AUDIO_L <= sample;
-        AUDIO_R <= sample;
+wire       audio_en   = status[11];       // audio enable
+
+wire [1:0] opl2_level = status[44:43];    // opl2 audio mix
+
+reg  [7:0] opl2_mult;
+
+// set the multiplier for each channel from menu
+
+always @( posedge clk_sys, posedge reset ) begin
+    if (reset) begin
+        opl2_mult<=0;
+    end else begin
+    case( opl2_level )
+        0: opl2_mult <= 8'h0c;    // 75%
+        1: opl2_mult <= 8'h08;    // 50%
+        2: opl2_mult <= 8'h04;    // 25%
+        3: opl2_mult <= 8'h00;    // 0%
+    endcase
+    end
+end
+
+wire signed [15:0] mono;
+
+jtframe_mixer #(.W0(16), .WOUT(16)) u_mix_mono(
+    .rst    ( reset        ),
+    .clk    ( clk_sys      ),
+    .cen    ( 1'b1         ),
+    // input signals
+    .ch0    ( sample       ),
+    .ch1    ( 16'd0        ),
+    .ch2    ( 16'd0        ),
+    .ch3    ( 16'd0        ),
+    // gain for each channel in 4.4 fixed point format
+    .gain0  ( opl2_mult    ),
+    .gain1  ( 8'd0         ),
+    .gain2  ( 8'd0         ),
+    .gain3  ( 8'd0         ),
+    .mixed  ( mono         ),
+    .peak   (              )
+);
+
+always @ * begin
+    if ( audio_en == 0 ) begin
+        // mix audio
+        AUDIO_L <= mono;
+        AUDIO_R <= mono;
     end else begin
         AUDIO_L <= 0;
         AUDIO_R <= 0;
@@ -1124,8 +1163,8 @@ dual_port_ram #(.LEN(1024), .DATA_WIDTH(16)) tile_line_buffer (
     .wren_b ( 0 ),
 //    .data_b ( ),
     .q_b ( tile_fb_out )
-    );
-    
+);
+
 dual_port_ram #(.LEN(1024), .DATA_WIDTH(16)) sprite_line_buffer (
     .clock_a ( clk_sys ),
     .address_a ( sprite_fb_addr_w ),
@@ -1138,7 +1177,7 @@ dual_port_ram #(.LEN(1024), .DATA_WIDTH(16)) sprite_line_buffer (
     .wren_b ( 0 ),
 //    .data_b ( ),
     .q_b ( sprite_fb_out )
-    );
+);
 
 reg [9:0] x_ofs;
 reg [9:0] x;
@@ -1159,7 +1198,7 @@ wire [9:0] y_ofs_dx_flipped = 255;
 // calculate scrolling
 wire [9:0] tile_x_unflipped = scroll_x_latch[layer[1:0]] + x_ofs_dx;
 wire [9:0] tile_y_unflipped = scroll_y_latch[layer[1:0]] + y_ofs_dx + scroll_y_offset;
-wire [9:0] tile_x_flipped   = 319 + scroll_x_latch[layer[1:0]] + x_ofs_dx_flipped; 
+wire [9:0] tile_x_flipped   = 319 + scroll_x_latch[layer[1:0]] + x_ofs_dx_flipped;
 wire [9:0] tile_y_flipped   = 239 + scroll_y_latch[layer[1:0]] + y_ofs_dx_flipped + scroll_y_offset;
 
 // reverse tiles when flipped
@@ -1219,7 +1258,7 @@ wire [8:0] sprite_width     = { sprite_size_buf_dout[3:0], 3'b0 } /* synthesis k
 
 reg [7:0] sprite_buf_num;
 
-reg [1:0] vtotal_282_flag; 
+reg [1:0] vtotal_282_flag;
 
 always @ (posedge clk_sys) begin // Check System Vcount flag for 60Hz mode
     if ({crtc[2][7:0], 1'b1 } == 269)
@@ -1364,7 +1403,7 @@ always @ (posedge clk_sys) begin
             tile_draw_state <= 0;
         end else if ( draw_state == 3 ) begin
             if ( tile_draw_state == 0 ) begin
-                tile <=  { layer[1:0], curr_y[8:3], curr_x[8:3] };  // works
+                tile <=  { layer[1:0], curr_y[8:3], curr_x[8:3] }; // works
                 tile_draw_state <= 4'h1;
             end else if ( tile_draw_state == 1 ) begin
                 tile_draw_state <= 2;
@@ -1379,7 +1418,7 @@ always @ (posedge clk_sys) begin
                         // do we need to read another tile?
                         // last pixel of this tile changes based on flip direction
                         if ( curr_x[2:0] == ( tile_flip ? 0 : 7)  ) begin
-                            draw_state <= 3; 
+                            draw_state <= 3;
                             tile_draw_state <= 0;
                         end
                         x <= x + 1;
@@ -1407,7 +1446,7 @@ always @ (posedge clk_sys) begin
                     tile_rom_cs <= 0;
                 end
             end else if ( tile_draw_state == 5 ) begin
-                tile_fb_w <= 0; 
+                tile_fb_w <= 0;
                 tile_fb_addr_w   <= { y[0], 9'b0 } + x;
                 // force render of first layer.
                 // if layer == 4 then tile_pix == 0 is not transparent
@@ -1427,7 +1466,7 @@ always @ (posedge clk_sys) begin
                     // do we need to read another tile?
                     // last pixel of this tile changes based on flip direction
                     if ( curr_x[2:0] == ( tile_flip ? 0 : 7)  ) begin
-                        draw_state <= 3; 
+                        draw_state <= 3;
                         tile_draw_state <= 0;
                     end 
                     x <= x + 1;
@@ -1465,7 +1504,6 @@ reg draw_sprite;
 // [3:0] = tile colour index.
 
 // there are 10 70MHz cycles per pixel. clk7_count from 0-9
-// 
 
 // dac values based on 120 ohm driver for the resistor dac and 75 ohm output.  4.7k, 2.2k, 1k, 470, 220
 // modeled in spice
@@ -1504,7 +1542,7 @@ dual_port_ram #(.LEN(16384), .DATA_WIDTH(32)) ram_tile_buf (
     .address_b ( tile[13:0] ),    // only read the tile # for now
     .wren_b ( 0 ),
     .q_b ( tile_buf_dout )
-    );
+);
 
 // tile attribute ram.  each tile attribute is 2 16bit words
 // pppp ---- --cc cccc httt tttt tttt tttt = Tile number (0 - $7fff)
@@ -1520,8 +1558,8 @@ dual_port_ram #(.LEN(16384), .DATA_WIDTH(16)) ram_tile_h (
     .address_b ( tile[13:0] ),    // only read the tile # for now
     .wren_b ( 0 ),
     .q_b ( tile_attr_dout[31:16] )
-    );
-    
+);
+
 dual_port_ram #(.LEN(16384), .DATA_WIDTH(16)) ram_tile_l (
     .clock_a ( clk_10M ),
     .address_a ( curr_tile_ofs ),
@@ -1533,7 +1571,7 @@ dual_port_ram #(.LEN(16384), .DATA_WIDTH(16)) ram_tile_l (
     .address_b ( tile[13:0] ),    // only read the tile # for now
     .wren_b ( 0 ),
     .q_b ( tile_attr_dout[15:0] )
-    );
+);
 
 // sprite attribute ram.  each tile attribute is 4 16bit words
 // indirect access through offset register
@@ -1541,7 +1579,7 @@ dual_port_ram #(.LEN(16384), .DATA_WIDTH(16)) ram_tile_l (
 dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_0 (
     .clock_a ( clk_10M ),
     .address_a ( curr_sprite_ofs[9:2] ),
-    .wren_a ( sprite_0_cs  & !cpu_rw),
+    .wren_a ( sprite_0_cs & !cpu_rw),
     .data_a ( cpu_dout ),
     .q_a ( sprite_0_dout ),
 
@@ -1549,7 +1587,7 @@ dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_0 (
     .address_b ( sprite_num_copy ),
     .wren_b ( 0 ),
     .q_b ( sprite_attr_0_dout[15:0] )
-    );
+);
 
 dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_0_buf (
     .clock_a ( clk_sys ),
@@ -1562,7 +1600,7 @@ dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_0_buf (
     .address_b ( sprite_num ),
     .wren_b ( 0 ),
     .q_b ( sprite_attr_0_buf_dout[15:0] )
-    );
+);
 
 dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_1 (
     .clock_a ( clk_10M ),
@@ -1575,7 +1613,7 @@ dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_1 (
     .address_b ( sprite_num_copy ),
     .wren_b ( 0 ),
     .q_b ( sprite_attr_1_dout[15:0] )
-    );
+);
 
 dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_1_buf (
     .clock_a ( clk_sys ),
@@ -1588,7 +1626,7 @@ dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_1_buf (
     .address_b ( sprite_num ),
     .wren_b ( 0 ),
     .q_b ( sprite_attr_1_buf_dout[15:0] )
-    );
+);
 
 dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_2 (
     .clock_a ( clk_10M ),
@@ -1601,7 +1639,7 @@ dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_2 (
     .address_b ( sprite_num_copy ),
     .wren_b ( 0 ),
     .q_b ( sprite_attr_2_dout[15:0] )
-    );
+);
 
 dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_2_buf (
     .clock_a ( clk_sys ),
@@ -1614,7 +1652,7 @@ dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_2_buf (
     .address_b ( sprite_num ),
     .wren_b ( 0 ),
     .q_b ( sprite_attr_2_buf_dout[15:0] )
-    );
+);
 
 dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_3 (
     .clock_a ( clk_10M ),
@@ -1627,7 +1665,7 @@ dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_3 (
     .address_b ( sprite_num_copy ),
     .wren_b ( 0 ),
     .q_b ( sprite_attr_3_dout[15:0] )
-    );
+);
 
 dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_3_buf (
     .clock_a ( clk_sys ),
@@ -1640,12 +1678,12 @@ dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_3_buf (
     .address_b ( sprite_num ),
     .wren_b ( 0 ),
     .q_b ( sprite_attr_3_buf_dout[15:0] )
-    );
+);
 
 dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_size (
     .clock_a ( clk_10M ),
     .address_a ( curr_sprite_ofs ),
-    .wren_a ( sprite_size_cs  & !cpu_rw),
+    .wren_a ( sprite_size_cs & !cpu_rw),
     .data_a ( cpu_dout ),
     .q_a ( sprite_size_cpu_dout ),
 
@@ -1653,7 +1691,7 @@ dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_size (
     .address_b ( sprite_num_copy ),
     .wren_b ( 0 ),
     .q_b ( sprite_size_dout )
-    );
+);
 
 dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_size_buf (
     .clock_a ( clk_sys ),
@@ -1666,8 +1704,7 @@ dual_port_ram #(.LEN(256), .DATA_WIDTH(16)) sprite_ram_size_buf (
     .address_b ( sprite_size_addr ),
     .wren_b ( 0 ),
     .q_b ( sprite_size_buf_dout )
-    
-    );
+);
 
 
 // tiles  1024 15 bit values.  index is ( 6 bits from tile attribute, 4 bits from bitmap )
@@ -1677,28 +1714,28 @@ dual_port_ram #(.LEN(1024), .DATA_WIDTH(8)) tile_palram_l (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[10:1] ),
     .wren_a ( tile_palette_cs & !cpu_rw & !cpu_lds_n),
-    .data_a ( cpu_dout[7:0]  ),
+    .data_a ( cpu_dout[7:0] ),
     .q_a ( tile_palette_cpu_dout[7:0] ),
 
     .clock_b ( clk_sys ),
     .address_b ( tile_palette_addr ),
     .wren_b ( 0 ),
     .q_b ( tile_palette_dout[7:0] )
-    );
+);
 
 // background palette ram high
 dual_port_ram #(.LEN(1024), .DATA_WIDTH(8)) tile_palram_h (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[10:1] ),
     .wren_a ( tile_palette_cs & !cpu_rw & !cpu_uds_n),
-    .data_a ( cpu_dout[15:8]  ),
+    .data_a ( cpu_dout[15:8] ),
     .q_a ( tile_palette_cpu_dout[15:8] ),
 
     .clock_b ( clk_sys ),
     .address_b ( tile_palette_addr ),
     .wren_b ( 0 ),
     .q_b ( tile_palette_dout[15:8] )
-    );
+);
 
 // sprite palette ram low
 // does this need to be byte addressable?
@@ -1706,28 +1743,28 @@ dual_port_ram #(.LEN(1024), .DATA_WIDTH(8)) sprite_palram_l (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[10:1] ),
     .wren_a ( sprite_palette_cs & !cpu_rw & !cpu_lds_n),
-    .data_a ( cpu_dout[7:0]  ),
+    .data_a ( cpu_dout[7:0] ),
     .q_a ( sprite_palette_cpu_dout[7:0] ),
 
     .clock_b ( clk_sys ),
     .address_b ( sprite_palette_addr ),
     .wren_b ( 0 ),
     .q_b ( sprite_palette_dout[7:0] )
-    );
+);
 
 // background palette ram high
 dual_port_ram #(.LEN(1024), .DATA_WIDTH(8)) sprite_palram_h (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[10:1] ),
     .wren_a ( sprite_palette_cs & !cpu_rw & !cpu_uds_n),
-    .data_a ( cpu_dout[15:8]  ),
+    .data_a ( cpu_dout[15:8] ),
     .q_a ( sprite_palette_cpu_dout[15:8] ),
 
     .clock_b ( clk_sys ),
     .address_b ( sprite_palette_addr ),
     .wren_b ( 0 ),
     .q_b ( sprite_palette_dout[15:8] )
-    );
+);
 
 
 // main 68k ram low
@@ -1735,7 +1772,7 @@ dual_port_ram #(.LEN(16384), .DATA_WIDTH(8))    ram16kx8_L (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[14:1] ),
     .wren_a ( !cpu_rw & ram_cs & !cpu_lds_n ),
-    .data_a ( cpu_dout[7:0]  ),
+    .data_a ( cpu_dout[7:0] ),
     .q_a (  ram_dout[7:0] )
     );
 
@@ -1744,9 +1781,9 @@ dual_port_ram #(.LEN(16384), .DATA_WIDTH(8))     ram16kx8_H (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[14:1] ),
     .wren_a ( !cpu_rw & ram_cs & !cpu_uds_n ),
-    .data_a ( cpu_dout[15:8]  ),
+    .data_a ( cpu_dout[15:8] ),
     .q_a (  ram_dout[15:8] )
-    );
+);
 
 
 //wire [15:0] z80_shared_addr = z80_addr - 16'h8000;
@@ -1758,7 +1795,7 @@ dual_port_ram #(.LEN(4096), .DATA_WIDTH(8))  shared_ram (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[12:1] ),
     .wren_a ( shared_ram_cs & !cpu_rw & !cpu_lds_n),
-    .data_a ( cpu_dout[7:0]  ),
+    .data_a ( cpu_dout[7:0] ),
     .q_a ( cpu_shared_dout[7:0] ),
 
     .clock_b ( clk_3_5M ),  // z80 clock is 3.5M
@@ -1766,7 +1803,7 @@ dual_port_ram #(.LEN(4096), .DATA_WIDTH(8))  shared_ram (
     .data_b ( z80_dout ),
     .wren_b ( sound_ram_1_cs & ~z80_wr_n ),
     .q_b ( z80_shared_dout )
-    );
+);
 
 reg [11:0] sprite_rb_addr;
 wire [15:0] sprite_rb_dout;
@@ -1775,27 +1812,27 @@ dual_port_ram #(.LEN(4096), .DATA_WIDTH(8)) sprite_ram_rb_l (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[12:1] ),
     .wren_a ( sprite_ram_cs & !cpu_rw & !cpu_lds_n),
-    .data_a ( cpu_dout[7:0]  ),
+    .data_a ( cpu_dout[7:0] ),
     .q_a ( sprite_rb_dout[7:0] ),
 
     .clock_b ( clk_sys ),
     .address_b ( sprite_rb_addr ),
     .wren_b ( 0 ),
     .q_b ( sprite_rb_dout[7:0] )
-    );
+);
 
 dual_port_ram #(.LEN(4096), .DATA_WIDTH(8)) sprite_ram_rb_h (
     .clock_a ( clk_10M ),
     .address_a ( cpu_a[12:1] ),
     .wren_a ( sprite_ram_cs & !cpu_rw & !cpu_uds_n),
-    .data_a ( cpu_dout[15:8]  ),
+    .data_a ( cpu_dout[15:8] ),
     .q_a ( cpu_shared_dout[15:8] ),
 
     .clock_b ( clk_sys ),
     .address_b ( sprite_rb_addr ),
     .wren_b ( 0 ),
     .q_b ( sprite_rb_dout[15:8] )
-    );
+);
 
 reg  [22:0] sdram_addr;
 reg  [31:0] sdram_data;
@@ -1918,7 +1955,7 @@ rom_controller rom_controller
     .sdram_ack(sdram_ack),
     .sdram_valid(sdram_valid),
     .sdram_q(sdram_q)
-  );
+);
 
 
 cache prog_cache
@@ -1937,8 +1974,7 @@ cache prog_cache
     .rom_addr(prog_cache_addr),
     .rom_valid(prog_cache_valid),
     .rom_data(prog_cache_data)
-
-); 
+);
 
 tile_cache tile_cache
 (
@@ -1956,7 +1992,6 @@ tile_cache tile_cache
     .rom_addr(tile_cache_addr),
     .rom_data(tile_cache_data),
     .rom_valid(tile_cache_valid)
-
 );
 
 endmodule

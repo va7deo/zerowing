@@ -20,3 +20,5 @@ set_global_assignment -name VHDL_FILE rtl/mem/segment.vhd
 set_global_assignment -name VHDL_FILE rtl/mem/download_buffer.vhd
 set_global_assignment -name VHDL_FILE rtl/mem/sdram.vhd
 set_global_assignment -name VHDL_FILE rtl/mem/dual_port_ram.vhd
+set_global_assignment -name VERILOG_FILE rtl/jtframe_mixer.v
+set_global_assignment -name VERILOG_FILE rtl/jtframe_fir_mono.v

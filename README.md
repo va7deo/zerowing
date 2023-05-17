@@ -1,7 +1,7 @@
 
 # Toaplan (Zero Wing) FPGA Implementation
 
-FPGA compatible core of Toaplan Version 1 arcade hardware for [**MiSTerFPGA**](https://github.com/MiSTer-devel/Main_MiSTer/wiki) written by [**Darren Olafson**](https://twitter.com/Darren__O). Based on schematics and verified against an OutZone (TP-015 Conversion / TP-018) and Tatsujin (TP-013B).
+FPGA compatible core of Toaplan Version 1 arcade hardware for [**MiSTerFPGA**](https://github.com/MiSTer-devel/Main_MiSTer/wiki) written by [**Darren Olafson**](https://twitter.com/Darren__O). Based on schematics and verified against OutZone (TP-015 Conversion / TP-018) and Tatsujin (TP-013B).
 
 The intent is for this core to be a 1:1 implementation of Toaplan V1 hardware. This core was developed with assistance from [**atrac17**](https://github.com/atrac17) and [**𝕓𝕝𝕒𝕔𝕜𝕨𝕚𝕟𝕖**](https://github.com/blackwine).
 
@@ -9,12 +9,12 @@ The intent is for this core to be a 1:1 implementation of Toaplan V1 hardware. T
 
 ## Supported Titles
 
-| Title                                                                   | PCB<br>Number | Status      | Released | ROM Set     |
-|-------------------------------------------------------------------------|---------------|-------------|----------|-------------|
-| [**Tatsujin**](https://en.wikipedia.org/wiki/Truxton_%28video_game%29)  | TP-013B       | Implemented | Yes      | .254 merged |
-| [**Hellfire**](https://en.wikipedia.org/wiki/Hellfire_%28video_game%29) | B90           | Implemented | Yes      | .254 merged |
-| [**Zero Wing**](https://en.wikipedia.org/wiki/Zero_Wing)                | TP-015        | Implemented | Yes      | .254 merged |
-| [**OutZone**](https://en.wikipedia.org/wiki/Out_Zone)                   | TP-018        | Implemented | Yes      | .254 merged |
+| Title                                                                   | PCB<br>Number | Status      | Released |
+|-------------------------------------------------------------------------|---------------|-------------|----------|
+| [**Tatsujin**](https://en.wikipedia.org/wiki/Truxton_%28video_game%29)  | TP-013B       | Implemented | Yes      |
+| [**Hellfire**](https://en.wikipedia.org/wiki/Hellfire_%28video_game%29) | B90 (TP-014)  | Implemented | Yes      |
+| [**Zero Wing**](https://en.wikipedia.org/wiki/Zero_Wing)                | TP-015        | Implemented | Yes      |
+| [**OutZone**](https://en.wikipedia.org/wiki/Out_Zone)                   | TP-018        | Implemented | Yes      |
 
 ## External Modules
 
@@ -30,6 +30,7 @@ The intent is for this core to be a 1:1 implementation of Toaplan V1 hardware. T
 # Known Issues / Tasks
 
 - [**OPL2 Audio**](https://github.com/jotego/jtopl/issues/11)  **[Issue]**  
+- Timing issues with jtframe_mixer module; false paths added to sdc (may need refactor?)  **[Task]**  
 
 # PCB Check List
 
@@ -65,7 +66,7 @@ _**(Tatsujin, Hellfire, Zero Wing)**_
 
 ### Main Components
 
-| Chip                                                                   | Use        |
+| Chip                                                                   | Function   |
 | -----------------------------------------------------------------------|------------|
 | [**Motorola 68000 CPU**](https://en.wikipedia.org/wiki/Motorola_68000) | Main CPU   |
 | [**Zilog Z80 CPU**](https://en.wikipedia.org/wiki/Zilog_Z80)           | Sound CPU  |
@@ -110,7 +111,7 @@ _**(Tatsujin, Hellfire, Zero Wing)**_
 
 ### H/V Adjustments
 
-- There are two H/V toggles, H/V-sync positioning adjust and H/V-sync width adjust. Positioning will move the display for centering on CRT display. The sync width adjust can be used to for sync issues (rolling) without modifying the video timings.
+- There are two H/V toggles, H/V-sync positioning adjust and H/V-sync width adjust. Positioning will move the display for centering on CRT display. The sync width adjust can be used to for sync issues (rolling, flagging etc) without modifying the video timings.
 
 ### Scandoubler Options
 
