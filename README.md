@@ -5,7 +5,9 @@ FPGA compatible core of Toaplan Version 1 arcade hardware for [**MiSTerFPGA**](h
 
 The intent is for this core to be a 1:1 implementation of Toaplan V1 hardware. This core was developed with assistance from [**atrac17**](https://github.com/atrac17) and [**𝕓𝕝𝕒𝕔𝕜𝕨𝕚𝕟𝕖**](https://github.com/blackwine).
 
-![zwcore_github](https://github.com/va7deo/zerowing/assets/32810066/bc1d6d2d-7be6-4a8a-a375-6babdf4749dd)
+Rally Bike (TP-012), Horror Story / Demon's World (TP-016), Fireshark (TP-017), and Vimana (TP-019) are also Toaplan V1 hardware and have separate repositories located [here](https://github.com/va7deo?tab=repositories).
+
+![zwcore_github](https://github.com/va7deo/zerowing/assets/32810066/db31670a-dc4e-4ff6-a803-2738e2ef9a86)
 
 ## Supported Titles
 
