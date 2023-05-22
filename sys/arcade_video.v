@@ -45,7 +45,7 @@ module arcade_video #(parameter WIDTH=320, DW=8, GAMMA=1)
 	output        VGA_HS,
 	output        VGA_VS,
 	output        VGA_DE,
-	output  [1:0] VGA_SL,
+	output  [2:0] VGA_SL,
 
 	input   [2:0] fx,
 	input         forced_scandoubler,
@@ -106,7 +106,7 @@ generate
 	end
 endgenerate
 
-assign VGA_SL  = sl[1:0];
+assign VGA_SL  = sl[2:0];
 wire [2:0] sl = fx ? fx - 1'd1 : 3'd0;
 wire scandoubler = fx || forced_scandoubler;
 

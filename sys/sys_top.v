@@ -1354,7 +1354,6 @@ csync csync_vga(clk_vid, vga_hs_osd, vga_vs_osd, vga_cs_osd);
 		.clk(clk_vid),
 		.PAL_EN(pal_en),
 		.PHASE_INC(PhaseInc),
-		.COLORBURST_RANGE(COLORBURST_RANGE),
 		.hsync(vga_hs_osd),
 		.vsync(vga_vs_osd),
 		.csync(vga_cs_osd),
@@ -1502,7 +1501,7 @@ wire        clk_sys;
 wire [15:0] audio_l, audio_r;
 wire        audio_s;
 wire  [1:0] audio_mix;
-wire  [1:0] scanlines;
+wire  [2:0] scanlines;
 wire  [7:0] r_out, g_out, b_out, hr_out, hg_out, hb_out;
 wire        vs_fix, hs_fix, de_emu, vs_emu, hs_emu, f1;
 wire        hvs_fix, hhs_fix, hde_emu;
@@ -1578,11 +1577,9 @@ reg  [1:0] sl_r;
 wire [1:0] sl = sl_r;
 always @(posedge clk_sys) sl_r <= FB_EN ? 2'b00 : scanlines;
 
-
 `ifdef MISTER_ENABLE_YC
 	wire pal_en;
 	wire yc_en;
-	wire [26:0] COLORBURST_RANGE;
 `endif
 
 emu emu
@@ -1607,7 +1604,6 @@ emu emu
 	.HDMI_HEIGHT(direct_video ? 12'd0 : hdmi_height),
 	.HDMI_FREEZE(freeze),
 `ifdef MISTER_ENABLE_YC	
-	.COLORBURST_RANGE(COLORBURST_RANGE),
 	.PALFLAG(pal_en),
 	.YC_EN(yc_en),
 	.CHROMA_PHASE_INC(PhaseInc),
