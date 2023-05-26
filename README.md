@@ -1,7 +1,7 @@
 
 # Toaplan (Zero Wing) FPGA Implementation
 
-FPGA compatible core of Toaplan Version 1 arcade hardware for [**MiSTerFPGA**](https://github.com/MiSTer-devel/Main_MiSTer/wiki) written by [**Darren Olafson**](https://twitter.com/Darren__O). Based on schematics and verified against OutZone (TP-015 Conversion / TP-018) and Tatsujin (TP-013B).
+FPGA compatible core of Toaplan Version 1 arcade hardware for [**MiSTerFPGA**](https://github.com/MiSTer-devel/Main_MiSTer/wiki) written by [**Darren Olafson**](https://twitter.com/Darren__O). Based on OutZone (TP-018) schematics and verified against OutZone (TP-015 Conversion / TP-018) and Tatsujin (TP-013B).
 
 The intent is for this core to be a 1:1 implementation of Toaplan V1 hardware. This core was developed with assistance from [**atrac17**](https://github.com/atrac17) and [**𝕓𝕝𝕒𝕔𝕜𝕨𝕚𝕟𝕖**](https://github.com/blackwine).
 

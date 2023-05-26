@@ -27,7 +27,7 @@
         <!-- SYSTEM -->
         <dip name="Test Switch" bits="18" ids="Off,On"/>
         <!-- TJUMP -->
-        <dip name="Region" bits="25" ids="Japan,USA,Europe-0,Europe-1"/>
+        <dip name="Region" bits="16,19" ids="Japan,USA,Europe-0,Europe-1"/>
     </switches>
 
     <buttons names="Shot,Shield,-,P1 Start,P2 Start,Coin A,Coin B,Pause" default="A,B,X,Y,R,Start"/>
