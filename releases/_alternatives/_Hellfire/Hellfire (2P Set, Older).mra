@@ -22,13 +22,11 @@
         <dip name="Extend" bits="10,11" ids="70k/270k,100k/250k,100k,200k"/>
         <dip name="Player" bits="12,13" ids="3,1,2,5"/>
         <dip name="No Hit" bits="14" ids="Off,On"/>
-        <!-- SYSTEM -->
-        <dip name="Test Switch" bits="18" ids="Off,On"/>
         <!-- TJUMP -->
         <dip name="Region" bits="16,19" ids="Japan,USA,Europe-0,Europe-1"/>
     </switches>
 
-    <buttons names="Shot,Shot Direction,-,P1 Start,P2 Start,Coin A,Coin B,Pause" default="A,B,X,Y,R,Start"/>
+    <buttons names="Shot,Shot Direction,-,Slow Scroll,P1 Start,P2 Start,Coin A,Coin B,Pause" default="A,B,X,Y,R,L,Start,Select"/>
 
     <rom index="1">
         <part>03</part>

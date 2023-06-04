@@ -2,7 +2,7 @@
 
 module chip_select
 (
-    input  [7:0] pcb,
+    input  [3:0] pcb,
 
     input [23:0] cpu_a,
     input        cpu_as_n,

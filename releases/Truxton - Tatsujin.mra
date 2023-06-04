@@ -24,8 +24,6 @@
         <dip name="No. of Player" bits="12,13" ids="3,5,4,2"/>
         <dip name="Dip Switch Display" bits="14" ids="Off,On"/>
         <dip name="Continued Play" bits="15" ids="Yes,No"/>
-        <!-- SYSTEM -->
-        <dip name="Test Switch" bits="18" ids="Off,On"/>
         <!-- TJUMP -->
         <dip name="Region" bits="16,19" ids="Japan,USA-0,Europe-0,Europe-1,USA-1,USA-2,Europe-2,Europe-3"/>
     </switches>

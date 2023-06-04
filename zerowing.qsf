@@ -76,6 +76,7 @@ source files.qip
 
 set_global_assignment -name ENABLE_SIGNALTAP OFF
 set_global_assignment -name SYNTHESIS_EFFORT FAST
+set_global_assignment -name PLACEMENT_EFFORT_MULTIPLIER 4.0
 set_global_assignment -name ROUTER_TIMING_OPTIMIZATION_LEVEL NORMAL
 
 set_global_assignment -name FITTER_AGGRESSIVE_ROUTABILITY_OPTIMIZATION ALWAYS

@@ -12,6 +12,7 @@
 
     <switches default="00,00,00,00,00,00,00,00">
         <!-- DSWA -->
+        <dip name="Debug" bits="0" ids="Off,On"/>
         <dip name="Screen Rotation" bits="1" ids="Off,On"/>
         <dip name="Function Check" bits="2" ids="Off,On"/>
         <dip name="Demo Sound" bits="3" ids="On,Off"/>
@@ -22,11 +23,12 @@
         <dip name="Extra Player" bits="10,11" ids="300k(E),200/500k(E),300k,None"/>
         <dip name="No. of Player" bits="12,13" ids="3,5,2,1"/>
         <dip name="No Death Mode" bits="14" ids="Off,On"/>
+        <dip name="Debug" bits="15" ids="Off,On"/>
         <!-- TJUMP -->
         <dip name="Region" bits="16,19" ids="Japan-0,USA-0,Europe,Hong Kong-0,Korea,Taiwan-0,Taiwan-1,USA-1,Hong Kong-1,Japan-1,Japan-2,Japan-3,Japan-4,Japan-5,Japan-6,Japan-7"/>
     </switches>
 
-    <buttons names="Shot,Bomb,-,P1 Start,P2 Start,Coin A,Coin B,Pause" default="A,B,X,Y,R,Start"/>
+    <buttons names="Shot,Bomb,-,Slow Scroll,P1 Start,P2 Start,Coin A,Coin B,Pause" default="A,B,X,Y,R,L,Start,Select"/>
 
     <rom index="1">
         <part>02</part>

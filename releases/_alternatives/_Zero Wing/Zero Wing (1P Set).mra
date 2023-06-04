@@ -24,13 +24,11 @@
         <dip name="No. of Player" bits="12,13" ids="3,5,4,2"/>
         <dip name="No Death Mode" bits="14" ids="Off,On"/>
         <dip name="Continued Play" bits="15" ids="Yes,No"/>
-        <!-- SYSTEM -->
-        <dip name="Test Switch" bits="18" ids="Off,On"/>
         <!-- TJUMP -->
         <dip name="Region" bits="16,19" ids="Japan,USA,Europe-0,Europe-1"/>
     </switches>
 
-    <buttons names="Shot,Shield,-,P1 Start,P2 Start,Coin A,Coin B,Pause" default="A,B,X,Y,R,Start"/>
+    <buttons names="Shot,Shield,-,Slow Scroll,P1 Start,P2 Start,Coin A,Coin B,Pause" default="A,B,X,Y,R,L,Start,Select"/>
 
     <rom index="1">
         <part>00</part>

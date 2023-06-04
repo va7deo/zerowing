@@ -202,7 +202,7 @@ assign BUTTONS = 0;
 // 0         1         2         3          4         5         6   
 // 01234567890123456789012345678901 23456789012345678901234567890123
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
-// X  XXXXXXXXXXX     X X XXXXXXXX             XX           XXXXXXXX
+// X  XXXXXXXXXXX     X X XXXXXXXX  XX         XX           XXXXXXXX
 
 wire [1:0] aspect_ratio = status[9:8];
 wire       orientation  = ~status[3];
@@ -258,6 +258,8 @@ localparam CONF_STR = {
     "P3-;",
     "P3OF,68k Freq.,10Mhz,17.5MHz;",
     "P3-;",
+    "P3o0,Scroll Debug,Off,On;",
+    "P3-;",
     "DIP;",
     "-;",
     "OK,Pause OSD,Off,When Open;",
@@ -270,7 +272,7 @@ localparam CONF_STR = {
 wire hps_forced_scandoubler;
 wire forced_scandoubler = hps_forced_scandoubler | status[10];
 
-wire  [2:0] buttons;
+wire  [1:0] buttons;
 wire [63:0] status;
 wire [10:0] ps2_key;
 wire [15:0] joy0, joy1;
@@ -331,7 +333,7 @@ wire [26:0] ioctl_addr;
 wire [15:0] ioctl_dout;
 wire [15:0] ioctl_din;
 
-reg   [7:0] pcb;
+reg   [3:0] pcb;
 wire        tile_priority_type;
 wire [15:0] scroll_y_offset;
 
@@ -345,20 +347,34 @@ wire [21:0] gamma_bus;
 
 //<buttons names="Fire,Jump,Start,Coin,Pause" default="A,B,R,L,Start" />
 // Inputs tied to z80_din
-reg [15:0] p1;
-reg [15:0] p2;
-reg [15:0] z80_dswa;
-reg [15:0] z80_dswb;
-reg [15:0] z80_tjump;
-reg [15:0] system;
+reg [7:0] p1;
+reg [7:0] p2;
+reg [7:0] z80_dswa;
+reg [7:0] z80_dswb;
+reg [7:0] z80_tjump;
+reg [7:0] system;
 
-always @ (posedge clk_sys ) begin
+always @ ( posedge clk_sys ) begin
     p1        <= { 1'b0, p1_buttons[2:0], p1_right, p1_left, p1_down, p1_up };
     p2        <= { 1'b0, p2_buttons[2:0], p2_right, p2_left, p2_down, p2_up };
-    z80_dswa  <= sw[0];
-    z80_dswb  <= sw[1];
     z80_tjump <= sw[2];
-    system    <= { vbl, start2, start1, coin_b, coin_a, service, key_tilt, key_service };
+
+    if ( pcb == 0 || pcb == 1 || pcb == 2 || pcb == 3 && status[32] == 1 ) begin
+        // zerowing, hellfire, outzone, outzone conversion debug options
+        z80_dswa  <= sw[0];
+        z80_dswb  <= { sw[1][7], sw[1][6] | status[32], sw[1][5:0] };
+        system    <= { vbl, start2 | p1_buttons[3], start1 | p1_buttons[3], coin_b, coin_a, service, key_tilt, key_service };
+    end else if ( pcb == 4 && status[32] == 1 ) begin
+        // truxton debug options
+        z80_dswa  <= { sw[0][7:3], sw[0][2] | status[32], sw[0][1:0] };
+        z80_dswb  <= sw[1];
+        system    <= { vbl, start2, start1, coin_b, coin_a, service, key_tilt, key_service };
+    end else begin
+        // default
+        z80_dswa  <= sw[0];
+        z80_dswb  <= sw[1];
+        system    <= { vbl, start2, start1, coin_b, coin_a, service, key_tilt, key_service };
+    end
 end
 
 reg        p1_swap;
@@ -367,13 +383,13 @@ reg        p1_right;
 reg        p1_left;
 reg        p1_down;
 reg        p1_up;
-reg [2:0]  p1_buttons;
+reg [3:0]  p1_buttons;
 
 reg        p2_right;
 reg        p2_left;
 reg        p2_down;
 reg        p2_up;
-reg [2:0]  p2_buttons;
+reg [3:0]  p2_buttons;
 
 reg start1;
 reg start2;
@@ -390,36 +406,36 @@ always @ * begin
         p1_left    <= joy0[1]   | key_p1_left;
         p1_down    <= joy0[2]   | key_p1_down;
         p1_up      <= joy0[3]   | key_p1_up;
-        p1_buttons <= joy0[6:4] | {key_p1_c, key_p1_b, key_p1_a};
+        p1_buttons <= joy0[7:4] | {key_p1_c, key_p1_b, key_p1_a};
 
         p2_right   <= joy1[0]   | key_p2_right;
         p2_left    <= joy1[1]   | key_p2_left;
         p2_down    <= joy1[2]   | key_p2_down;
         p2_up      <= joy1[3]   | key_p2_up;
-        p2_buttons <= joy1[6:4] | {key_p2_c, key_p2_b, key_p2_a};
+        p2_buttons <= joy1[7:4] | {key_p2_c, key_p2_b, key_p2_a};
     end else begin
         p2_right   <= joy0[0]   | key_p1_right;
         p2_left    <= joy0[1]   | key_p1_left;
         p2_down    <= joy0[2]   | key_p1_down;
         p2_up      <= joy0[3]   | key_p1_up;
-        p2_buttons <= joy0[6:4] | {key_p1_c, key_p1_b, key_p1_a};
+        p2_buttons <= joy0[7:4] | {key_p1_c, key_p1_b, key_p1_a};
 
         p1_right   <= joy1[0]   | key_p2_right;
         p1_left    <= joy1[1]   | key_p2_left;
         p1_down    <= joy1[2]   | key_p2_down;
         p1_up      <= joy1[3]   | key_p2_up;
-        p1_buttons <= joy1[6:4] | {key_p2_c, key_p2_b, key_p2_a};
+        p1_buttons <= joy1[7:4] | {key_p2_c, key_p2_b, key_p2_a};
     end
 end
 
 always @ * begin
-        start1    <= joy0[7]  | joy1[7]  | key_start_1p;
-        start2    <= joy0[8]  | joy1[8]  | key_start_2p;
+        start1    <= joy0[8]  | joy1[8]  | key_start_1p;
+        start2    <= joy0[9]  | joy1[9]  | key_start_2p;
 
-        coin_a    <= joy0[9]  | joy1[9]  | key_coin_a;
-        coin_b    <= joy0[10] | joy1[10] | key_coin_b;
+        coin_a    <= joy0[10] | joy1[10] | key_coin_a;
+        coin_b    <= joy0[11] | joy1[11] | key_coin_b;
 
-        b_pause   <= joy0[11] | key_pause;
+        b_pause   <= joy0[12] | key_pause;
         service   <= key_test;
 end
 
@@ -588,7 +604,7 @@ wire    pause_cpu;
 wire    hs_pause;
 
 // 8 bits per colour, 70MHz sys clk
-pause #(8,8,8,70) pause 
+pause #(8,8,8,70) pause
 (
     .clk_sys(clk_sys),
     .reset(reset),
@@ -867,8 +883,6 @@ jtopl #(.OPL_TYPE(2)) jtopl2
     .sample(opl_sample_clk)
 );
 
-wire       audio_en   = status[11];       // audio enable
-
 wire [1:0] opl2_level = status[44:43];    // opl2 audio mix
 
 reg  [7:0] opl2_mult;
@@ -879,12 +893,12 @@ always @( posedge clk_sys, posedge reset ) begin
     if (reset) begin
         opl2_mult<=0;
     end else begin
-    case( opl2_level )
-        0: opl2_mult <= 8'h0c;    // 75%
-        1: opl2_mult <= 8'h08;    // 50%
-        2: opl2_mult <= 8'h04;    // 25%
-        3: opl2_mult <= 8'h00;    // 0%
-    endcase
+        case( opl2_level )
+            0: opl2_mult <= 8'h0c;    // 75%
+            1: opl2_mult <= 8'h08;    // 50%
+            2: opl2_mult <= 8'h04;    // 25%
+            3: opl2_mult <= 8'h00;    // 0%
+        endcase
     end
 end
 
@@ -908,14 +922,14 @@ jtframe_mixer #(.W0(16), .WOUT(16)) u_mix_mono(
     .peak   (              )
 );
 
-always @ * begin
-    if ( audio_en == 0 ) begin
+always @ (posedge clk_sys ) begin
+    if ( pause_cpu == 1 ) begin
+        AUDIO_L <= 0;
+        AUDIO_R <= 0;
+    end else if ( pause_cpu == 0 ) begin
         // mix audio
         AUDIO_L <= mono;
         AUDIO_R <= mono;
-    end else begin
-        AUDIO_L <= 0;
-        AUDIO_R <= 0;
     end
 end
 
