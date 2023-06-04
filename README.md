@@ -5,7 +5,7 @@ FPGA compatible core of Toaplan Version 1 arcade hardware for [**MiSTerFPGA**](h
 
 The intent is for this core to be a 1:1 **game play** FPGA implementation of Toaplan V1 hardware for the supported titles. This project was developed with assistance from [**atrac17**](https://github.com/atrac17) and [**𝕓𝕝𝕒𝕔𝕜𝕨𝕚𝕟𝕖**](https://github.com/blackwine).
 
-Rally Bike (TP-012), Horror Story / Demon's World (TP-016), Fireshark (TP-017), and Vimana (TP-019) are also Toaplan V1 titles and have separate repositories located [**here**](https://github.com/va7deo?tab=repositories).
+Rally Bike (TP-012), Demon's World (TP-016), Fireshark (TP-017), and Vimana (TP-019) are also Toaplan V1 titles and have separate repositories located [**here**](https://github.com/va7deo?tab=repositories).
 
 ![zwcore_github](https://github.com/va7deo/zerowing/assets/32810066/db31670a-dc4e-4ff6-a803-2738e2ef9a86)
 
@@ -35,15 +35,6 @@ Rally Bike (TP-012), Horror Story / Demon's World (TP-016), Fireshark (TP-017), 
 - Address timing issues with jtframe_mixer module usage; false paths added to sdc  **[Task]**  
 
 # PCB Check List
-
-### Schematics Availability
-
-| Title     | Schematics / Additional Verification                                                                                                                                                                                                              | Notes                                                                                                                                                                                                                     |
-|-----------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| Tatsujin  | [**Additional Verification**](https://c10.patreonusercontent.com/4/patreon-media/p/post/66547820/5f927de91f9248b79a0d51f395615d9f/eyJxIjoxMDAsIndlYnAiOjB9/1.jpg?token-time=1687132800&token-hash=8icbxvPuigV3RyoZ18LO1dRJFVaBUFltOtyYgSho_tw%3D) | Tatsujin pcb timings and gameplay verification [**(atrac17)**](https://github.com/atrac17); Tatsujin readings implemented in core [**(𝕓𝕝𝕒𝕔𝕜𝕨𝕚𝕟𝕖)**](https://github.com/blackwine).                                         |
-| Hellfire  | Not Available                                                                                                                                                                                                                                     | Hellfire is similar to Zero Wing pcb layout with same timing parameters.                                                                                                                                                  |
-| Zero Wing | Not Available                                                                                                                                                                                                                                     | Zero Wing pcb timings and gameplay verification [**(atrac17)**](https://github.com/atrac17).                                                                                                                              |
-| OutZone   | [**Yes**](https://github.com/va7deo/zerowing/blob/main/doc/Schematics/Out%20Zone%20Schematics.pdf)                                                                                                                                                | Schematics referenced for design and implemented in core [**(Darren Olafson)**](https://github.com/va7deo). OutZone gameplay, pcb timings and minimal schematic verification [**(atrac17)**](https://github.com/atrac17). |
 
 ### Clock Information
 
@@ -119,7 +110,7 @@ _**(Tatsujin, Hellfire, Zero Wing)**_
 
 ### P1/P2 Input Swap Options
 
-- Additional toggle to swap inputs from Player 1 to Player 2. This only **swaps inputs for the joystick**, keyboard inputs retain there default assignments.
+- Additional toggle to swap inputs from Player 1 to Player 2. This swaps inputs for the joystick and keyboard assignments.
 
 ### Audio Options
 
@@ -137,7 +128,7 @@ _**(Tatsujin, Hellfire, Zero Wing)**_
 
 - Additional toggle for horizontal and vertical centering; the "H/V-Sync Pos Adj" toggles move the image to assist in screen centering if you choose not to adjust your displays settings.
 
-- Additional toggle for horizontal and vertical sync width adjust. The "H/V-Sync Width Adj" toggles address "rolling sync" and "flagging" on certain displays.
+- Additional toggle for horizontal and vertical sync width adjust; the "H/V-Sync Width Adj" toggles address "rolling sync" and "flagging" on certain displays.
 
 ### Scandoubler Options ( 31kHz Displays )
 
@@ -158,7 +149,7 @@ _**(Tatsujin, Hellfire, Zero Wing)**_
 
 - Upright cabinets use a **2L3B** control panel layout. Cocktail cabinets use a **2L3B** control panel layout on opposite sides of the cabinet. <br><br>
 - If the cabinet type is set to table, the screen inverts for cocktail mode with turned based two player gameplay. <br><br>
-- Push button 3 may have no function in game, but corresponds to the hardware service menu, depending on the title. <br><br>
+- Push button 3 may have no function in-game, but corresponds to the hardware service menu in OutZone. The "Scroll Debug" adds a button combination and is not tied to the keyboard handler. <br><br>
 
 ### Keyboard Handler
 
