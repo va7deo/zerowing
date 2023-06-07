@@ -1294,7 +1294,7 @@ always @ (posedge clk_sys) begin
         // render sprites 
         // triggered when the tile rendering starts
         if ( sprite_state == 0 && draw_state > 0 ) begin
-            sprite_num <= 8'hff;
+            sprite_num <= 8'h00;
             sprite_x <= 0;
             sprite_fb_w <= 1;
             sprite_state <= 1;
@@ -1327,8 +1327,8 @@ always @ (posedge clk_sys) begin
             // sprite pos can be negative?
         if ( sprite_hidden == 0 && sprite_width > 0 && ( $signed(y_flipped) >= $signed(sprite_pos_y) ) && $signed(y_flipped) < ( $signed(sprite_pos_y) + $signed(sprite_height) ) ) begin
                 sprite_state <= 5;
-            end else if ( sprite_num > 0 ) begin
-                sprite_num <= sprite_num - 1;
+            end else if ( sprite_num < 8'hff ) begin
+                sprite_num <= sprite_num + 1;
                 sprite_state <= 2;
             end else begin
                 sprite_state <= 15;
@@ -1348,8 +1348,13 @@ always @ (posedge clk_sys) begin
         end else if ( sprite_state == 7 ) begin
             sprite_fb_w <= 0;
             // draw if pixel value not zero and priority >= previous sprite data
-            if ( sprite_pix > 0 && sprite_priority_buf[sprite_buf_x] == 0 ) begin 
+//            if ( sprite_pix > 0 && sprite_priority_buf[sprite_buf_x] == 0 ) begin
+//            if ( sprite_pix != 0 && ( sprite_priority == 0 || sprite_priority >= sprite_priority_buf[sprite_buf_x] ) ) begin
+            if ( sprite_pix != 0 ) begin
                 sprite_fb_din <= { 2'b11, sprite_priority, sprite_pal_addr, sprite_pix };
+//                if ( sprite_priority == 0 ) begin
+//                    sprite_priority_buf[sprite_buf_x] <= { 1'b1, sprite_priority };
+//                end else begin
                 sprite_fb_addr_w <= { y[0], 9'b0 } + sprite_buf_x;
                 sprite_priority_buf[sprite_buf_x] <= sprite_priority;
                 sprite_fb_w <= 1;
@@ -1360,8 +1365,8 @@ always @ (posedge clk_sys) begin
                     // do recalc bitmap address
                     sprite_state <= 5;
                 end
-            end else if ( sprite_num > 0 ) begin
-                sprite_num <= sprite_num - 1;
+            end else if ( sprite_num < 8'hff ) begin
+                sprite_num <= sprite_num + 1;
                 sprite_x <= 0;
                 // need to load new attributes and size
                 sprite_state <= 2;
