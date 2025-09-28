@@ -810,7 +810,6 @@ wire MREQ_n;
 always @ (posedge clk_sys) begin
     if ( reset == 1 ) begin
         z80_wait_n <= 0;
-        sound_wr <= 0;
     end else if ( clk_3_5M == 1 ) begin
         z80_wait_n <= 1;
         if ( ioctl_download | ( z80_rd_n == 0 && sound_rom_1_data_valid == 0 && sound_rom_1_cs == 1 ) ) begin
@@ -844,44 +843,15 @@ always @ (posedge clk_sys) begin
                 z80_din <= 8'h00;
             end
         end
-        sound_wr <= 0;
-        if ( z80_wr_n == 0 ) begin
-            if ( z80_sound0_cs | z80_sound1_cs ) begin
-                sound_data  <= z80_dout;
-                sound_addr <= { 1'b0, z80_sound1_cs }; // pad for opl3.  opl2 is single bit address
-                sound_wr <= 1;
-            end
-        end
     end
 end
-
-reg  [1:0] sound_addr;
-reg  [7:0] sound_data;
-reg sound_wr;
 
 wire [7:0] opl_dout;
 wire opl_irq_n;
 
-reg signed [15:0] sample;
+reg signed [15:0] opl_sample;
 
 assign AUDIO_S = 1'b1;
-
-wire opl_sample_clk;
-
-jtopl #(.OPL_TYPE(2)) jtopl2
-(
-    .rst(~reset_n),
-    .clk(clk_sys),
-    .cen(clk_3_5M),
-    .din(sound_data),
-    .addr(sound_addr),
-    .cs_n('0),
-    .wr_n(~sound_wr),
-    .dout(),
-    .irq_n(),
-    .snd(),
-    .sample(opl_sample_clk)
-);
 
 opl2_fpga opl2_fpga (
     .clk_audio(CLK_AUDIO),
@@ -894,38 +864,48 @@ opl2_fpga opl2_fpga (
     .din(z80_dout), // clk_host domain
     .dout(opl_dout), // clk_host domain
     .sample_valid(), // clk_audio domain
-    .sample, // clk_audio domain
+    .sample(opl_sample), // clk_audio domain
     .led(), // clk_audio domain
     .irq_n(opl_irq_n) // clk_host domain
 );
 
-wire [1:0] opl2_level = status[44:43];    // opl2 audio mix
+logic [1:0] opl2_level_synced;
 
-reg  [7:0] opl2_mult;
+cdc_vector_handshake_continuous #(
+    .DATA_WIDTH(2)
+) opl2_level_cdc (
+    .clk_in(clk_sys),
+    .clk_out(CLK_AUDIO),
+    .data_in(status[44:43]), // opl2 audio mix
+    .data_out(opl2_level_synced)
+);
+
+logic  [7:0] opl2_mult;
 
 // set the multiplier for each channel from menu
+always_ff @(posedge CLK_AUDIO)
+    unique case (opl2_level_synced)
+    0: opl2_mult <= 8'h0c;    // 75%
+    1: opl2_mult <= 8'h08;    // 50%
+    2: opl2_mult <= 8'h04;    // 25%
+    3: opl2_mult <= 8'h00;    // 0%
+    endcase
 
-always @( posedge clk_sys, posedge reset ) begin
-    if (reset) begin
-        opl2_mult<=0;
-    end else begin
-        case( opl2_level )
-            0: opl2_mult <= 8'h0c;    // 75%
-            1: opl2_mult <= 8'h08;    // 50%
-            2: opl2_mult <= 8'h04;    // 25%
-            3: opl2_mult <= 8'h00;    // 0%
-        endcase
-    end
-end
+logic reset_clk_audio;
+logic signed [15:0] mono;
 
-wire signed [15:0] mono;
+reset_sync reset_sync_clk_audio (
+    .clk(CLK_AUDIO),
+    .arst_n(!reset),
+    .reset(reset_clk_audio)
+);
 
 jtframe_mixer #(.W0(16), .WOUT(16)) u_mix_mono(
-    .rst    ( reset        ),
-    .clk    ( clk_sys      ),
+    .rst    ( reset_clk_audio ),
+    .clk    ( CLK_AUDIO    ),
     .cen    ( 1'b1         ),
     // input signals
-    .ch0    ( sample       ),
+    .ch0    ( opl_sample   ),
     .ch1    ( 16'd0        ),
     .ch2    ( 16'd0        ),
     .ch3    ( 16'd0        ),
@@ -938,11 +918,19 @@ jtframe_mixer #(.W0(16), .WOUT(16)) u_mix_mono(
     .peak   (              )
 );
 
-always @ (posedge clk_sys ) begin
-    if ( pause_cpu == 1 ) begin
+logic pause_cpu_synced;
+
+synchronizer pause_cpu_synchronizer (
+    .clk(CLK_AUDIO),
+    .in(pause_cpu),
+    .out(pause_cpu_synced)
+);
+
+always @ (posedge CLK_AUDIO ) begin
+    if ( pause_cpu_synced ) begin
         AUDIO_L <= 0;
         AUDIO_R <= 0;
-    end else if ( pause_cpu == 0 ) begin
+    end else begin
         // mix audio
         AUDIO_L <= mono;
         AUDIO_R <= mono;

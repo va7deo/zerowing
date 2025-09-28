@@ -2,7 +2,6 @@ set_global_assignment -name SDC_FILE zerowing.sdc
 set_global_assignment -name SYSTEMVERILOG_FILE zerowing.sv
 set_global_assignment -name QIP_FILE rtl/t80/T80.qip
 set_global_assignment -name QIP_FILE rtl/fx68k/fx68k.qip
-set_global_assignment -name QIP_FILE rtl/jtopl/jt26.qip
 set_global_assignment -name QIP_FILE rtl/opl2_fpga_MiSTer/opl2_fpga.qip
 set_global_assignment -name VERILOG_FILE rtl/video_timing.v
 set_global_assignment -name QIP_FILE sys/pll_q17.qip
