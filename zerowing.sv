@@ -877,8 +877,8 @@ jtopl #(.OPL_TYPE(2)) jtopl2
     .addr(sound_addr),
     .cs_n('0),
     .wr_n(~sound_wr),
-    .dout(opl_dout),
-    .irq_n(opl_irq_n),
+    .dout(),
+    .irq_n(),
     .snd(),
     .sample(opl_sample_clk)
 );
@@ -892,11 +892,11 @@ opl2_fpga opl2_fpga (
     .wr_n(z80_wr_n), // clk_host domain
     .address(z80_sound1_cs), // clk_host domain
     .din(z80_dout), // clk_host domain
-    .dout(), // clk_host domain
+    .dout(opl_dout), // clk_host domain
     .sample_valid(), // clk_audio domain
     .sample, // clk_audio domain
     .led(), // clk_audio domain
-    .irq_n() // clk_host domain
+    .irq_n(opl_irq_n) // clk_host domain
 );
 
 wire [1:0] opl2_level = status[44:43];    // opl2 audio mix
