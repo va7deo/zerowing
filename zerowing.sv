@@ -198,8 +198,8 @@ assign LED_POWER = 0;
 assign BUTTONS = 0;
 
 // Status Bit Map:
-//              Upper Case                     Lower Case           
-// 0         1         2         3          4         5         6   
+//              Upper Case                     Lower Case
+// 0         1         2         3          4         5         6
 // 01234567890123456789012345678901 23456789012345678901234567890123
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
 // X  XXXXXXXXXXX     X X XXXXXXXX  XX         XX           XXXXXXXX
@@ -225,7 +225,7 @@ wire [3:0] vs_width  = status[63:60];
 assign VIDEO_ARX = (!aspect_ratio) ? (orientation  ? 8'd4 : 8'd3) : (aspect_ratio - 1'd1);
 assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
 
-`include "build_id.v" 
+`include "build_id.v"
 localparam CONF_STR = {
     "Toaplan V1;;",
     "-;",
@@ -753,7 +753,7 @@ fx68k fx68k (
     .BERRn(1'b1),
     .BRn(1'b1),
     .BGACKn(1'b1),
-    
+
     .IPL0n(1'b1),
     .IPL1n(1'b1),
     .IPL2n(ipl2_n),
@@ -879,8 +879,24 @@ jtopl #(.OPL_TYPE(2)) jtopl2
     .wr_n(~sound_wr),
     .dout(opl_dout),
     .irq_n(opl_irq_n),
-    .snd(sample),
+    .snd(),
     .sample(opl_sample_clk)
+);
+
+opl2_fpga opl2_fpga (
+    .clk_audio(CLK_AUDIO),
+    .clk_host(clk_sys),
+    .ic_n(reset_n),
+    .cs_n(!(z80_sound0_cs || z80_sound1_cs)), // clk_host domain
+    .rd_n('0), // clk_host domain
+    .wr_n(z80_wr_n), // clk_host domain
+    .address(z80_sound1_cs), // clk_host domain
+    .din(z80_dout), // clk_host domain
+    .dout(), // clk_host domain
+    .sample_valid(), // clk_audio domain
+    .sample, // clk_audio domain
+    .led(), // clk_audio domain
+    .irq_n() // clk_host domain
 );
 
 wire [1:0] opl2_level = status[44:43];    // opl2 audio mix
@@ -1086,7 +1102,7 @@ always @ (posedge clk_sys) begin
                 inc_sprite_ofs <= 1;
             end
             if ( reset_z80_cs ) begin
-                // the pcb writes to a latch to control the reset 
+                // the pcb writes to a latch to control the reset
                 reset_z80_n <= cpu_dout[0];
             end
         end
@@ -1291,7 +1307,7 @@ always @ (posedge clk_sys) begin
         sprite_copy_state <= 0;
         tile_draw_state <= 0;
     end else begin
-        // render sprites 
+        // render sprites
         // triggered when the tile rendering starts
         if ( sprite_state == 0 && draw_state > 0 ) begin
             sprite_num <= 8'h00;
@@ -1487,7 +1503,7 @@ always @ (posedge clk_sys) begin
                     if ( curr_x[2:0] == ( tile_flip ? 0 : 7)  ) begin
                         draw_state <= 3;
                         tile_draw_state <= 0;
-                    end 
+                    end
                     x <= x + 1;
                 end else if ( layer > 0 ) begin
                     layer <= layer - 1;
@@ -1536,7 +1552,7 @@ always @ (posedge clk_sys) begin
         // if palette index is zero then it's from layer 3 and is transparent render as blank (black).
         rgb <= { dac[tile_palette_dout[4:0]], dac[tile_palette_dout[9:5]], dac[tile_palette_dout[14:10]] };
 
-        // if not transparent and sprite is higher priority 
+        // if not transparent and sprite is higher priority
         if ( sprite_fb_out[3:0] > 0 && (sprite_fb_out[13:10] > tile_fb_out[13:10]) ) begin
             // draw sprite
             rgb <= { dac[sprite_palette_dout[4:0]], dac[sprite_palette_dout[9:5]], dac[sprite_palette_dout[14:10]] };
@@ -1872,7 +1888,7 @@ sdram #(.CLK_FREQ(70.0)) sdram
   .data(sdram_data),
   .we(sdram_we),
   .req(sdram_req),
-  
+
   .ack(sdram_ack),
   .valid(sdram_valid),
   .q(sdram_q),
