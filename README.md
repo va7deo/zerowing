@@ -24,15 +24,13 @@ Rally Bike (TP-012), Demon's World (TP-016), Fireshark (TP-017), and Vimana (TP-
 |---------------------------------------------------------------------------------------|------------------------------------------------------------------------|------------------------------------------------|
 | [**fx68k**](https://github.com/ijor/fx68k)                                            | [**Motorola 68000 CPU**](https://en.wikipedia.org/wiki/Motorola_68000) | Jorge Cwik                                     |
 | [**t80**](https://opencores.org/projects/t80)                                         | [**Zilog Z80 CPU**](https://en.wikipedia.org/wiki/Zilog_Z80)           | Daniel Wallner                                 |
-| [**jtopl2**](https://github.com/jotego/jtopl)                                         | [**Yamaha OPL2**](https://en.wikipedia.org/wiki/Yamaha_OPL#OPL2)       | Jose Tejada                                    |
+| [**opl2_fpga**](https://github.com/gtaylormb/opl2_fpga_MiSTer)                        | [**Yamaha OPL2**](https://en.wikipedia.org/wiki/Yamaha_OPL#OPL2)       | Greg Taylor                                    |
 | [**yc_out**](https://github.com/MikeS11/MiSTerFPGA_YC_Encoder)                        | [**Y/C Video Module**](https://en.wikipedia.org/wiki/S-Video)          | Mike Simone                                    |
 | [**mem**](https://github.com/MiSTer-devel/Arcade-Rygar_MiSTer/tree/master/src/mem)    | SDRAM Controller / Rom Downloader                                      | Josh Bassett; modified by Darren Olafson       |
 | [**core_template**](https://github.com/MiSTer-devel/Template_MiSTer)                  | MiSTer Framework Template                                              | sorgelig; modified by Darren Olafson / atrac17 |
 
 # Known Issues / Tasks
 
-- [**OPL2 Audio**](https://github.com/jotego/jtopl/issues/11)  **[Issue]**  
-- Address timing issues with jtframe_mixer module usage; false paths added to sdc  **[Task]**  
 
 # PCB Check List
 
@@ -56,15 +54,15 @@ Rally Bike (TP-012), Demon's World (TP-016), Fireshark (TP-017), and Vimana (TP-
 
 _**(OutZone)**_
 
-    450 pixels/line  
-  
-    282 lines/frame  
+    450 pixels/line
+
+    282 lines/frame
 
 _**(Tatsujin, Hellfire, Zero Wing)**_
 
-    450 pixels/line  
-  
-    270 lines/frame  
+    450 pixels/line
+
+    270 lines/frame
 
 ### Main Components
 
