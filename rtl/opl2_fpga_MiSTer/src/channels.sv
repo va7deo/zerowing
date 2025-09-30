@@ -92,6 +92,10 @@ module channels
     } signals;
     // verilator lint_on UNOPTFLAT
 
+    always_ff @(posedge clk)
+        if (opl2_reg_wr.valid && opl2_reg_wr.address == 'hBD)
+            ryt <= opl2_reg_wr.data[5];
+
     mem_single_bank #(
         .DATA_WIDTH(1),
         .DEPTH('h9),
