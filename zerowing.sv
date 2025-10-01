@@ -854,19 +854,20 @@ reg signed [15:0] opl_sample;
 assign AUDIO_S = 1'b1;
 
 opl2_fpga opl2_fpga (
-    .clk_audio(CLK_AUDIO),
+    .clk(clk_sys),
     .clk_host(clk_sys),
+    .clk_dac(CLK_AUDIO),
     .ic_n(reset_n),
-    .cs_n(!(z80_sound0_cs || z80_sound1_cs)), // clk_host domain
-    .rd_n('0), // clk_host domain
-    .wr_n(z80_wr_n), // clk_host domain
-    .address(z80_sound1_cs), // clk_host domain
-    .din(z80_dout), // clk_host domain
-    .dout(opl_dout), // clk_host domain
-    .sample_valid(), // clk_audio domain
-    .sample(opl_sample), // clk_audio domain
-    .led(), // clk_audio domain
-    .irq_n(opl_irq_n) // clk_host domain
+    .cs_n(!(z80_sound0_cs || z80_sound1_cs)),
+    .rd_n(z80_rd_n),
+    .wr_n(z80_wr_n),
+    .address(z80_sound1_cs),
+    .din(z80_dout),
+    .dout(opl_dout),
+    .sample_valid(),
+    .sample(opl_sample),
+    .led(),
+    .irq_n(opl_irq_n)
 );
 
 logic [1:0] opl2_level_synced;

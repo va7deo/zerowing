@@ -44,8 +44,9 @@
 module opl2_fpga
     import opl2_pkg::*;
 (
-    input wire clk_audio, // 24.576MHz
-    input wire clk_host,
+    input wire clk, // opl3 master clk
+    input wire clk_host, // if different from clk, set INSTANTIATE_MASTER_HOST_CDC to 1
+    input wire clk_dac, // only used if INSTANTIATE_SAMPLE_DAC_CDC is set
     input wire ic_n, // reset, clk_host domain
     input wire cs_n, // clk_host domain
     input wire rd_n, // clk_host domain
@@ -53,9 +54,9 @@ module opl2_fpga
     input wire address, // clk_host domain
     input wire [REG_FILE_DATA_WIDTH-1:0] din, // clk_host domain
     output logic [REG_FILE_DATA_WIDTH-1:0] dout, // clk_host domain
-    output logic sample_valid, // clk_audio domain
-    output logic signed [DAC_OUTPUT_WIDTH-1:0] sample, // clk_audio domain
-    output logic [NUM_LEDS-1:0] led, // clk_audio domain
+    output logic sample_valid, // clk domain: if INSTANTIATE_SAMPLE_DAC_CDC ? clk_audio : clk
+    output logic signed [DAC_OUTPUT_WIDTH-1:0] sample, // clk domain: if INSTANTIATE_SAMPLE_DAC_CDC ? clk_audio : clk
+    output logic [NUM_LEDS-1:0] led, // master clk domain
     output logic irq_n // clk_host domain
 );
     logic reset;
@@ -63,10 +64,6 @@ module opl2_fpga
     opl2_reg_wr_t opl2_reg_wr;
     logic [REG_FILE_DATA_WIDTH-1:0] status;
     logic force_timer_overflow;
-    logic clk;
-
-    // most of design driven off clk_audio, which is consistent between cores
-    always_comb clk = clk_audio;
 
     reset_sync reset_sync (
         .clk,
@@ -87,7 +84,6 @@ module opl2_fpga
     );
 
     channels channels (
-        .clk_dac('0), // unused in MiSTer; we're already generating/outputting at the dac_clk
         .*
     );
 

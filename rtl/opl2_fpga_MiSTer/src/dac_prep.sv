@@ -60,12 +60,15 @@ module dac_prep
     end
 
     generate
-    if (INSTANTIATE_SAMPLE_SYNC_TO_DAC_CLK) begin
+    if (INSTANTIATE_SAMPLE_DAC_CDC) begin
         logic [2:0] sample_valid_opl2_pulse_extend;
         logic sample_valid_opl2_extended_pulse = 0;
-        logic sample_valid_cpu_p0;
-        logic sample_valid_cpu_p1 = 0;
+        logic sample_valid_dac_p0;
+        logic sample_valid_dac_p1 = 0;
 
+        /*
+         * pulse extend to make it through synchronizer
+         */
         always_ff @(posedge clk) begin
             sample_valid_opl2_pulse_extend <= sample_valid_opl2_pulse_extend << 1;
             sample_valid_opl2_pulse_extend[0] <= sample_valid_opl2_p1;
@@ -75,20 +78,20 @@ module dac_prep
         synchronizer channel_valid_sync (
             .clk(clk_dac),
             .in(sample_valid_opl2_extended_pulse),
-            .out(sample_valid_cpu_p0)
+            .out(sample_valid_dac_p0)
         );
 
         /*
         * opl2 channels are latched and held on channel_valid for a full sample period, so we only need to
-        * synchronize the channel_valid bit and use to latch samples into cpu clock domain
+        * synchronize the channel_valid bit and use to latch samples into DAC clock domain
         */
         always_ff @(posedge clk_dac) begin
-            sample_valid_cpu_p1 <= sample_valid_cpu_p0;
+            sample_valid_dac_p1 <= sample_valid_dac_p0;
 
-            if (sample_valid_cpu_p0)
+            if (sample_valid_dac_p0)
                 sample <= sample_opl2_p1;
 
-            sample_valid <= sample_valid_cpu_p0 && !sample_valid_cpu_p1;
+            sample_valid <= sample_valid_dac_p0 && !sample_valid_dac_p1;
         end
     end
     else

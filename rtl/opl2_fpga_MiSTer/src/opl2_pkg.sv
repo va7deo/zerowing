@@ -46,18 +46,18 @@
 package opl2_pkg;
     /*
      * Original OPL2 used a 3.579545MHz master clock, divided by 72 giving a
-     * sample clock of 49.7159KHz. On MiSTer we'll use the audio clk at 24.576MHz
-     * divided by 494 to give us 49.74899KHz, +0.07% away
+     * sample clock of 49.7159KHz. Choose CLK_DIV_COUNT to get as close to this as possible.
      */
-    localparam CLK_FREQ = 24.576e6; // clk_audio on MiSTer
+    localparam CLK_FREQ = 70e6; // set this to master clk frequency
     localparam DAC_OUTPUT_WIDTH = 16;
     localparam INSTANTIATE_TIMERS = 1; // set to 1 to use timers, 0 to save area
-    localparam NUM_LEDS = 4; // connected to kon bank 0 starting at 0
-    localparam INSTANTIATE_SAMPLE_SYNC_TO_DAC_CLK = 0;
-    localparam INSTANTIATE_TRICK_SW_DETECTION = 0;
+    localparam NUM_LEDS = 0; // connected to kon bank 0 starting at 0
+    localparam INSTANTIATE_MASTER_HOST_CDC = 0; // if clk and clk_host are not the same, set to 1
+    localparam INSTANTIATE_SAMPLE_DAC_CDC = 1;
+    localparam INSTANTIATE_TRICK_SW_DETECTION = 0; // needed on ao486 to fool games into detecting chip
 
-    localparam DESIRED_SAMPLE_FREQ = 49.7159e3;
-    localparam int CLK_DIV_COUNT = 494; // gets us to 49.74899KHz sample freq, +0.07% away
+    localparam DESIRED_SAMPLE_FREQ = 49.7159e3; // do not change
+    localparam int CLK_DIV_COUNT = 1408; // gets us to 49.7159KHz sample freq
     localparam ACTUAL_SAMPLE_FREQ = CLK_FREQ/CLK_DIV_COUNT;
 
     localparam NUM_REG_PER_BANK = 'hF6;

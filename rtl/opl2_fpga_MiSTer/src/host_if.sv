@@ -63,6 +63,7 @@ module host_if
     logic address_p1 = 0;
     logic [REG_FILE_DATA_WIDTH-1:0] din_p1 = 0;
     logic opl3_fifo_empty;
+    logic opl3_wr_pulse;
     logic opl3_address;
     logic [REG_FILE_DATA_WIDTH-1:0] opl3_data;
     logic wr_p1;
@@ -80,26 +81,38 @@ module host_if
 
     always_comb wr_p1 = !cs_p1_n && !wr_p1_n;
 
-    afifo #(
-        .LGFIFO(6), // use at least 6 to get inferred into BRAM. Increase in ALMs at lower depths
-        .WIDTH(1 + REG_FILE_DATA_WIDTH) // address + data
-    ) afifo (
-		.i_wclk(clk_host),
-		.i_wr_reset_n(ic_n),
-		.i_wr(wr_p1 && !wr_p2),
-		.i_wr_data({address_p1, din_p1}),
-		.o_wr_full(),
-		.i_rclk(clk),
-		.i_rd_reset_n(!reset),
-		.i_rd(!opl3_fifo_empty),
-		.o_rd_data({opl3_address, opl3_data}),
-		.o_rd_empty(opl3_fifo_empty)
-	);
+    generate
+    if (INSTANTIATE_MASTER_HOST_CDC) begin
+        afifo #(
+            .LGFIFO(6), // use at least 6 to get inferred into BRAM. Increase in ALMs at lower depths
+            .WIDTH(1 + REG_FILE_DATA_WIDTH) // address + data
+        ) afifo (
+            .i_wclk(clk_host),
+            .i_wr_reset_n(ic_n),
+            .i_wr(wr_p1 && !wr_p2),
+            .i_wr_data({address_p1, din_p1}),
+            .o_wr_full(),
+            .i_rclk(clk),
+            .i_rd_reset_n(!reset),
+            .i_rd(!opl3_fifo_empty),
+            .o_rd_data({opl3_address, opl3_data}),
+            .o_rd_empty(opl3_fifo_empty)
+        );
+
+        always_comb opl3_wr_pulse = !opl3_fifo_empty;
+    end
+    else
+        always_comb begin
+            opl3_wr_pulse = wr_p1 && !wr_p2;
+            opl3_address = address_p1;
+            opl3_data = din_p1;
+        end
+    endgenerate
 
     always_ff @(posedge clk) begin
         opl2_reg_wr.valid <= 0;
 
-        if (!opl3_fifo_empty)
+        if (opl3_wr_pulse)
             if (!opl3_address) // address write mode
                 opl2_reg_wr.address <= opl3_data;
             else begin                  // data write mode
@@ -111,14 +124,19 @@ module host_if
             opl2_reg_wr <= 0;
     end
 
-    // bits do not need to be coherant, can use synchronizers
-    synchronizer #(
-        .DATA_WIDTH(REG_FILE_DATA_WIDTH)
-    ) dout_sync (
-        .clk(clk_host),
-        .in(status),
-        .out(host_status)
-    );
+    generate
+    if (INSTANTIATE_MASTER_HOST_CDC)
+        // bits do not need to be coherant, can use synchronizers
+        synchronizer #(
+            .DATA_WIDTH(REG_FILE_DATA_WIDTH)
+        ) dout_sync (
+            .clk(clk_host),
+            .in(status),
+            .out(host_status)
+        );
+    else
+        always_comb host_status = status;
+    endgenerate
 
     always_ff @(posedge clk_host)
         dout <= host_status;

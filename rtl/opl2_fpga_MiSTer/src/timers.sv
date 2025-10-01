@@ -133,11 +133,16 @@ module timers
     always_ff @(posedge clk)
         irq_n_pre_synced <= !irq;
 
-    synchronizer synchronizer_irq (
-        .clk(clk_host),
-        .in(irq_n_pre_synced),
-        .out(irq_n)
-    );
+    generate
+    if (INSTANTIATE_MASTER_HOST_CDC)
+        synchronizer synchronizer_irq (
+            .clk(clk_host),
+            .in(irq_n_pre_synced),
+            .out(irq_n)
+        );
+    else
+        always_comb irq_n = irq_n_pre_synced;
+    endgenerate
 
     always_comb begin
         status = 0;
