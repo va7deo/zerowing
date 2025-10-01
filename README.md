@@ -29,9 +29,6 @@ Rally Bike (TP-012), Demon's World (TP-016), Fireshark (TP-017), and Vimana (TP-
 | [**mem**](https://github.com/MiSTer-devel/Arcade-Rygar_MiSTer/tree/master/src/mem)    | SDRAM Controller / Rom Downloader                                      | Josh Bassett; modified by Darren Olafson       |
 | [**core_template**](https://github.com/MiSTer-devel/Template_MiSTer)                  | MiSTer Framework Template                                              | sorgelig; modified by Darren Olafson / atrac17 |
 
-# Known Issues / Tasks
-
-
 # PCB Check List
 
 ### Clock Information
