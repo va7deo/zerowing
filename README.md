@@ -170,10 +170,3 @@ Special thanks to the following loaned hardware used during development of this 
 [**@cathoderaze**](https://twitter.com/cathoderaze) for loaning Tatsujin (TP-013B) <br>
 [**@90s_cyber_thriller**](https://www.instagram.com/90s_cyber_thriller/) for loaning Outzone (TP-018) <br>
 
-# Support
-
-Please consider showing support for this and future projects via [**Darren's Ko-fi**](https://ko-fi.com/darreno) and [**atrac17's Patreon**](https://www.patreon.com/atrac17). While it isn't necessary, it's greatly appreciated. <br>
-
-# Licensing
-
-Contact the author for special licensing needs. Otherwise follow the GPLv2 license attached.
