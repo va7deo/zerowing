@@ -1,7 +1,7 @@
 
 # Toaplan (Zero Wing) FPGA Implementation
 
-FPGA compatible core of Toaplan Version 1 arcade hardware for [**MiSTerFPGA**](https://github.com/MiSTer-devel/Main_MiSTer/wiki) written by [**Darren Olafson**](https://twitter.com/Darren__O). Based on OutZone (TP-018) schematics and verified against OutZone (TP-015 Conversion / TP-018) and Tatsujin (TP-013B).
+FPGA compatible core of Toaplan Version 1 arcade hardware for [**MiSTerFPGA**](https://github.com/MiSTer-devel/Main_MiSTer/wiki) written by [**Erin Olafson**]. Based on OutZone (TP-018) schematics and verified against OutZone (TP-015 Conversion / TP-018) and Tatsujin (TP-013B).
 
 The intent is for this core to be a 1:1 **game play** FPGA implementation of Toaplan V1 hardware for the supported titles. This project was developed with assistance from [**atrac17**](https://github.com/atrac17) and [**𝕓𝕝𝕒𝕔𝕜𝕨𝕚𝕟𝕖**](https://github.com/blackwine).
 
@@ -26,8 +26,8 @@ Rally Bike (TP-012), Demon's World (TP-016), Fireshark (TP-017), and Vimana (TP-
 | [**t80**](https://opencores.org/projects/t80)                                         | [**Zilog Z80 CPU**](https://en.wikipedia.org/wiki/Zilog_Z80)           | Daniel Wallner                                 |
 | [**opl2_fpga**](https://github.com/gtaylormb/opl2_fpga_MiSTer)                        | [**Yamaha OPL2**](https://en.wikipedia.org/wiki/Yamaha_OPL#OPL2)       | Greg Taylor                                    |
 | [**yc_out**](https://github.com/MikeS11/MiSTerFPGA_YC_Encoder)                        | [**Y/C Video Module**](https://en.wikipedia.org/wiki/S-Video)          | Mike Simone                                    |
-| [**mem**](https://github.com/MiSTer-devel/Arcade-Rygar_MiSTer/tree/master/src/mem)    | SDRAM Controller / Rom Downloader                                      | Josh Bassett; modified by Darren Olafson       |
-| [**core_template**](https://github.com/MiSTer-devel/Template_MiSTer)                  | MiSTer Framework Template                                              | sorgelig; modified by Darren Olafson / atrac17 |
+| [**mem**](https://github.com/MiSTer-devel/Arcade-Rygar_MiSTer/tree/master/src/mem)    | SDRAM Controller / Rom Downloader                                      | Josh Bassett; modified by Erin Olafson       |
+| [**core_template**](https://github.com/MiSTer-devel/Template_MiSTer)                  | MiSTer Framework Template                                              | sorgelig; modified by Erin Olafson / atrac17 |
 
 # PCB Check List
 
