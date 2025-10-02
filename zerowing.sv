@@ -198,8 +198,8 @@ assign LED_POWER = 0;
 assign BUTTONS = 0;
 
 // Status Bit Map:
-//              Upper Case                     Lower Case           
-// 0         1         2         3          4         5         6   
+//              Upper Case                     Lower Case
+// 0         1         2         3          4         5         6
 // 01234567890123456789012345678901 23456789012345678901234567890123
 // 0123456789ABCDEFGHIJKLMNOPQRSTUV 0123456789ABCDEFGHIJKLMNOPQRSTUV
 // X  XXXXXXXXXXX     X X XXXXXXXX  XX         XX           XXXXXXXX
@@ -225,7 +225,7 @@ wire [3:0] vs_width  = status[63:60];
 assign VIDEO_ARX = (!aspect_ratio) ? (orientation  ? 8'd4 : 8'd3) : (aspect_ratio - 1'd1);
 assign VIDEO_ARY = (!aspect_ratio) ? (orientation  ? 8'd3 : 8'd4) : 12'd0;
 
-`include "build_id.v" 
+`include "build_id.v"
 localparam CONF_STR = {
     "Toaplan V1;;",
     "-;",
@@ -753,7 +753,7 @@ fx68k fx68k (
     .BERRn(1'b1),
     .BRn(1'b1),
     .BGACKn(1'b1),
-    
+
     .IPL0n(1'b1),
     .IPL1n(1'b1),
     .IPL2n(ipl2_n),
@@ -810,7 +810,6 @@ wire MREQ_n;
 always @ (posedge clk_sys) begin
     if ( reset == 1 ) begin
         z80_wait_n <= 0;
-        sound_wr <= 0;
     end else if ( clk_3_5M == 1 ) begin
         z80_wait_n <= 1;
         if ( ioctl_download | ( z80_rd_n == 0 && sound_rom_1_data_valid == 0 && sound_rom_1_cs == 1 ) ) begin
@@ -844,72 +843,70 @@ always @ (posedge clk_sys) begin
                 z80_din <= 8'h00;
             end
         end
-        sound_wr <= 0;
-        if ( z80_wr_n == 0 ) begin
-            if ( z80_sound0_cs | z80_sound1_cs ) begin
-                sound_data  <= z80_dout;
-                sound_addr <= { 1'b0, z80_sound1_cs }; // pad for opl3.  opl2 is single bit address
-                sound_wr <= 1;
-            end
-        end
     end
 end
-
-reg  [1:0] sound_addr;
-reg  [7:0] sound_data;
-reg sound_wr;
 
 wire [7:0] opl_dout;
 wire opl_irq_n;
 
-reg signed [15:0] sample;
+reg signed [15:0] opl_sample;
 
 assign AUDIO_S = 1'b1;
 
-wire opl_sample_clk;
-
-jtopl #(.OPL_TYPE(2)) jtopl2
-(
-    .rst(~reset_n),
+opl2_fpga opl2_fpga (
     .clk(clk_sys),
-    .cen(clk_3_5M),
-    .din(sound_data),
-    .addr(sound_addr),
-    .cs_n('0),
-    .wr_n(~sound_wr),
+    .clk_host(clk_sys),
+    .clk_dac(CLK_AUDIO),
+    .ic_n(reset_n),
+    .cs_n(!(z80_sound0_cs || z80_sound1_cs)),
+    .rd_n(z80_rd_n),
+    .wr_n(z80_wr_n),
+    .address(z80_sound1_cs),
+    .din(z80_dout),
     .dout(opl_dout),
-    .irq_n(opl_irq_n),
-    .snd(sample),
-    .sample(opl_sample_clk)
+    .sample_valid(),
+    .sample(opl_sample),
+    .led(),
+    .irq_n(opl_irq_n)
 );
 
-wire [1:0] opl2_level = status[44:43];    // opl2 audio mix
+logic [1:0] opl2_level_synced;
 
-reg  [7:0] opl2_mult;
+cdc_vector_handshake_continuous #(
+    .DATA_WIDTH(2)
+) opl2_level_cdc (
+    .clk_in(clk_sys),
+    .clk_out(CLK_AUDIO),
+    .data_in(status[44:43]), // opl2 audio mix
+    .data_out(opl2_level_synced)
+);
+
+logic  [7:0] opl2_mult;
 
 // set the multiplier for each channel from menu
+always_ff @(posedge CLK_AUDIO)
+    unique case (opl2_level_synced)
+    0: opl2_mult <= 8'h0c;    // 75%
+    1: opl2_mult <= 8'h08;    // 50%
+    2: opl2_mult <= 8'h04;    // 25%
+    3: opl2_mult <= 8'h00;    // 0%
+    endcase
 
-always @( posedge clk_sys, posedge reset ) begin
-    if (reset) begin
-        opl2_mult<=0;
-    end else begin
-        case( opl2_level )
-            0: opl2_mult <= 8'h0c;    // 75%
-            1: opl2_mult <= 8'h08;    // 50%
-            2: opl2_mult <= 8'h04;    // 25%
-            3: opl2_mult <= 8'h00;    // 0%
-        endcase
-    end
-end
+logic reset_clk_audio;
+logic signed [15:0] mono;
 
-wire signed [15:0] mono;
+reset_sync reset_sync_clk_audio (
+    .clk(CLK_AUDIO),
+    .arst_n(!reset),
+    .reset(reset_clk_audio)
+);
 
 jtframe_mixer #(.W0(16), .WOUT(16)) u_mix_mono(
-    .rst    ( reset        ),
-    .clk    ( clk_sys      ),
+    .rst    ( reset_clk_audio ),
+    .clk    ( CLK_AUDIO    ),
     .cen    ( 1'b1         ),
     // input signals
-    .ch0    ( sample       ),
+    .ch0    ( opl_sample   ),
     .ch1    ( 16'd0        ),
     .ch2    ( 16'd0        ),
     .ch3    ( 16'd0        ),
@@ -922,11 +919,19 @@ jtframe_mixer #(.W0(16), .WOUT(16)) u_mix_mono(
     .peak   (              )
 );
 
-always @ (posedge clk_sys ) begin
-    if ( pause_cpu == 1 ) begin
+logic pause_cpu_synced;
+
+synchronizer pause_cpu_synchronizer (
+    .clk(CLK_AUDIO),
+    .in(pause_cpu),
+    .out(pause_cpu_synced)
+);
+
+always @ (posedge CLK_AUDIO ) begin
+    if ( pause_cpu_synced ) begin
         AUDIO_L <= 0;
         AUDIO_R <= 0;
-    end else if ( pause_cpu == 0 ) begin
+    end else begin
         // mix audio
         AUDIO_L <= mono;
         AUDIO_R <= mono;
@@ -1086,7 +1091,7 @@ always @ (posedge clk_sys) begin
                 inc_sprite_ofs <= 1;
             end
             if ( reset_z80_cs ) begin
-                // the pcb writes to a latch to control the reset 
+                // the pcb writes to a latch to control the reset
                 reset_z80_n <= cpu_dout[0];
             end
         end
@@ -1291,7 +1296,7 @@ always @ (posedge clk_sys) begin
         sprite_copy_state <= 0;
         tile_draw_state <= 0;
     end else begin
-        // render sprites 
+        // render sprites
         // triggered when the tile rendering starts
         if ( sprite_state == 0 && draw_state > 0 ) begin
             sprite_num <= 8'h00;
@@ -1487,7 +1492,7 @@ always @ (posedge clk_sys) begin
                     if ( curr_x[2:0] == ( tile_flip ? 0 : 7)  ) begin
                         draw_state <= 3;
                         tile_draw_state <= 0;
-                    end 
+                    end
                     x <= x + 1;
                 end else if ( layer > 0 ) begin
                     layer <= layer - 1;
@@ -1536,7 +1541,7 @@ always @ (posedge clk_sys) begin
         // if palette index is zero then it's from layer 3 and is transparent render as blank (black).
         rgb <= { dac[tile_palette_dout[4:0]], dac[tile_palette_dout[9:5]], dac[tile_palette_dout[14:10]] };
 
-        // if not transparent and sprite is higher priority 
+        // if not transparent and sprite is higher priority
         if ( sprite_fb_out[3:0] > 0 && (sprite_fb_out[13:10] > tile_fb_out[13:10]) ) begin
             // draw sprite
             rgb <= { dac[sprite_palette_dout[4:0]], dac[sprite_palette_dout[9:5]], dac[sprite_palette_dout[14:10]] };
@@ -1872,7 +1877,7 @@ sdram #(.CLK_FREQ(70.0)) sdram
   .data(sdram_data),
   .we(sdram_we),
   .req(sdram_req),
-  
+
   .ack(sdram_ack),
   .valid(sdram_valid),
   .q(sdram_q),
