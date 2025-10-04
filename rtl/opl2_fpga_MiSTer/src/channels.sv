@@ -171,7 +171,9 @@ module channels
                 default:;
                 endcase
 
-            next_self.channel_acc_pre_clamp = self.channel_acc_pre_clamp + signals.channel_out*2;
+            // OPL3 combines 4 channels into 2 in the analog domain in the YAC512. OPL2 is only 1 channel;
+            // do not double output.
+            next_self.channel_acc_pre_clamp = self.channel_acc_pre_clamp + signals.channel_out;
 
             if (self.channel_num == NUM_CHANNELS_PER_BANK - 1)
                 next_state = DONE;
